@@ -1,0 +1,213 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    font-family: "Open Sans", sans-serif;
+}
+
+body {
+    background: rgb(226, 226, 226);
+}
+
+.container {
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+.logo {
+    text-align: center;
+    display: flex;
+    margin: 10px 0px 0px 10px;
+    padding-bottom: 3rem;
+}
+
+.logo img {
+    margin-left: 2px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+nav {
+    left: 0px;
+    position: sticky;
+    width: 90px;
+    height: 100vh;
+    background-color: #344a72;
+    overflow-x: hidden;
+    transition: 1s;
+}
+
+nav:hover {
+    width: 280px;
+    transition: 1s;
+}
+
+a {
+    width: 280px;
+    display: table;
+    position: relative;
+    padding: 10px;
+    color: rgb(85,83,83);
+    font-size: 14px;
+}
+
+a:hover {
+    background-color: #344a90;
+}
+
+nav .fas {
+    position: relative;
+    width: 70px;
+    height: 40px;
+    color: white;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 20px;
+}
+
+.nav-item {
+    position: relative;
+    margin-top: 15px;
+    margin-left: 10px;
+    color: white;
+    font-size: 14px;
+}
+
+.add-datos {
+    color: black;
+    margin-left: 15px;
+    margin-top: 10px;
+    display: flex;
+    width: 400px;
+    background-color: transparent;
+}
+
+label {
+    color: black;
+    background-color: transparent;
+    padding-left: 15px;
+    padding-right: 20px;
+    position: absolute;
+}
+
+.go-datos {
+    margin-left: 250px;
+}
+
+.attendance {
+    margin-top: 50px;
+    margin-left: 0px;
+    margin-right: auto;
+}
+
+.attendance-list {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.1);
+    text-align: center;
+} 
+
+.add-elemento {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    width: 250px;
+    height: 30px;
+    border: solid green 1px;
+    background-color: #34AF6D;
+    color: white;
+    font-size: 18px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.table {
+    border-collapse: collapse;
+    font-size: 15px;
+    min-width: 800px;
+    overflow: hidden;
+    border-radius: 5px 5px 0 0;
+}
+
+table thead tr {
+    color: #fff;
+    background: #34AF6D;
+    text-align: center;
+    font-weight: bold;
+}
+
+.table th, .table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    text-align: left;
+}
+
+.table tbody tr:nth-of-type(odd) {
+    background: #f3f3f3;
+}
+
+.table tbody tr.active {
+    font-weight: bold;
+    color: #4AD489;
+}
+
+.table tbody tr:last-of-type {
+    border-bottom: 2px solid #4AD489;
+}
+
+.table button {
+    padding: 6px 20px;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid #4AD489;
+}
+  
+.table button:hover {
+    background: #4AD489;
+    color: #fff;
+    transition: 0.5rem;
+}
+
+#inside_button {
+    width: 20px;
+    padding: 6px 20px;
+    border-radius: transparent;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid #4AD489;
+}
+
+.mensaje-bienvenida{
+    clear: both;
+    margin: auto;
+    color: #344a72;
+    background-color: transparent;
+    font-size: 1cm;
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    text-align: center;
+}
+
+.alinear-vertical{
+    position: relative;
+    text-align: center;
+    margin: auto;
+}
+
+input[type='text'] {
+    width: 160;
+}
+
+.barra_navegacion {
+    overflow: hidden;
+    background-color: #333;
+    font-family: Arial;
+}

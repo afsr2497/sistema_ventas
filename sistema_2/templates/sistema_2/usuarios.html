@@ -1,0 +1,71 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block content%}
+<section class="attendance">
+    <div class="attendance-list">
+      <h1 class="cabecera">LISTA DE USUARIOS</h1>
+      <!--<a class="add-elemento" href="{% url 'sistema_2:importar_usuarios' %}">Importar usuarios</a>-->
+      <a class="add-elemento" href="{% url 'sistema_2:add_user' %}">Añadir usuario</a>
+      <form class="filtros" method="get">
+        <div>
+          <div>
+            <div class="add-datos">
+              <label>Usuario</label><br>
+              <div class="go-datos"><input type="text" name="usuario"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Email</label><br>
+              <div class="go-datos"><input type="text" name="email"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Tipo</label><br>
+              <div class="go-datos"><input type="text" name="tipo"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Celular</label><br>
+              <div class="go-datos"><input type="text" name="celular"></div>
+            </div>
+          </div>
+          <button type="submit" class="add-elemento">
+            <i class="fas fa-search fa-sm"></i>
+          </button>
+        </div>
+      </form>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Tipo</th>
+            <th>Celular</th>
+            <th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody>
+           {% for usuario in usr %}
+                <tr>
+                    <td>{{ usuario.id }}</td>
+                    <td>{{ usuario.username }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>{{ usuario.first_name }}</td>
+                    <td>{{ usuario.last_name }}</td>
+                    <td>
+                      {% if usuario.first_name == 'vendedor' %}
+                        <a href="{% url 'sistema_2:eliminar_usuario' usuario.id %}" ><button>Eliminar</button></a>
+                        <a href="{% url 'sistema_2:update_user' usuario.id %}" ><button>Modificar</button></a>
+                      {% endif %}
+                    </td>
+                </tr>
+           {% endfor %}
+        </tbody>
+      </table>
+    </div>
+</section>
+{% endblock %}

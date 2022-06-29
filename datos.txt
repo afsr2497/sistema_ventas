@@ -1,0 +1,9 @@
+
+Pendiente: 
+Filtros de información - Filtrado de información - Definir que filtros, Categoria, Sub Categoría, Fecha , ETC - Dos filtros y queda listo - Cerrar con los módulos hasta las 10 para proceder a trabajar con las guias y facturas fast -Ra
+Eliminar y modificar datos - Listo
+
+Convertir cotización en guia y factura - Funcionalidad - Aprobar y generar guias
+Stock solo se descuenta con guias aceptadas - Convertir a factura
+
+Guardar facturas de forma autoincremental

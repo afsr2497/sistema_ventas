@@ -1,0 +1,89 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block info %}
+<script>
+    document.addEventListener("DOMContentLoaded",() => {
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var today = String(date.getDate()).padStart(2,'0');
+        var datePattern = year + '-' + '0' + month + '-' + today;
+        document.getElementById("id_prof_fecha").value = datePattern; 
+
+        var user_id = JSON.parse(document.getElementById('user_id').textContent)
+        document.getElementById('id_prof_vendedor').value = user_id
+    })
+</script>
+{% endblock %}
+
+{% block content%}
+
+{{ request.user.id | json_script:"user_id" }}
+
+<div class="attendance">
+    <div class="attendance-list">
+    <h1>AGREGAR PROFORMA</h1>
+    <a class="add-elemento" href="{% url 'sistema_2:proformas' %}">Ver proformas</a>
+    <form action="{% url 'sistema_2:add_proforma' %}" method="post">
+        {% csrf_token %}
+        <div>
+            {% for campo in form_proforma %}
+                <div class="add-datos">
+                    <label>{{ campo.label }}</label>
+                    <div class="go-datos">{{ campo }}</div>
+                </div>
+            {% endfor %}
+        </div>
+        <input class="add-elemento" type="submit">
+    </form>
+    </div>
+    <div class="attendance-list">
+        <h1 class="cabecera">PRODUCTOS AGREGADOS</h1>
+        <a class="add-elemento" href="{% url 'sistema_2:add_producto_proforma' %}">Añadir producto a la proforma</a>
+        <a class="add-elemento" href="{% url 'sistema_2:add_cliente_proforma' %}">Añadir cliente a la proforma</a>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Razon Social</th>
+                    <th>RUC</th>
+                    <th>DNI</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                {% for dato in cliente %}
+                    <td>{{ dato }}</td>
+                {% endfor %}
+                </tr>
+            </tbody>
+      </table>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nombre</th>
+                    <th>Codigo</th>
+                    <th>Categoria</th>
+                    <th>Sub Categoria</th>
+                    <th>Precio de venta sin IGV</th>
+                    <th>Codigo SUNAT</th>
+                    <th>Moneda</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in lista_productos %}
+                <tr>
+                    {% for campo in producto %}
+                    <td>{{ campo }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+      </table>
+    </div>
+</div>
+{% endblock %}

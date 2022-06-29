@@ -1,0 +1,22 @@
+Subir a amazon de metalprotect - Enlazar a RDS interno
+Subir a GitHub de luis
+
+Hacer preview de proformas, guías y facturas
+Llamar producto - Jalar precio - Descuento (x producto) - Añadir
+
+Condición de pago
+Numero de guia
+Emisión
+Generar numero de guia
+
+Cantabria factura - revisar factura - Campos obligatorios en factura 
+Proforma campo para seleccionar 
+Añadir el vendedor - Seleccionadle
+
+
+Valor total en lista de proformas max 2 dígitos y moneda
+Inventarios - generar
+
+Inventarios regionales con ubicación y cantidad (stock)
+GitHub y AWS - GROUP AWS
+Reunion - Martes en la noche - Luego de mi webinar

@@ -1,0 +1,22 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block content%}
+<div class="attendance">
+    <div class="attendance-list">
+    <h1>ACTUALIZAR SERVICIO</h1>
+    <a class="add-elemento" href="{% url 'sistema_2:servicios' %}">Ver servicios</a>
+    <form action="{% url 'sistema_2:update_service' id_servicio %}" method="post">
+        {% csrf_token %}
+        <div>
+            {% for campo in form_service %}
+                <div class="add-datos">
+                    <label>{{ campo.label }}</label>
+                    <div class="go-datos">{{ campo }}</div>
+                </div>
+            {% endfor %}
+        </div>
+        <input class="add-elemento" type="submit" value="Actualizar">
+    </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "sistema_2/layout_1.html" %}
+
+
+
+{% block content%}
+<section class="attendance">
+    <div class="attendance-list">
+      <h1 class="cabecera">LISTA DE PROFORMAS</h1>
+      <a class="add-elemento" href="{% url 'sistema_2:add_proforma' %}">Añadir proforma</a>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Valor total</th>
+            <th>Estado</th>
+            <th>Vendedor</th>
+            <th>Ver Proforma</th>
+            <th>Generar Guia</th>
+            <th>Descargar</th>
+            <th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody>
+           {% for proforma in prof %}
+                <tr>
+                    <td>{{ proforma.id }}</td>
+                    <td>{{ proforma.prof_cliente.3 }}</td>
+                    <td>{{ proforma.prof_fecha }}</td>
+                    <td>{{ proforma.prof_valor_total }}</td>
+                    <td>{{ proforma.prof_estado }}</td>
+                    <td>{{ proforma.prof_vendedor.1 }}</td>
+                    <td>
+                      {% if proforma.prof_estado == 'NoGenerada' %}
+                        <a href="{% url 'sistema_2:ver_proforma' proforma.id %}" >Ver Proforma</a></td>
+                      {% else %}
+                        {{ proforma.prof_estado }}
+                      {% endif %}
+                      <td>
+                      {% if proforma.prof_estado == 'Generada'%}
+                        <a href="{% url 'sistema_2:generar_guia' proforma.id %}" >Generar guia</a>
+                      {% else %}
+                        {{ proforma.prof_estado }}
+                      {% endif %} 
+                    </td>
+                    <td>
+                      {% if proforma.prof_estado == 'Generada' or proforma.prof_estado == 'Ejecutada' %}
+                        <a href="{% url 'sistema_2:generar_proforma' proforma.id %}" >Descargar</a>
+                      {% endif %}
+                      </td>
+                    <td><a href="{% url 'sistema_2:eliminar_proforma' proforma.id %}" >Eliminar</a></td>
+                </tr>
+           {% endfor %}
+        </tbody>
+      </table>
+    </div>
+</section>
+{% endblock %}

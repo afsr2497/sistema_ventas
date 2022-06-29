@@ -1,0 +1,109 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block content%}
+<section class="attendance">
+    <div class="attendance-list">
+      <h1 class="cabecera">LISTA DE PRODUCTOS</h1>
+      <a class="add-elemento" href="{% url 'sistema_2:importar_productos' %}">Importar productos</a>
+      <a class="add-elemento" href="{% url 'sistema_2:add_product' %}">Añadir producto</a>
+      <form class="filtros" method="get">
+        <div>
+          <div>
+            <div class="add-datos">
+              <label>Nombre</label><br>
+              <div class="go-datos"><input type="text" name="nombre"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Codigo</label><br>
+              <div class="go-datos"><input type="text" name="codigo"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Categoria</label><br>
+              <div class="go-datos"><input type="text" name="categoria"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Sub Categoria</label><br>
+              <div class="go-datos"><input type="text" name="sub-categoria"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Unidad de medida</label><br>
+              <div class="go-datos"><input type="text" name="unidad-med"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Codigo SUNAT</label><br>
+              <div class="go-datos"><input type="text" name="codigo-sun"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Moneda</label><br>
+              <div class="go-datos"><input type="text" name="moneda"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Almacen</label><br>
+              <div class="go-datos"><input type="text" name="almacen"></div>
+            </div>
+          </div>
+
+          <button type="submit" class="add-elemento">
+            <i class="fas fa-search fa-sm"></i>
+          </button>
+        </div>
+      </form>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Nombre</th>
+            <th>Codigo</th>
+            <th>Categoria</th>
+            <th>Sub Categoria</th>
+            <th>Unidad de medida</th>
+            <th>Precio de compra sin IGV</th>
+            <th>Precio de compra con IGV</th>
+            <th>Precio de venta sin IGV</th>
+            <th>Precio de venta con IGV</th>
+            <th>Codigo SUNAT</th>
+            <th>Moneda</th>
+            <th>Stock</th>
+            <th>Almacen</th>
+            <th>Configurar</th>
+          </tr>
+        </thead>
+        <tbody>
+           {% for producto in pro %}
+                <tr>
+                    <td>{{ producto.id }}</td>
+                    <td>{{ producto.pro_nombre }}</td>
+                    <td>{{ producto.pro_codigo }}</td>
+                    <td>{{ producto.pro_categoria }}</td>
+                    <td>{{ producto.pro_sub_categoria }}</td>
+                    <td>{{ producto.pro_unidad_med }}</td>
+                    <td>{{ producto.pro_precio_compra_sin_igv }}</td>
+                    <td>{{ producto.pro_precio_compra_con_igv }}</td>
+                    <td>{{ producto.pro_precio_venta_sin_igv }}</td>
+                    <td>{{ producto.pro_precio_venta_con_igv }}</td>
+                    <td>{{ producto.pro_codigo_sunat }}</td>
+                    <td>{{ producto.pro_moneda }}</td>
+                    <td>{{ producto.pro_stock }}</td>
+                    <td>{{ producto.pro_almacen }}</td>
+                    <td><a href="{% url 'sistema_2:eliminar_producto' producto.id %}" id="inside_button"><button>Eliminar</button></a><a href="{% url 'sistema_2:update_product' producto.id %}" id="inside_button"><button>Modificar</button></a></td>
+                </tr>
+           {% endfor %}
+        </tbody>
+      </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "sistema_2/layout_0.html" %}
+
+{% block body %}
+<div class="login-box">
+    <h1>Ingrese a su cuenta</h1>
+    <form action="{% url 'sistema_2:login_view' %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Ingresar" />
+    </form>
+</div>
+{% if message %}
+<div class="mensaje-fallido">
+    {{ message }}
+</div>
+{% endif %}
+{% endblock %}

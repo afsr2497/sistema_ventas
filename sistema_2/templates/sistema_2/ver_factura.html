@@ -1,0 +1,52 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block info %}
+<script>
+    document.addEventListener("DOMContentLoaded",() => {
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var today = String(date.getDate()).padStart(2,'0');
+        var datePattern = year + '-' + '0' + month + '-' + today;
+        document.getElementById("fecha-emision").value = datePattern; 
+        document.getElementById("fecha-vencimiento").value = datePattern; 
+    })
+</script>
+{% endblock %}
+
+{% block content%}
+<div class="attendance">
+    <div class="attendance-list">
+    <h1>VER FACTURA</h1>
+    </div>
+    <form method="post" action="{% url 'sistema_2:ver_factura' id_factura %}">
+    {% csrf_token %}
+    <div>
+        <div class="add-datos">
+            <label>Fecha de emision</label>
+            <div>
+                <input type="date" class="go-datos" name="fecha-emision" id="fecha-emision">    
+            </div>
+        </div>
+        <div class="add-datos">
+            <label>Fecha de vencimiento</label>
+            <div>
+                <input type="date" class="go-datos" name="fecha-vencimiento" id="fecha-vencimiento">    
+            </div>
+        </div>
+        <div class="add-datos">
+            <label>Condicion de pago</label>
+            <select name="condi-pago" class="go-datos" value="Contado">
+                <option value="Contado" >Contado</option>
+                <option value="2Cuotas" >2Cuotas</option>
+                <option value="3Cuotas" >3Cuotas</option>
+                <option value="4Cuotas" >4Cuotas</option>
+                <option value="5Cuotas" >5Cuotas</option>
+                <option value="6Cuotas" >6Cuotas</option>
+            </select>
+        </div>
+    </div>
+    <input type="submit" value="Emitir">
+    </form>
+</div>
+{% endblock %}

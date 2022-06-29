@@ -1,0 +1,105 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block content%}
+<section class="attendance">
+    <div class="attendance-list">
+      <h1 class="cabecera">LISTA DE CLIENTES</h1>
+      <a class="add-elemento" href="{% url 'sistema_2:importar_clientes' %}">Importar clientes</a>
+      <a class="add-elemento" href="{% url 'sistema_2:add_client' %}">Añadir cliente</a>
+      <form class="filtros" method="get">
+        <div>
+          <div>
+            <div class="add-datos">
+              <label>Nombre</label><br>
+              <div class="go-datos"><input type="text" name="nombre"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Apellido</label><br>
+              <div class="go-datos"><input type="text" name="apellido"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Razon social</label><br>
+              <div class="go-datos"><input type="text" name="razon-social"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>DNI</label><br>
+              <div class="go-datos"><input type="text" name="dni"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>RUC</label><br>
+              <div class="go-datos"><input type="text" name="ruc"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Departament</label><br>
+              <div class="go-datos"><input type="text" name="departamento"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Provincia</label><br>
+              <div class="go-datos"><input type="text" name="provincia"></div>
+            </div>
+          </div>
+          <div>
+            <div class="add-datos">
+              <label>Distrito</label><br>
+              <div class="go-datos"><input type="text" name="distrito"></div>
+            </div>
+          </div>
+          <button type="submit" class="add-elemento">
+            <i class="fas fa-search fa-sm"></i>
+          </button>
+        </div>
+      </form>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Razon Social</th>
+            <th>DNI</th>
+            <th>RUC</th>
+            <th>Email</th>
+            <th>Contacto</th>
+            <th>Telefono</th>
+            <th>Departamento</th>
+            <th>Provincia</th>
+            <th>Distrito</th>
+            <th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody>
+           {% for cliente in cli %}
+                <tr>
+                    <td>{{ cliente.id }}</td>
+                    <td>{{ cliente.cli_nombre }}</td>
+                    <td>{{ cliente.cli_apellido }}</td>
+                    <td>{{ cliente.cli_razon_social }}</td>
+                    <td>{{ cliente.cli_dni }}</td>
+                    <td>{{ cliente.cli_ruc }}</td>
+                    <td>{{ cliente.cli_email }}</td>
+                    <td>{{ cliente.cli_contacto }}</td>
+                    <td>{{ cliente.cli_telefono }}</td>
+                    <td>{{ cliente.cli_department }}</td>
+                    <td>{{ cliente.cli_provincia }}</td>
+                    <td>{{ cliente.cli_distrito }}</td>
+                    <td><a href="{% url 'sistema_2:eliminar_cliente' cliente.id %}" ><button>Eliminar</button></a><a href="{% url 'sistema_2:update_client' cliente.id %}" ><button>Modificar</button></a></td>
+                </tr>
+           {% endfor %}
+        </tbody>
+      </table>
+    </div>
+</section>
+{% endblock %}

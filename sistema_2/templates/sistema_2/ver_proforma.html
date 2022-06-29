@@ -1,0 +1,58 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block info %}
+{% endblock %}
+
+{% block content%}
+
+{{ request.user.id | json_script:"user_id" }}
+
+<div class="attendance">
+    <div class="attendance-list">
+    <h1>VER PROFORMA</h1>
+    <a class="add-elemento" href="{% url 'sistema_2:proformas' %}">Ver proformas</a>
+    <div class="attendance-list">
+        <h1 class="cabecera">PRODUCTOS AGREGADOS</h1>
+        <form action="{% url 'sistema_2:ver_proforma' id_proforma %}" method="post">
+        {% csrf_token %}
+        <div class="add-datos">
+            <label>Tipo de cambio</label>
+            <div class="go-datos"><input type="number" step="0.01" value="0" name="tipo-cambio"></div>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nombre</th>
+                    <th>Codigo</th>
+                    <th>Categoria</th>
+                    <th>Sub Categoria</th>
+                    <th>Precio de venta sin IGV</th>
+                    <th>Codigo SUNAT</th>
+                    <th>Descuento</th>
+                    <th>Moneda</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                <tr>
+                    <td>{{ producto.0 }}</td>
+                    <td>{{ producto.1 }}</td>
+                    <td>{{ producto.2 }}</td>
+                    <td>{{ producto.3 }}</td>
+                    <td>{{ producto.4 }}</td>
+                    <td>{{ producto.5 }}</td>
+                    <td>{{ producto.6 }}</td>
+                    <td><input type="text" type="number" step="0.01" name="{{ producto.0 }}"></td>
+                    <td>{{ producto.7 }}</td>
+                    <td>{{ producto.8 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+      </table>
+      <input type="submit" value="Generar" class="add-elemeto">
+      </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block content%}
+<div class="attendance">
+    <div class="attendance-list">
+    <h1>AGREGAR PRODUCTO</h1>
+    <a class="add-elemento" href="{% url 'sistema_2:productos' %}">Ver productos</a>
+    <form action="{% url 'sistema_2:add_product' %}" method="post">
+        {% csrf_token %}
+        <div>
+            {% for campo in form_product %}
+                <div class="add-datos">
+                    <label>{{ campo.label }}</label>
+                    <div class="go-datos">{{ campo }}</div>
+                </div>
+            {% endfor %}
+        </div>
+        <input type="submit">
+    </form>
+    </div>
+</div>
+{% endblock %}

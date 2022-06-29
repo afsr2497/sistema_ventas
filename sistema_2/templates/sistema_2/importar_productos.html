@@ -1,0 +1,22 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block content%}
+<div class="attendance">
+    <div class="attendance-list">
+    <h1>IMPORTAR PRODUCTOS</h1>
+    <a class="add-elemento" href="{% url 'sistema_2:productos' %}">Ver productos</a>
+    {% if mensaje %}
+        <h2>{{ mensaje }}</h2>
+    {% endif %}
+    <form action="{% url 'sistema_2:importar_productos' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            <div class="add-datos">
+                <input type="file" name="MyFile">
+            </div>
+        </div>
+        <input class="add-elemento" type="submit">
+    </form>
+    </div>
+</div>
+{% endblock %}

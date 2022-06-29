@@ -1,0 +1,37 @@
+{% extends "sistema_2/layout_1.html" %}
+
+{% block content%}
+<section class="attendance">
+    <div class="attendance-list">
+      <h1 class="cabecera">GUIAS</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Descargar</th>
+            <th>Generar factura</th>
+          </tr>
+        </thead>
+        <tbody>
+           {% for proforma in gui %}
+                <tr>
+                    <td>{{ proforma.id }}</td>
+                    <td>{{ proforma.gui_cliente.3 }}</td>
+                    <td>{{ proforma.gui_fecha }}</td>
+                    <td>{{ proforma.gui_estado }}</td>
+                    <td><a href="{% url 'sistema_2:descargar_guia' proforma.id %}" >Descargar</a></td>
+                    <td>
+                      {% if proforma.gui_estado == 'Generada' %}
+                        <a href="{% url 'sistema_2:generar_factura' proforma.id %}" >Generar Factura</a>
+                      {% endif %}
+                    </td>
+                </tr>
+           {% endfor %}
+        </tbody>
+      </table>
+    </div>
+</section>
+{% endblock %}
