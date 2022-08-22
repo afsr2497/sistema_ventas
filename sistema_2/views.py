@@ -50,6 +50,7 @@ def ingresos(request):
 
 @login_required(login_url='/sistema_2')
 def dashboard(request):
+    print('Hola soy alexander')
     return render(request,'sistema_2/dashboard.html')
 
 def login_view(request):
