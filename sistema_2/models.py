@@ -113,7 +113,6 @@ class guias(models.Model):
     nroDocumento = models.CharField(max_length=128,null=True)
     estadoSunat = models.CharField(max_length=128,null=True)
     fecha_emision = models.DateField(null=True)
-    datos_raros_guia = models.CharField(max_length=256,null=True)
     
 
 class facturas(models.Model):
