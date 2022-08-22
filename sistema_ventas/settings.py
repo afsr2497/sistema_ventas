@@ -75,7 +75,6 @@ WSGI_APPLICATION = 'sistema_ventas.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 
-"""
 #Base de datos de prueba
 DATABASES = {
     'default': {
@@ -104,6 +103,7 @@ DATABASES = {
         #'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+"""
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
