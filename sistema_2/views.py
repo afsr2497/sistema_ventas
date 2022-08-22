@@ -877,8 +877,6 @@ def importar_productos(request):
             'mensaje': mensaje,
         })
 
-    return render(request,'sistema_2/importar_productos.html')
-
 def importar_servicios(request):
     if request.method == 'POST':
         columnas_servicio = ['NOMBRE','CATEGORIA','SUBCATEGORIA','UNIDAD','PRECIO VENTA','PRECIO VENTA + IGV']
