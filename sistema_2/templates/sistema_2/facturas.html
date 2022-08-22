@@ -1,44 +1,145 @@
-{% extends "sistema_2/layout_1.html" %}
+{% extends "sistema_2/layout_3.html" %}
+
+{% load static %}
+
+{% block code %}
+
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="{% static 'sistema_2/factura.js' %}"></script>
+
+{% endblock %}
+
 
 {% block content%}
-<section class="attendance">
-    <div class="attendance-list">
-      <h1 class="cabecera">FACTURAS</h1>
-      <table class="table">
-        <thead>
+
+<div class="container">
+  <h1>Facturas</h1>
+  <br>
+  <br>
+  <div>
+    <form class="row g-12" method="post" action="{% url 'sistema_2:fact' %}">
+    {% csrf_token %}
+        <div class="col-md-2">
+            <label>Fecha inicial</label>
+            <input type="date" class="form-control col-md-1" name="fecha_inicio" value="{{ fecha_inicial }}">
+        </div>
+        <div class="col-md-2">
+            <label>Fecha final</label>
+            <input type="date" class="form-control col-md-1" name="fecha_fin" value="{{ fecha_final }}">
+        </div>
+        <br>
+        <br>
+        <br>
+        <div>
+            <button type="submit" class="btn btn-success">Filtrar</button>
+        </div>
+    </form>
+    <br>
+    <a class="btn btn-success float-left" style="color: white;" href="{% url 'sistema_2:fact' %}">Reestablecer</a>
+  </div>
+  <br>
+  <table class="table table-bordered table-hover" id="facturasTable">
+      <thead class="table-dark">
           <tr>
-            <th>Id</th>
-            <th>Cliente</th>
-            <th>Fecha</th>
-            <th>Valor total</th>
-            <th>Estado</th>
-            <th>Ver</th>
-            <th>Descargar</th>
+              <th scope="col">ID</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Codigo</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Editar</th>
+              <th scope="col">Descargar factura</th>
+              <th scope="col">Enviar a teFacturo</th>
+              <th scope="col">Verificar estado</th>
+              <th scope="col">Estado teFacturo</th>
+              <th scope="col">Emitir nota de credito</th>
           </tr>
-        </thead>
-        <tbody>
-           {% for proforma in fac %}
-                <tr>
-                    <td>{{ proforma.id }}</td>
-                    <td>{{ proforma.fac_cliente.3 }}</td>
-                    <td>{{ proforma.fac_fecha }}</td>
-                    <td>{{ proforma.fac_valor_total }}</td>
-                    <td>{{ proforma.fac_estado }}</td>
-                    <td>
-                      {% if proforma.fac_estado != 'Emitida' %}
-                        <a href="{% url 'sistema_2:ver_factura' proforma.id %}">Ver</a></td>
-                      {% else %}
-                        {{ proforma.fac_estado }}
-                      {% endif %}
-                    <td>
-                      {% if proforma.fac_estado == 'Emitida' %}
-                        <a href="{% url 'sistema_2:descargar_factura' proforma.id %}">Descargar</a>
-                      {% endif %}
-                    </td>
-                </tr>
-           {% endfor %}
-        </tbody>
-      </table>
+      </thead>
+      <tbody>
+        {% for factura in fac %}
+          <tr>
+              <td scope="row">{{ factura.id }}</th>
+              {% if factura.cliente.1 == '' %}
+              <td>{{ factura.cliente.3 }}</td>
+              {% else %}
+              <td>{{ factura.cliente.1 }} {{ factura.cliente.2 }}</td>
+              {% endif %}
+              <td>{{ factura.codigoFactura }}</td>
+              <td>{{ factura.fechaFactura }}</td>
+              <td>
+                {% if factura.estadoFactura == 'Generada' %}
+                    <div class="bg-success rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ factura.estadoFactura }}</div>
+                {% endif %}
+                {% if factura.estadoFactura == 'Enviada' %}
+                    <div class="bg-primary rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ factura.estadoFactura }}</div>
+                {% endif %}
+                {% if factura.estadoFactura == 'Anulada' %}
+                    <div class="bg-danger rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ factura.estadoFactura }}</div>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                  <a class="btn btn-warning" href="{% url 'sistema_2:editar_factura' factura.id %}"><i class="fa fa-edit"></i></a>
+              </td>
+              {% if factura.estadoFactura == 'Enviada' %}
+                <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:download_factura' factura.id %}"><i class="fas fa-download"></i></a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+                <td style="text-align: center;">
+                {% if factura.estadoFactura == 'Generada' %}
+                <a class="btn btn-success" href="{% url 'sistema_2:enviar_factura' factura.id %}"><i class="fas fa-arrow-right"></i></a>
+                {% endif %}
+              </td>
+              {% if factura.estadoFactura == 'Enviada' %}
+              <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:verificar_factura_teFacturo' factura.id %}"><i class="fa fa-check"></i></a></td>
+              {% else %}
+              <td></td>
+              {% endif %}
+              <td>{{ factura.estadoSunat }}</td>
+              <td style="text-align: center;">
+                {% if factura.estadoFactura == 'Enviada' %}
+                <a class="btn btn-danger" href="{% url 'sistema_2:eliminar_factura' factura.id %}"><i class="fa fa-trash"></i></a>
+                {% endif %}
+              </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+</div>
+
+{% for factura in fac %}
+<div class="modal fade" tabindex="-1" id="guiaGen{{ factura.id }}" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="model-title">Generar guia</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% for producto in factura.productos %}
+        <div class="form-check proFact{{ factura.id }}" data-id="{{producto.0}}">
+          <!--{% if producto.9 == '1' %}
+            <input class="form-check-input" type="checkbox" disabled>
+          {% endif %}
+          {% if producto.9 == '0' %}
+            <input class="form-check-input" type="checkbox">
+          {% endif %}-->
+          <input type="number" step="1" value="0" max="{{ producto.10 }}" min="0" style="width: 60px; height: 30px; font-size: 10px; display: inline;" class="form-control">
+          <label style="font-size: 12px; display: inline;">{{ producto.1 }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary generar" data-fact="{{ factura.id }}" >Generar</button>
+      </div>
     </div>
-</section>
+  </div>
+</div>
+{% endfor %}
+
+
+
 {% endblock %}

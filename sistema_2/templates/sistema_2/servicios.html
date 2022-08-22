@@ -1,70 +1,200 @@
-{% extends "sistema_2/layout_1.html" %}
+{% extends "sistema_2/layout_3.html" %}
+
+{% load static %}
+
+{% block code %}
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="{% static 'sistema_2/servicios.js' %}"></script>
+{% endblock %}
+
 
 {% block content%}
-<section class="attendance">
-    <div class="attendance-list">
-      <h1 class="cabecera">LISTA DE SERVICIOS</h1>
-      <a class="add-elemento" href="{% url 'sistema_2:importar_servicios' %}">Importar servicios</a>
-      <a class="add-elemento" href="{% url 'sistema_2:add_service' %}">Añadir servicio</a>
-      <form class="filtros" method="get">
-        <div>
-          <div>
-            <div class="add-datos">
-              <label>Nombre</label><br>
-              <div class="go-datos"><input type="text" name="nombre"></div>
-            </div>
-          </div>
-          <div>
-            <div class="add-datos">
-              <label>Categoria</label><br>
-              <div class="go-datos"><input type="text" name="categoria"></div>
-            </div>
-          </div>
-          <div>
-            <div class="add-datos">
-              <label>Sub Categoria</label><br>
-              <div class="go-datos"><input type="text" name="sub-categoria"></div>
-            </div>
-          </div>
-          <div>
-            <div class="add-datos">
-              <label>Unidad de medida</label><br>
-              <div class="go-datos"><input type="text" name="unidad-med"></div>
-            </div>
-          </div>
-          <button type="submit" class="add-elemento">
-            <i class="fas fa-search fa-sm"></i>
-          </button>
-        </div>
-      </form>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Nombre</th>
-            <th>Categoria</th>
-            <th>Sub Categoria</th>
-            <th>Unidad de medida</th>
-            <th>Precio de venta sin IGV</th>
-            <th>Precio de venta con IGV</th>
-            <th>Eliminar</th>
-          </tr>
+<div class="container">
+  <h1>Servicios</h1>
+  <div>
+      <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoServicio">Nuevo <i class="fa fa-plus"></i></a>
+  </div>
+  <br>
+  <div>
+      <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#importarSer">Importar <i class="fas fa-file-import"></i></a>
+  </div>
+  <br>
+  <div style="height: 1000px;overflow: scroll;">
+    <table class="table table-bordered table-hover" id="serviciosTable">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Categoria</th>
+                <th scope="col">Sub Categoria</th>
+                <th scope="col">Unidad de medida</th>
+                <th scope="col">Venta sin IGV</th>
+                <th scope="col">Venta con IGV</th>
+                <th scope="col">Editar</th>
+                <th scope="col">Eliminar</th>
+            </tr>
         </thead>
         <tbody>
-           {% for servicio in ser %}
-                <tr>
-                    <td>{{ servicio.id }}</td>
-                    <td>{{ servicio.ser_nombre }}</td>
-                    <td>{{ servicio.ser_categoria }}</td>
-                    <td>{{ servicio.ser_sub_categoria }}</td>
-                    <td>{{ servicio.ser_unidad_med }}</td>
-                    <td>{{ servicio.ser_precio_venta_sin_igv }}</td>
-                    <td>{{ servicio.ser_precio_venta_con_igv }}</td>
-                    <td><a href="{% url 'sistema_2:eliminar_servicio' servicio.id %}" id="inside_button"><button>Eliminar</button></a><a href="{% url 'sistema_2:update_service' servicio.id %}" id="inside_button"><button>Modificar</button></a></td>
-                </tr>
-           {% endfor %}
+          {% for servicio in ser %}
+            <tr>
+                <th scope="row">{{ servicio.id }}</th>
+                <td>{{ servicio.nombre }}</td>
+                <td>{{ servicio.categoria }}</td>
+                <td>{{ servicio.sub_categoria }}</td>
+                <td>{{ servicio.unidad_med }}</td>
+                <td>{{ servicio.precio_venta_sin_igv }}</td>
+                <td>{{ servicio.precio_venta_con_igv }}</td>
+                <td style="text-align: center;"><a class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#servicio{{ servicio.id }}"><i class="fa fa-edit"></i></a></td>
+                <td style="text-align: center;"><a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar{{ servicio.id }}"><i class="fa fa-trash"></i></a></td>
+            </tr>
+          {% endfor %}
         </tbody>
-      </table>
+    </table>
+  </div>
+</div>
+
+{% for servicio in ser %}
+<div class="modal fade" tabindex="-1" role="dialog" id="eliminar{{ servicio.id }}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar servicio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Esta seguro que dese eliminar este servicio?</p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-danger" href="{% url 'sistema_2:eliminar_servicio' servicio.id %}">Eliminar</a>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
     </div>
-</section>
+  </div>
+</div>
+{% endfor %}
+
+
+<div class="modal fade" tabindex="-1" role="dialog" id="importarSer">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Importar Servicios</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'sistema_2:importar_servicios' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-group">
+            <input class="form-control" type="file" id="formFile" name="MyFile">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Importar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" tabindex="-1" role="dialog" id="nuevoServicio">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar servicio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'sistema_2:servicios' %}">
+        {% csrf_token %}
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Nombre</label>
+              <input type="text" class="form-control" required name="nombre">
+            </div>
+            <div class="col-md-6">
+              <label>Categoria</label>
+              <input type="text" class="form-control" required name="categoria">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Sub Categoria</label>
+              <input type="text" class="form-control" required name="subCategoria">
+            </div>
+            <div class="col-md-6">
+              <label>Unidad de medida</label>
+              <input type="text" class="form-control" required name="unidadMed">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Precio de venta sin IGV</label>
+              <input type="number" step="0.01" class="form-control" required name="pvsinIGV">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Agregar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% for servicio in ser %}
+<div class="modal fade" tabindex="-1" role="dialog" id="servicio{{ servicio.id }}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Actualizar servicio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'sistema_2:actualizar_servicio' servicio.id %}">
+        {% csrf_token %}
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Nombre</label>
+              <input type="text" class="form-control" required name="nombre" value="{{ servicio.nombre }}">
+            </div>
+            <div class="col-md-6">
+              <label>Categoria</label>
+              <input type="text" class="form-control" required name="categoria" value="{{ servicio.categoria }}">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Sub Categoria</label>
+              <input type="text" class="form-control" required name="subCategoria" value="{{ servicio.sub_categoria }}">
+            </div>
+            <div class="col-md-6">
+              <label>Unidad de medida</label>
+              <input type="text" class="form-control" required name="unidadMed" value="{{ servicio.unidad_med }}">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Precio de venta sin IGV</label>
+              <input type="number" step="0.01" class="form-control" required name="pvsinIGV" value="{{ servicio.precio_venta_sin_igv }}">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+
+
 {% endblock %}

@@ -6,7 +6,7 @@
     <form action="{% url 'sistema_2:login_view' %}" method="post">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" value="Ingresar" />
+        <input type="submit" value="Ingresar"/>
     </form>
 </div>
 {% if message %}

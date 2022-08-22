@@ -1,0 +1,92 @@
+{% extends "sistema_2/layout_3.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+    <form method="post" action="{% url 'sistema_2:configurar_documentos' %}">
+    {% csrf_token %}
+    <div>
+        <h4>Configuracion de la cotizacion</h4>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Serie de la cotizacion</label>
+                <input type="text" class="form-control" placeholder="Serie" id="serieCoti" name="serieCotizacion" value="{{ info.cotiSerie }}">
+            </div>
+            <div class="col-md-4">
+                <label>Nro de la cotizacion</label>
+                <input type="number" class="form-control" placeholder="Nro" id="nroCoti" name="nroCotizacion" value="{{ info.cotiNro }}">
+            </div>
+        </div>
+        <h4>Configuracion de la boleta</h4>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Serie de boleta</label>
+                <input type="text" class="form-control" placeholder="Serie" id="serieBol" name="serieBoleta" value="{{ info.boletaSerie }}">
+            </div>
+            <div class="col-md-4">
+                <label>Nro de boleta</label>
+                <input type="number" class="form-control" placeholder="Nro" id="nroBol" name="nroBoleta" value="{{ info.boletaNro }}">
+            </div>
+        </div>
+        <h4>Configuracion de la factura</h4>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Serie de factura</label>
+                <input type="text" class="form-control" placeholder="Serie" id="serieFac" name="serieFactura" value="{{ info.facturaSerie }}">
+            </div>
+            <div class="col-md-4">
+                <label>Nro de factura</label>
+                <input type="number" class="form-control" placeholder="Nro" id="nroFac" name="nroFactura" value="{{ info.facturaNro }}">
+            </div>
+        </div>
+        <h4>Configuracion de la guia</h4>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Serie de guia</label>
+                <input type="text" class="form-control" placeholder="Serie" id="serieG" name="serieGuia" value="{{ info.guiaSerie }}">
+            </div>
+            <div class="col-md-4">
+                <label>Nro de guia</label>
+                <input type="number" class="form-control" placeholder="Nro" id="nroG" name="nroGuia" value="{{ info.guiaNro }}">
+            </div>
+        </div>
+        <h4>Configuracion de la nota de credito (Boletas)</h4>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Serie de nota de credito</label>
+                <input type="text" class="form-control" placeholder="Serie" id="serieN" name="serieNota" value="{{ info.notaSerie }}">
+            </div>
+            <div class="col-md-4">
+                <label>Nro de nota de credito</label>
+                <input type="number" class="form-control" placeholder="Nro" id="nroN" name="nroNota" value="{{ info.notaNro }}">
+            </div>
+        </div>
+        <h4>Configuracion de la nota de credito (Facturas)</h4>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Serie de nota de credito</label>
+                <input type="text" class="form-control" placeholder="Serie" id="serieN" name="serieNotaFactura" value="{{ info.notaFactSerie }}">
+            </div>
+            <div class="col-md-4">
+                <label>Nro de nota de credito</label>
+                <input type="number" class="form-control" placeholder="Nro" id="nroN" name="nroNotaFactura" value="{{ info.notaFactNro }}">
+            </div>
+        </div>
+        <h4>Configuracion del token</h4>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Token</label>
+                <input type="text" class="form-control" placeholder="Token" id="tokenSis" name="tokenSistema" value="{{ info.tokenDoc }}">
+            </div>
+        </div>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary" id="crearProforma">Guardar</button>
+        <a class="btn btn-secondary" href="{% url 'sistema_2:dashboard' %}" style="text-decoration: none; color: white;">Cancelar</a>
+    </div>
+    </form>
+</div>
+
+
+{% endblock %}

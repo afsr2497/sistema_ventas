@@ -1,71 +1,200 @@
-{% extends "sistema_2/layout_1.html" %}
+{% extends "sistema_2/layout_3.html" %}
+
+{% load static %}
+
+{% block code %}
+
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="{% static 'sistema_2/usuarios.js' %}"></script>
+
+{% endblock %}
 
 {% block content%}
-<section class="attendance">
-    <div class="attendance-list">
-      <h1 class="cabecera">LISTA DE USUARIOS</h1>
-      <!--<a class="add-elemento" href="{% url 'sistema_2:importar_usuarios' %}">Importar usuarios</a>-->
-      <a class="add-elemento" href="{% url 'sistema_2:add_user' %}">Añadir usuario</a>
-      <form class="filtros" method="get">
-        <div>
-          <div>
-            <div class="add-datos">
-              <label>Usuario</label><br>
-              <div class="go-datos"><input type="text" name="usuario"></div>
-            </div>
-          </div>
-          <div>
-            <div class="add-datos">
-              <label>Email</label><br>
-              <div class="go-datos"><input type="text" name="email"></div>
-            </div>
-          </div>
-          <div>
-            <div class="add-datos">
-              <label>Tipo</label><br>
-              <div class="go-datos"><input type="text" name="tipo"></div>
-            </div>
-          </div>
-          <div>
-            <div class="add-datos">
-              <label>Celular</label><br>
-              <div class="go-datos"><input type="text" name="celular"></div>
-            </div>
-          </div>
-          <button type="submit" class="add-elemento">
-            <i class="fas fa-search fa-sm"></i>
-          </button>
-        </div>
-      </form>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Usuario</th>
-            <th>Email</th>
-            <th>Tipo</th>
-            <th>Celular</th>
-            <th>Eliminar</th>
-          </tr>
-        </thead>
-        <tbody>
-           {% for usuario in usr %}
-                <tr>
-                    <td>{{ usuario.id }}</td>
-                    <td>{{ usuario.username }}</td>
-                    <td>{{ usuario.email }}</td>
-                    <td>{{ usuario.first_name }}</td>
-                    <td>{{ usuario.last_name }}</td>
-                    <td>
-                      {% if usuario.first_name == 'vendedor' %}
-                        <a href="{% url 'sistema_2:eliminar_usuario' usuario.id %}" ><button>Eliminar</button></a>
-                        <a href="{% url 'sistema_2:update_user' usuario.id %}" ><button>Modificar</button></a>
-                      {% endif %}
-                    </td>
-                </tr>
-           {% endfor %}
-        </tbody>
-      </table>
+<div class="container">
+  <h1>Usuarios del sistema</h1>
+  <div>
+    <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoUsuario">Nuevo <i class="fas fa-plus"></i></a>
+  </div>
+  <br>
+  {% if mensaje %}
+    <div class="alert alert-danger" role="alert" id="mensaje_info">
+      {{ mensaje }}
     </div>
-</section>
+  {% endif %}
+  <br>
+  <div style="height: 1000px;overflow: scroll;">
+    <table id="usuariosTable" class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col">Codigo</th>
+          <th scope="col">Usuario</th>
+          <th scope="col">Email</th>
+          <th scope="col">Tipo</th>
+          <th scope="col">Celular</th>
+          <th scope="col">Editar</th>
+          <th scope="col">Eliminar</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for usuario in usr %}
+        <tr>
+          <td scope="row">{{ usuario.codigo }}</td>
+          <td>{{ usuario.usuario.username }}</td>
+          <td>{{ usuario.usuario.email }}</td>
+          <td>{{ usuario.tipo }}</td>
+          <td>{{ usuario.celular }}</td>
+          {% if usuario_logued == 'admin' %}
+            <td style="text-align: center;"><a class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#usuario{{ usuario.id }}"><i class="fa fa-edit"></i></a></td>
+            <td style="text-align: center;"><a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar{{ usuario.id }}"><i class="fa fa-trash"></i></a></td>
+          {% else %}
+            <td></td>
+            <td></td>
+          {% endif %}  
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<div class="modal fade" tabindex="-1" role="dialog" id="nuevoUsuario">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'sistema_2:usuarios' %}">
+        {% csrf_token %}
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Usuario</label>
+              <input type="text" class="form-control" required name="usuario">
+            </div>
+            <div class="col-md-6">
+              <label>Contraseña</label>
+              <input type="password" class="form-control" required name="contra">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Email</label>
+              <input type="text" class="form-control" required name="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$">
+            </div>
+            <div class="col-md-6">
+              <label for="inputState">Tipo</label>
+              <select id="inputState" class="form-select" required name="tipo">
+                <option selected>admin</option>
+                <option>vendedor</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Celular</label>
+              <input type="tel" class="form-control" pattern="[0-9]{9}" required name="celular" placeholder="Numero de celular">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Agregar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% for usuario in usr %}
+<div class="modal fade" tabindex="-1" role="dialog" id="usuario{{ usuario.id }}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Actualizar usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'sistema_2:actualizar_usuario' usuario.id %}">
+        {% csrf_token %}
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Usuario</label>
+              <input type="text" class="form-control" required name="usuario" value="{{ usuario.usuario.username }}">
+            </div>
+            <div class="col-md-6">
+              <label>Contraseña</label>
+              <input type="password" class="form-control" disabled name="contra" value="">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Email</label>
+              <input type="text" class="form-control" required name="email" value="{{ usuario.usuario.email }}">
+            </div>
+            <div class="col-md-6">
+              <label for="inputState">Tipo</label>
+              <select id="inputState" class="form-control" required name="tipo" value="{{ usuario.tipo }}">
+                {% if usuario.tipo == 'admin' %}
+                  <option selected>admin</option>
+                  <option>vendedor</option>
+                {% endif %}
+                {% if usuario.tipo == 'vendedor' %}
+                  <option>admin</option>
+                  <option selected>vendedor</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Celular</label>
+              <input type="text" class="form-control" required name="celular" value="{{ usuario.celular }}">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+
+{% for usuario in usr %}
+<div class="modal fade" tabindex="-1" role="dialog" id="eliminar{{ usuario.id }}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% if usuario.codigo == 'USR-0001' %}
+          <p>No se puede eliminar al usuario principal</p>
+        {% else %}
+          <p>¿Esta seguro que dese eliminar este usuario?</p>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        {% if usuario.codigo == 'USR-0001' %}
+        {% else %}
+        <a class="btn btn-danger" href="{% url 'sistema_2:eliminar_usuario' usuario.id %}">Eliminar</a>
+        {% endif %}
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+
 {% endblock %}

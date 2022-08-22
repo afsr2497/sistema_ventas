@@ -74,6 +74,23 @@ WSGI_APPLICATION = 'sistema_ventas.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+
+#Base de datos de prueba
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'devMetal',
+        'USER': 'devMetal',
+        'PASSWORD': 'devMetal',
+        'HOST': 'database-2.cvwnf9ht2gui.us-east-1.rds.amazonaws.com',
+        'PORT': '2233',
+        #'ENGINE': 'django.db.backends.sqlite3',
+        #'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+"""
+#Base de datos de produccion
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -86,7 +103,7 @@ DATABASES = {
         #'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+"""
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -117,7 +134,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

@@ -1,37 +1,227 @@
-{% extends "sistema_2/layout_1.html" %}
+{% extends "sistema_2/layout_3.html" %}
+
+
+{% block code %}
+
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+
+  function crearFactura() {
+    guiasSeleccionadas = document.querySelectorAll('.seleccionarGuia')
+    console.log(guiasSeleccionadas)
+    guias_factura = []
+    for(var i = 0; i < guiasSeleccionadas.length; i++)
+    {
+      if(guiasSeleccionadas[i].firstChild.checked === true)
+      {
+        guias_factura.push(guiasSeleccionadas[i].id)
+      }
+    }
+    console.log(guias_factura)
+    informacion = {
+      'guias':guias_factura
+    }
+    url = '/sistema_2/crear_factura_guias'
+    fetch(url,{
+        method:"POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body:JSON.stringify(informacion)
+    })
+    .then(response => response.json())
+    .then(data => {
+    console.log(data);
+    });
+    window.location = '/sistema_2/dashboard'
+  }
+
+  function crearBoleta() {
+    guiasSeleccionadas = document.querySelectorAll('.seleccionarGuia')
+    console.log(guiasSeleccionadas)
+    guias_factura = []
+    for(var i = 0; i < guiasSeleccionadas.length; i++)
+    {
+      if(guiasSeleccionadas[i].firstChild.checked === true)
+      {
+        guias_factura.push(guiasSeleccionadas[i].id)
+      }
+    }
+    console.log(guias_factura)
+    informacion = {
+      'guias':guias_factura
+    }
+    url = '/sistema_2/crear_boleta_guias'
+    fetch(url,{
+        method:"POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body:JSON.stringify(informacion)
+    })
+    .then(response => response.json())
+    .then(data => {
+    console.log(data);
+    });
+    window.location = '/sistema_2/dashboard'
+  }
+
+  function getCookie(name) 
+    {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") 
+        {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) 
+            {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) 
+                {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    $('#guiasTable').DataTable({
+      paging: true,
+      pageLength: 25,
+      lenghtChange: true,
+      autoWidth: false,
+      serching: true,
+      bInfo: false,
+      bSort: false,
+    })
+
+  })
+</script>
+
+{% endblock %}
 
 {% block content%}
-<section class="attendance">
-    <div class="attendance-list">
-      <h1 class="cabecera">GUIAS</h1>
-      <table class="table">
-        <thead>
+
+<div class="container">
+  <h1>Guias</h1>
+  <br>
+  <button class="btn btn-success" onclick="crearFactura()">Crear factura</button>
+  <br>
+  <br>
+  <button class="btn btn-success" onclick="crearBoleta()">Crear boleta</button>
+  <br>
+  <br>
+  <div>
+    <form class="row g-12" method="post" action="{% url 'sistema_2:gui' %}">
+    {% csrf_token %}
+        <div class="col-md-2">
+            <label>Fecha inicial</label>
+            <input type="date" class="form-control col-md-1" name="fecha_inicio" value="{{ fecha_inicial }}">
+        </div>
+        <div class="col-md-2">
+            <label>Fecha final</label>
+            <input type="date" class="form-control col-md-1" name="fecha_fin" value="{{ fecha_final }}">
+        </div>
+        <br>
+        <br>
+        <br>
+        <div>
+            <button type="submit" class="btn btn-success">Filtrar</button>
+        </div>
+    </form>
+    <br>
+    <a class="btn btn-success float-left" style="color: white;" href="{% url 'sistema_2:gui' %}">Reestablecer</a>
+  </div>
+  <br>
+  <br>
+  <table class="table table-bordered table-hover" id="guiasTable">
+      <thead class="table-dark">
           <tr>
-            <th>Id</th>
-            <th>Cliente</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Descargar</th>
-            <th>Generar factura</th>
+              <th scope="col">ID</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Codigo</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Editar</th>
+              <th scope="col">Descargar guia</th>
+              <th scope="col">Seleccionar</th>
+              <th scope="col">Emitir comprobante</th>
+              <th scope="col">Verificar estado</th>
+              <th scope="col">Estado teFacturo</th>
+              <th scope="col">Enviar a teFacturo</th>
           </tr>
-        </thead>
-        <tbody>
-           {% for proforma in gui %}
-                <tr>
-                    <td>{{ proforma.id }}</td>
-                    <td>{{ proforma.gui_cliente.3 }}</td>
-                    <td>{{ proforma.gui_fecha }}</td>
-                    <td>{{ proforma.gui_estado }}</td>
-                    <td><a href="{% url 'sistema_2:descargar_guia' proforma.id %}" >Descargar</a></td>
-                    <td>
-                      {% if proforma.gui_estado == 'Generada' %}
-                        <a href="{% url 'sistema_2:generar_factura' proforma.id %}" >Generar Factura</a>
-                      {% endif %}
-                    </td>
-                </tr>
-           {% endfor %}
-        </tbody>
-      </table>
-    </div>
-</section>
+      </thead>
+      <tbody>
+          {% for guia in gui %}
+          <tr>
+              <th scope="row">{{ guia.id }}</th>
+              <td>{{ guia.cliente.1 }}{{ guia.cliente.3 }}</td>
+              <td>{{ guia.codigoGuia }}</td>
+              <td>{{ guia.fechaGuia }}</td>
+              <td>
+                {% if guia.estadoGuia == 'Generada' %}
+                    <div class="bg-success rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ guia.estadoGuia }}</div>
+                {% endif %}
+                {% if guia.estadoGuia == 'Enviada' %}
+                    <div class="bg-primary rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ guia.estadoGuia }}</div>
+                {% endif %}
+                {% if guia.estadoGuia == 'Emitida' %}
+                    <div class="bg-warning rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ guia.estadoGuia }}</div>
+                {% endif %}
+              </td>
+              <td style="text-align: center;"><a class="btn btn-warning" href="{% url 'sistema_2:editar_guia' guia.id %}"><i class="fa fa-edit"></i></a></td>
+              {% if guia.estadoGuia == 'Enviada' or guia.estadoGuia == 'Emitida' %}
+              <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:download_guia' guia.id %}"><i class="fas fa-download"></i></a></td>
+              {% else %}
+              <td></td>
+              {% endif %}
+              {% if guia.estadoGuia == 'Enviada' %}
+                <td style="text-align: center;" class="seleccionarGuia" id="{{guia.id}}"><input class="form-check-input" type="checkbox"></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+              {% if guia.estadoGuia == 'Enviada' %}
+              <td style="text-align: center;">
+                {% if guia.cliente.1 == '' %}
+                <a class="btn btn-success" href="{% url 'sistema_2:gen_factura_guia' guia.id %}">F</a>
+                {% else %}
+                <a class="btn btn-success" href="{% url 'sistema_2:gen_boleta_guia' guia.id %}">B</a>
+                {% endif %}
+              </td>
+              {% else %}
+                <td></td>
+              {% endif %}
+              {% if guia.estadoGuia == 'Enviada' or guia.estadoGuia == 'Emitida' %}
+              <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:verificar_guia_teFacturo' guia.id %}"><i class="fa fa-check"></i></a></td>
+              {% else %}
+              <td></td>
+              {% endif %}
+              <td>{{ guia.estadoSunat }}</td>
+              {% if guia.estadoGuia == 'Generada' %}
+                <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:enviar_guia' guia.id %}"><i class="fas fa-arrow-right"></i></a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+          </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+</div>
+
+
+
 {% endblock %}
+<!--job.metalprotec.pe-->
+<!--Dominio entorno de pruebas-->
+<!--Enviar todas las guias correlativas a teFacturo-->
+<!--Cambiar login (mejorar)-->
+<!--Ambiente de pruebas-->
+<!--subdominio de pruebas-->
+<!--Preguntar a franko nota de credito - cambio de producto, cambio por color, notas de credito parciales, pagos de facturas anticipadas-->

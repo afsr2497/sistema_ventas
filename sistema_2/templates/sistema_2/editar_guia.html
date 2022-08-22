@@ -1,0 +1,445 @@
+{% extends "sistema_2/layout_3.html" %}
+
+{% load static %}
+
+{% block code %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
+<script src="{% static 'sistema_2/edit_guia.js' %}"></script>
+
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <div>
+        <h4>Tipo de guia</h4>
+        <div class="row mb3">
+            <div class="col-md-3">
+                <select class="form-control selectpicker" name="tipo" id="tipoProforma" disabled>
+                    {% if prof.tipoGuia == 'Servicios' %}
+                        <option value="Servicios" selected>Servicios</option>
+                        <option value="Productos">Productos</option>
+                    {% endif %}
+                    {% if prof.tipoGuia == 'Productos' %}
+                        <option value="Servicios">Servicios</option>
+                        <option value="Productos" selected>Productos</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input class="form-control" style="display: none;" name="tipo" id="idProforma" value="{{ prof.id }}">
+            </div>
+        </div>
+    </div>
+    <br>
+    <div>
+        <h4>Datos del cliente</h4>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Dni</label>
+                <input type="text" class="form-control" placeholder="Dni" id="dniCliente" value="{{ prof.cliente.4 }}" disabled>
+            </div>
+            <div class="col-md-4">
+                <label>Ruc</label>
+                <input type="text" class="form-control" placeholder="Ruc" id="rucCliente" value="{{ prof.cliente.5 }}" disabled>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Nombre</label>
+                <input type="text" class="form-control" placeholder="Nombre" id="nombreCliente" value="{{ prof.cliente.1 }}" disabled>
+            </div>
+            <div class="col-md-4">
+                <label>Apellido</label>
+                <input type="text" class="form-control" placeholder="Apellido" id="apellidoCliente" value="{{ prof.cliente.2 }}" disabled>
+            </div>
+            <div class="col-md-4">
+                <label>Razon social</label>
+                <input type="text" class="form-control" placeholder="Razon social" id="razonCliente" value="{{ prof.cliente.3 }}" disabled>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Email (*)</label>
+                <input type="text" class="form-control" placeholder="Email" id="emailCliente" value="{{ prof.cliente.6 }}">
+            </div>
+            <div class="col-md-4">
+                <label>Contacto</label>
+                <input type="text" class="form-control" placeholder="Contacto" id="contactoCliente" value="{{ prof.cliente.7 }}">
+            </div>
+            <div class="col-md-4">
+                <label>Telefono</label>
+                <input type="text" class="form-control" placeholder="Telefono" id="telefonoCliente" value="{{ prof.cliente.8 }}">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Direccion fiscal (*)</label>
+                <input type="text" class="form-control" placeholder="Direccion fiscal" id="direccionCliente" value="{{ prof.cliente.9 }}">
+            </div>
+            <div class="col-md-8">
+                <label>Direccion de entrega (*)</label>
+                <input type="text" class="form-control" placeholder="Direccion de entrega" id="entregarCliente" value="{{ prof.cliente.10 }}">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Fecha de entrega de bienes (*)</label>
+                <input type="date" class="form-control" placeholder="Fecha de entrega" id="fechaEntrega" value="{{ prof.datosTraslado.0 }}">
+            </div>
+            <div class="col-md-4">
+                <label>Motivo de traslado</label>
+                <select id="motivoTraslado" class="form-select" disabled>
+                    <option value="VENTA">VENTA</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label>Modalidad de transporte (*)</label>
+                <select id="modalidadTransporte" class="form-select">
+                    {% if prof.datosTraslado.2 == 'PUBLICO' %}
+                    <option value="PUBLICO" selected>PUBLICO</option>
+                    <option value="PRIVADO">PRIVADO</option>
+                    {% endif %}
+                    {% if prof.datosTraslado.2 == 'PRIVADO' %}
+                    <option value="PUBLICO">PUBLICO</option>
+                    <option value="PRIVADO" selected>PRIVADO</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label>Peso extra de la carga (*)</label>
+                <input type="number" class="form-control" placeholder="Peso extra de la carga" id="pesoBruto" value="{{ prof.datosTraslado.4 }}">
+            </div>
+            <div class="col-md-6">
+                <label>Nro Ubigeo del cliente (*)</label>
+                <input type="text" class="form-control" placeholder="Ubigeo del cliente" id="ubigeoCliente" value="{{ prof.ubigeoGuia }}">
+            </div>
+        </div>
+    </div>
+    <br>
+    <div>
+        <h4>Datos del vendedor</h4>
+        <br>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                    <label>Usuario</label>
+                    <input type="text" class="form-control" placeholder="Vendedor" id="usuarioUsr" value="{{ prof.vendedor.1 }}" disabled>
+            </div>
+            <div class="col-md-4">
+                    <label>Codigo</label>
+                    <input type="text" class="form-control" placeholder="Codigo" id="codigoUsr" value="{{ prof.vendedor.2 }}" disabled>
+            </div>
+            <div class="col-md-4">
+                    <label>Telefono</label>
+                    <input type="text" class="form-control" placeholder="Telefono" id="telefonoUsr" value="{{ prof.vendedor.3 }}" disabled>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h4>Datos del transportista</h4>
+        <br>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                    <label>Razon social (*)</label>
+                    <input type="text" class="form-control" placeholder="Razon social" id="transRazon" value="{{ prof.datosTransportista.0 }}">
+            </div>
+            <div class="col-md-6">
+                    <label>RUC (*)</label>
+                    <input type="text" class="form-control" placeholder="Ruc" id="transRuc" value="{{ prof.datosTransportista.1 }}">
+            </div>
+        </div>
+    </div>
+    <div>
+        <h4>Datos del conductor</h4>
+        <br>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                    <label>Placa del vehiculo (*)</label>
+                    <input type="text" class="form-control" placeholder="Placa del vehiculo" id="placaVehiculo" value="{{ prof.datosVehiculo.0 }}">
+            </div>
+            <div class="col-md-4">
+                    <label>Nombre del conducto (*)</label>
+                    <input type="text" class="form-control" placeholder="Nombre del conductor" id="nombreConductor" value="{{ prof.datosVehiculo.1 }}">
+            </div>
+            <div class="col-md-4">
+                <label>DNI del conductor (*)</label>
+                <input type="text" class="form-control" placeholder="Dni del conductor" id="dniConductor" value="{{ prof.datosVehiculo.2 }}">
+        </div>
+        </div>
+    </div>
+    <br>
+    <div>
+        <h4>Datos de la guia</h4>
+        <div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>Fecha de emision (*)</label>
+                    <input type="date" class="form-control" placeholder="Fecha ..." id="fechaProf" value="{{ prof.fechaGuia }}">
+                </div>
+                <div class="col-md-6" style="display: none;">
+                    <label>Fecha de entrega de bienes (*)</label>
+                    <input type="date" class="form-control" placeholder="Fecha ..." id="fechaVencProf" value="None">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4" style="display: none;">
+                    <label>Moneda</label>
+                    <select class="selectpicker form-control" id="monedaProf" disabled>
+                        {% if prof.monedaGuia == 'SOLES' %}
+                        <option selected value="SOLES">SOLES</option>
+                        <option value="DOLARES">DOLARES</option>
+                        {% else %}
+                        <option value="SOLES">SOLES</option>
+                        <option selected value="DOLARES">DOLARES</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md-4" style="display: none;">
+                    <label>TC - Venta</label>
+                    <input type="number" step="0.001" class="form-control" placeholder="Tipo de cambio ..." id="tcventaProf" value="{{ prof.tipoCambio.1 }}" disabled>
+                </div>
+                <div class="col-md-4" style="display: none;">
+                    <label>TC - Compra</label>
+                    <input type="number" step="0.001" class="form-control" placeholder="Tipo de cambio ..." id="tccompraProf" value="{{ prof.tipoCambio.0 }}" disabled>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6" style="display: none;">
+                    <label>Tipo de pago</label>
+                    <select class="selectpicker form-control" id="pagoProf" disabled>
+                        {% if prof.pagoGuia == 'CONTADO' %}
+                            <option selected value="CONTADO">CONTADO</option>
+                            <option value="CREDITO">CREDITO</option>
+                        {% else %}
+                            <option value="CONTADO">CONTADO</option>
+                            <option selected value="CREDITO">CREDITO</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label>Observaciones</label>
+                    <input class="form-control" type="text" placeholder="Observaciones" id="obsGuia" value="{{ prof.observacionesGuia }}">
+                </div>
+            </div>
+        </div>
+        <br>
+    </div>
+    <div id="productosSec" style="display: none;">
+        <h4>Productos</h4>
+        <div>
+            <div>
+                <a class="btn btn-success" style="color: white; display: none;" data-bs-toggle="modal" data-bs-target="#seleccionarProducto">Agregar Producto <i class="fas fa-plus"></i></a>
+            </div>
+            <br>
+            <div>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <th>Id</th>
+                        <th>Nombre</th>
+                        <th>Codigo</th>
+                        <th>Unidad de medida</th>
+                        <th>Almacen</th>
+                        <th>Moneda</th>
+                        <th>PV sin IGV</th>
+                        <th>Descuento</th>
+                        <th>Cantidad</th>
+                        <th>Peso Unitario (Kg)</th>
+                        <th>Eliminar</th>
+                    </thead>
+                    <tbody id="proCuerpo">
+                        {% for producto in prof.productos %}
+                        <tr>
+                            <td>{{ producto.0 }}</td>
+                            <td>{{ producto.1 }}</td>
+                            <td>{{ producto.2 }}</td>
+                            <td>{{ producto.3 }}</td>
+                            <td>{{ producto.4 }}</td>
+                            <td>{{ producto.5 }}</td>
+                            <td><input class="form-control" style="width:80px;" value="{{ producto.6 }}" disabled></td>
+                            <td><input class="form-control" style="width:80px;" value="{{ producto.7 }}" disabled></td>
+                            <td><input class="form-control" style="width:80px;" value="{{ producto.8 }}" disabled></td>
+                            <td><input class="form-control" style="width:80px;" value="{{ producto.11 }}"></td>
+                            <td><input type="button" class="btn btn-secondary" value="Eliminar"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br>
+    </div>
+    <div id="serviciosSec" style="display: block;">
+        <h4>Servicios</h4>
+        <div>
+            <div>
+                <a class="btn btn-success" style="color: white; display: none;" data-bs-toggle="modal" data-bs-target="#seleccionarServicio">Agregar Servicio <i class="fas fa-plus"></i></a>
+            </div>
+            <br>
+            <div>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <th>Id</th>
+                        <th>Nombre</th>
+                        <th>Unidad de Medida</th>
+                        <th>Moneda</th>
+                        <th>PV sin IGV</th>
+                        <th>Descuento</th>
+                        <th>Eliminar</th>
+                    </thead>
+                    <tbody id="serCuerpo">
+                        {% for servicio in prof.servicios %}
+                        <tr>
+                            <td>{{ servicio.0 }}</td>
+                            <td>{{ servicio.1 }}</td>
+                            <td>{{ servicio.2 }}</td>
+                            <td>{{ servicio.3 }}</td>
+                            <td><input class="form-control" style="width:80px;" value="{{ servicio.4 }}"></td>
+                            <td><input class="form-control" style="width:80px;" value="{{ servicio.5 }}"></td>
+                            <td><input type="button" class="btn btn-secondary" value="Eliminar"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br>
+    </div>
+    <div>
+        <button type="button" class="btn btn-primary" id="crearProforma">Agregar</button>
+        <button type="button" class="btn btn-secondary" id="cancelarProforma">Close</button>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="seleccionarProducto">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Agregar Productos</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <label>Nombre de producto</label>
+            
+            <select class="selectpicker form-control" id="productSelect" data-live-search="true">
+                {% for producto in pro %}
+                <option value="{{ producto.id }}">{{ producto.nombre }} {{ producto.codigo }}</option>>
+                {% endfor %}
+            </select>
+            <div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Nombre</label>
+                        <input type="text" class="form-control" placeholder="Nombre" id="nombrePro">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Codigo</label>
+                        <input type="text" class="form-control" placeholder="Codigo" id="codigoPro">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="form-group col-md-6">
+                        <label>Unidad de medida</label>
+                        <input type="text" class="form-control" placeholder="Unidad de medida" id="unidadPro">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Precio de venta sin IGV</label>
+                        <input type="number" step="0.01" class="form-control" placeholder="Precio de venta sin IGV" id="pvsinIGV">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Descuento (%)</label>
+                        <input type="number" class="form-control" placeholder="Descuento %" id="descuentoPro">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Moneda</label>
+                        <select class="form-select" id="monedaProducto">
+                            <option value="SOLES" selected>SOLES</option>
+                            <option value="DOLARES">DOLARES</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Cantidad</label>
+                        <input type="number" class="form-control" placeholder="Cantidad" id="cantidadPro" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Almacen</label>
+                        <select id="seleccionAlmacen" class="form-select"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="agregarProducto" data-bs-dismiss="modal">Agregar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="seleccionarServicio">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Agregar Servicios</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <label>Nombre de servicio</label>
+            <select class="selectpicker form-control" id="serviceSelect" data-live-search="true">
+                {% for servicio in ser %}
+                <option value="{{ servicio.id }}">{{ servicio.nombre }}</option>>
+                {% endfor %}
+            </select>
+            <div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Nombre</label>
+                        <input type="text" class="form-control" placeholder="Nombre" id="nombreSer">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Unidad de medida</label>
+                        <input type="text" class="form-control" placeholder="Unidad de medida" id="unidadSer">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="form-group col-md-6">
+                        <label>Precio de venta sin IGV</label>
+                        <input type="number" step="0.01" class="form-control" placeholder="Precio de venta sin IGV" id="pvsinIGVSer">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Descuento (%)</label>
+                        <input type="number" class="form-control" placeholder="Descuento %" id="descuentoSer">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Moneda</label>
+                        <select id="monedaSer" class="form-select">
+                            <option value="SOLES">SOLES</option>
+                            <option value="DOLARES">DOLARES</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="agregarServicio" data-bs-dismiss="modal">Agregar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}

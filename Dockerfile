@@ -11,5 +11,7 @@ RUN pip3 install PyPDF2
 RUN pip3 install pandas
 RUN pip3 install openpyxl
 RUN pip3 install numpy
+RUN pip3 install requests
+RUN pip3 install beautifulsoup4
 COPY . .
 CMD python3 manage.py runserver 0.0.0.0:80

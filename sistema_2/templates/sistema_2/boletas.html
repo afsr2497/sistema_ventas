@@ -1,0 +1,141 @@
+{% extends "sistema_2/layout_3.html" %}
+
+{% load static %}
+
+{% block code %}
+
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="{% static 'sistema_2/boleta.js' %}"></script>
+
+{% endblock %}
+
+
+{% block content%}
+
+<div class="container">
+  <h1>Boletas</h1>
+  <br>
+  <br>
+  <div>
+    <form class="row g-12" method="post" action="{% url 'sistema_2:bole' %}">
+    {% csrf_token %}
+        <div class="col-md-2">
+            <label>Fecha inicial</label>
+            <input type="date" class="form-control col-md-1" name="fecha_inicio" value="{{ fecha_inicial }}">
+        </div>
+        <div class="col-md-2">
+            <label>Fecha final</label>
+            <input type="date" class="form-control col-md-1" name="fecha_fin" value="{{ fecha_final }}">
+        </div>
+        <br>
+        <br>
+        <br>
+        <div>
+            <button type="submit" class="btn btn-success">Filtrar</button>
+        </div>
+    </form>
+    <br>
+    <a class="btn btn-success float-left" style="color: white;" href="{% url 'sistema_2:bole' %}">Reestablecer</a>
+  </div>
+  <br>
+  <table class="table table-bordered table-hover" id="boletasTable">
+      <thead class="table-dark">
+          <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Codigo</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Editar</th>
+              <th scope="col">Descargar boleta</th>
+              <th scope="col">Enviar a teFacturo</th>
+              <th scope="col">Verificar estado</th>
+              <th scope="col">Estado teFacturo</th>
+              <th scope="col">Emitir nota de credito</th>
+          </tr>
+      </thead>
+      <tbody>
+        {% for boleta in bol %}
+          <tr>
+              <td scope="row">{{ boleta.id }}</th>
+              {% if boleta.cliente.1 == '' %}
+              <td>{{ boleta.cliente.3 }}</td>
+              {% else %}
+              <td>{{ boleta.cliente.1 }} {{ boleta.cliente.2 }}</td>
+              {% endif %}
+              <td>{{ boleta.fechaBoleta }}</td>
+              <td>{{ boleta.codigoBoleta }}</td>
+              <td>
+                {% if boleta.estadoBoleta == 'Generada' %}
+                    <div class="bg-success rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ boleta.estadoBoleta }}</div>
+                {% endif %}
+                {% if boleta.estadoBoleta == 'Enviada' %}
+                    <div class="bg-warning rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ boleta.estadoBoleta }}</div>
+                {% endif %}
+                {% if boleta.estadoBoleta == 'Anulada' %}
+                    <div class="bg-danger rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ boleta.estadoBoleta }}</div>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                  <a class="btn btn-warning" href="{% url 'sistema_2:editar_boleta' boleta.id %}"><i class="fa fa-edit"></i></a>
+              </td>
+              {% if boleta.estadoBoleta == 'Enviada' %}
+                <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:download_boleta' boleta.id %}"><i class="fas fa-download"></i></a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+              <td style="text-align: center;">
+                {% if boleta.estadoBoleta == 'Generada' %}
+                <a class="btn btn-success" href="{% url 'sistema_2:enviar_boleta' boleta.id %}"><i class="fas fa-arrow-right"></i></a>
+                {% endif %}
+              </td>
+              {% if boleta.estadoBoleta == 'Enviada' %}
+              <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:verificar_boleta_teFacturo' boleta.id %}"><i class="fa fa-check"></i></a></td>
+              {% else %}
+              <td></td>
+              {% endif %}
+              <td>{{ boleta.estadoSunat }}</td>
+              <td style="text-align: center;">
+                {% if boleta.estadoBoleta == 'Enviada' %}
+                <a class="btn btn-danger" href="{% url 'sistema_2:eliminar_boleta' boleta.id %}"><i class="fa fa-trash"></i></a>
+                {% endif %}
+              </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+</div>
+
+
+{% for boleta in bol %}
+<div class="modal fade" tabindex="-1" id="guiaGen{{ boleta.id }}" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="model-title">Generar guia</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% for producto in boleta.productos %}
+        <div class="form-check proBol{{ boleta.id }}" data-id="{{producto.0}}">
+          <input type="number" step="1" value="0" max="{{ producto.10 }}" min="0" style="width: 60px; height: 30px; font-size: 10px; display: inline;" class="form-control">
+          <label style="font-size: 12px; display: inline;">{{ producto.1 }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary generar" data-bol="{{ boleta.id }}" >Generar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+
+
+
+{% endblock %}

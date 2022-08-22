@@ -1,0 +1,119 @@
+{
+    'close2u': 
+        {
+            'tipoIntegracion': 'OFFLINE',
+            'tipoPlantilla': '01',
+            'tipoRegistro': 'PRECIOS_SIN_IGV'
+        }, 
+    'datosDocumento': 
+        {
+            'serie': 'F001', 
+            'numero': '28', 
+            'moneda': 'USD', 
+            'fechaEmision': '2022-08-19', 
+            'horaEmision': None, 
+            'fechaVencimiento': '2022-09-03', 
+            'formaPago': 'CREDITO', 
+            'medioPago': 'DEPOSITO_CUENTA', 
+            'condicionPago': None, 
+            'ordencompra': None, 
+            'puntoEmisor': None, 
+            'glosa': None}, 
+            'detalleDocumento': [
+                {
+                    'codigoProducto': '2745999901', 
+                    'codigoProductoSunat': '', 
+                    'descripcion': 'FAST MASTIC 850 CATALIZADOR . 1 GL', 
+                    'tipoAfectacion': 'GRAVADO_OPERACION_ONEROSA', 
+                    'unidadMedida': 'UNIDAD_BIENES', 
+                    'cantidad': '20', 
+                    'valorVentaUnitarioItem': 30.39, 
+                    'descuento': 
+                    {
+                        'monto': '0'
+                    }, 
+                    'numeroOrden': 1, 
+                    'esPorcentaje': True
+                }, 
+                {  
+                    'codigoProducto': '3292999901', 
+                    'codigoProductoSunat': '', 
+                    'descripcion': 'FAST THINNER EPOXY SIC . 1 GL', 
+                    'tipoAfectacion': 'GRAVADO_OPERACION_ONEROSA', 
+                    'unidadMedida': 'UNIDAD_BIENES', 
+                    'cantidad': '20', 
+                    'valorVentaUnitarioItem': 14.04, 
+                    'descuento': 
+                    {
+                        'monto': '0'
+                    }, 
+                    'numeroOrden': 2, 
+                    'esPorcentaje': True
+                }, 
+                {
+                    'codigoProducto': '2744830101',
+                    'codigoProductoSunat': '', 
+                    'descripcion': 'FAST MASTIC 850 GRIS 1 GL', 
+                    'tipoAfectacion': 'GRAVADO_OPERACION_ONEROSA', 
+                    'unidadMedida': 'UNIDAD_BIENES', 
+                    'cantidad': '20', 'valorVentaUnitarioItem': 35.56, 
+                    'descuento': 
+                    {
+                        'monto': '0'
+                    }, 
+                    'numeroOrden': 3, 
+                    'esPorcentaje': True
+                }], 
+            'emisor': 
+            {
+                'correo': 'info@metalprotec.com', 
+                'nombreComercial': None, 
+                'nombreLegal': 'METALPROTEC', 
+                'numeroDocumentoIdentidad': '20541628631', 
+                'tipoDocumentoIdentidad': 'RUC', 
+                'domicilioFiscal': 
+                {
+                    'pais': 'PERU', 
+                    'departamento': 'ANCASH', 
+                    'provincia': 'SANTA', 
+                    'distrito': 'NUEVO CHIMBOTE', 
+                    'direccon': 'Mza. J4 Lote. 39', 
+                    'ubigeo': '02712'
+                }
+            }, 
+            'informacionAdicional': 
+                {
+                    'tipoOperacion': 'VENTA_INTERNA', 
+                    'coVendedor': None
+                }, 
+            'receptor': 
+            {
+                'correo': 'almacenchimbote@metalprotec.pe', 
+                'correoCopia': None, 
+                'domicilioFiscal': 
+                {
+                    'direccion': 'AV. PABLO CASALS NRO. 221 URB. MOCHICA (ENTRE OVALO MOCHICA Y T. AMARU) LA LIBERTAD - TRUJILLO - TRUJILLO', 
+                    'pais': 'PERU'
+                }, 
+                'nombreComercial': None, 
+                'nombreLegal': 'HALCON S.A.', 
+                'numeroDocumentoIdentidad': '20354180911',
+                'tipoDocumentoIdentidad': 'RUC'
+            }, 
+            'referencias': 
+            {
+                'documentoReferenciaList': [
+                    {
+                        'tipoDocumento': 'GUIAEMISIONREMITENTE', 
+                        'numero': '0027', 
+                        'serie': 'T001'
+                    }]
+            }, 
+            'cuotas': [
+                {'numero': '1',
+                'fecha': '2022-09-03',
+                'monto': '1887.76',
+                'moneda': 'USD'
+                }
+            ]
+    }
