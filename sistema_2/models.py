@@ -1,8 +1,8 @@
-from ctypes import Array
 from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.forms import CharField, FloatField
+import datetime
 
 # Create your models here.
 
@@ -195,3 +195,26 @@ class notaCredito(models.Model):
     monedaNota = models.CharField(max_length=30,null=True)
     imprimirDescuento = models.CharField(max_length=20,null=True)
     tipoItemsNota = models.CharField(max_length=32,null=True)
+
+class regCuenta(models.Model):
+    bancoCuenta = models.CharField(max_length=256,default='')
+    monedaCuenta = models.CharField(max_length=256,default='SOLES')
+    nroCuenta = models.CharField(max_length=256,default='')
+    saldoCuenta = models.CharField(max_length=256,default='0')
+
+class regOperacion(models.Model):
+    idCuentaBank = models.CharField(max_length=64,default='0')
+    fechaOperacion = models.DateField(default=datetime.date.today)
+    detalleOperacion = models.CharField(max_length=256,default='')
+    montoOperacion = models.CharField(max_length=256,default='0')
+    saldoOperacion = models.CharField(max_length=256,default='0')
+    lugarOperacion = models.CharField(max_length=128,default='0')
+    nroOperacion = models.CharField(max_length=64,default='0')
+    horaOperacion = models.DateField(default=datetime.date.today)
+    tipoOperacion = models.CharField(max_length=64,default='EGRESO')
+    estadoOperacion = models.CharField(max_length=128,default='IMCOMPLETO')
+    clienteOperacion = ArrayField(models.CharField(max_length=256),default=list())
+    comprobanteOperacion = ArrayField(models.CharField(max_length=256),default=list())
+    guiaOperacion = ArrayField(models.CharField(max_length=256),default=list())
+    vendedorOperacion = ArrayField(models.CharField(max_length=256),default=list())
+    cotizacionOperacion = ArrayField(models.CharField(max_length=256),default=list())

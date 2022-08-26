@@ -86,4 +86,7 @@ urlpatterns = [
     path('actualizar_info_producto/<str:ind>',views.actualizar_info_producto,name='obtener_info_producto'),
     path('eliminar_producto_tabla/<str:ind>',views.eliminar_producto_tabla,name='eliminar_producto_tabla'),
     path('update_producto/<str:ind>',views.update_producto,name='update_producto'),
+    path('ver_movimientos/<str:ind>',views.ver_movimientos,name='ver_movimientos'),
+    path('actualizar_cuenta/<str:ind>',views.actualizar_cuenta,name='actualizar_cuenta'),
+    path('eliminar_cuenta/<str:ind>',views.eliminar_cuenta,name='eliminar_cuenta')
 ]

@@ -44,16 +44,18 @@
                 </tr>
             </thead>
             <tbody>
+                {% for cuenta in cuentasBancos %}
                 <tr>
-                    <td scope="row">1</td>
-                    <td>BCP</td>
-                    <td>SOLES</td>
-                    <td>193-011-123123</td>
-                    <td>40000</td>
-                    <td style="text-align: center;"><a class="btn btn-info"><i class="fa fa-eye"></i></a></td>
-                    <td style="text-align: center;"><a class="btn btn-warning"><i class="fa fa-edit"></i></a></td>
-                    <td style="text-align: center;"><a class="btn btn-danger"><i class="fa fa-trash"></i></a></td>
+                    <td scope="row">{{ cuenta.id }}</td>
+                    <td>{{ cuenta.bancoCuenta }}</td>
+                    <td>{{ cuenta.monedaCuenta }}</td>
+                    <td>{{ cuenta.nroCuenta }}</td>
+                    <td>{{ cuenta.saldoCuenta }}</td>
+                    <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:ver_movimientos' cuenta.id %}"><i class="fa fa-eye"></i></a></td>
+                    <td style="text-align: center;"><a class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#actualizarReg{{ cuenta.id }}"><i class="fa fa-edit"></i></a></td>
+                    <td style="text-align: center;"><a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarReg{{ cuenta.id }}"><i class="fa fa-trash"></i></a></td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -66,40 +68,118 @@
                 <h5 class="modal-title">Nueva cuenta bancaria</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label>Banco</label>
-                        <input type="text" class="form-control">
+            <form method="post" action="{% url 'sistema_2:registros_bancarios' %}">
+            {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Banco</label>
+                            <input type="text" class="form-control" name="bancoCuenta">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Moneda</label>
+                            <select class="selectpicker form-control" name="monedaCuenta">
+                                <option value="DOLARES" selected>DOLARES</option>
+                                <option value="SOLES">SOLES</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label>Moneda</label>
-                        <select class="selectpicker form-control">
-                            <option value="DOLARES" selected>DOLARES</option>
-                            <option value="SOLES">SOLES</option>
-                        </select>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label>Nro de cuenta bancaria</label>
+                            <input type="text" class="form-control" name="nroCuenta">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Saldo inicial</label>
+                            <input type="number" step="0.01" class="form-control" name="saldoCuenta">
+                        </div>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <label>Nro de cuenta bancaria</label>
-                        <input class="form-control">
-                    </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label>Saldo inicial</label>
-                        <input type="number" step="0.01" class="form-control">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary">Agregar</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </div>
+            </form>
         </div>        
     </div>
 </div>
+
+{% for cuenta in cuentasBancos %}
+<div class="modal fade" tabindex="-1" role="dialog" id="actualizarReg{{ cuenta.id }}">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div  class="modal-header">
+                <h5 class="modal-title">Actualizar cuenta bancaria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'sistema_2:actualizar_cuenta' cuenta.id %}">
+            {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Banco</label>
+                            <input type="text" class="form-control" name="bancoCuenta" value="{{ cuenta.bancoCuenta }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Moneda</label>
+                            <select class="selectpicker form-control" name="monedaCuenta">
+                                {% if cuenta.monedaCuenta == 'DOLARES' %}
+                                    <option value="DOLARES" selected>DOLARES</option>
+                                    <option value="SOLES">SOLES</option>
+                                {%endif%}
+                                {% if cuenta.monedaCuenta == 'SOLES' %}
+                                    <option value="DOLARES">DOLARES</option>
+                                    <option value="SOLES" selected>SOLES</option>
+                                {%endif%}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label>Nro de cuenta bancaria</label>
+                            <input type="text" class="form-control" name="nroCuenta" value="{{ cuenta.nroCuenta }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Saldo inicial</label>
+                            <input type="number" step="0.01" class="form-control" name="saldoCuenta" value="{{ cuenta.saldoCuenta }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% for cuenta in cuentasBancos %}
+<div class="modal fade" tabindex="-1" role="dialog" id="eliminarReg{{ cuenta.id }}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar cuenta bancaria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Esta seguro que dese eliminar esta cuenta?</p>
+            </div>
+            <div class="modal-footer">
+                <a class="btn btn-danger" href="{% url 'sistema_2:eliminar_cuenta' cuenta.id %}">Eliminar</a>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
 
 <div class="modal fade" tabindex="-1" role="dialog" id="cargarMov">
     <div class="modal-dialog" role="document">
@@ -118,13 +198,6 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
             </div>
         </div>
-    </div>
-</div>
-
-
-<div class="modal fade" tabindex="-1" role="dialog" id="verMov">
-    <div class="modal-dialog" role="document">
-
     </div>
 </div>
 

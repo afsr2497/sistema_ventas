@@ -9,7 +9,7 @@ from django import forms
 from reportlab.pdfgen import canvas
 from django.shortcuts import render
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito
+from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from django.db.models import Q
@@ -4207,9 +4207,6 @@ def gen_boleta_cot(request,ind):
     time.sleep(0.5)
     return HttpResponseRedirect(reverse('sistema_2:bole'))
 
-def registros_bancarios(request):
-    return render(request,'sistema_2/registros_bancarios.html')
-
 def emitir_nota_factura(request,ind):
     return render(request,'sistema_2/dashboard.html')
 
@@ -5486,3 +5483,39 @@ def update_producto(request,ind):
     return render(request,'sistema_2/update_producto.html',{
         'producto':producto_actualizar
     })
+
+def registros_bancarios(request):
+    if request.method == 'POST':
+        bancoCuenta = request.POST.get('bancoCuenta')
+        monedaCuenta = request.POST.get('monedaCuenta')
+        nroCuenta = request.POST.get('nroCuenta')
+        saldoCuenta = request.POST.get('saldoCuenta')
+        regCuenta(bancoCuenta=bancoCuenta,monedaCuenta=monedaCuenta,nroCuenta=nroCuenta,saldoCuenta=saldoCuenta).save()
+        return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+    return render(request,'sistema_2/registros_bancarios.html',{
+        'cuentasBancos':regCuenta.objects.all().order_by('id'),
+    })
+
+def actualizar_cuenta(request,ind):
+    if request.method == 'POST':
+        cuenta_modificar = regCuenta.objects.get(id=ind)
+        bancoCuenta = request.POST.get('bancoCuenta')
+        monedaCuenta = request.POST.get('monedaCuenta')
+        nroCuenta = request.POST.get('nroCuenta')
+        saldoCuenta = request.POST.get('saldoCuenta')
+        cuenta_modificar.bancoCuenta=bancoCuenta
+        cuenta_modificar.monedaCuenta=monedaCuenta
+        cuenta_modificar.nroCuenta=nroCuenta
+        cuenta_modificar.saldoCuenta=saldoCuenta
+        cuenta_modificar.save()
+        return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+
+def importar_movimientos(request):
+    return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+
+def eliminar_cuenta(request,ind):
+    regCuenta.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+
+def ver_movimientos(request,ind):
+    return render(request,'sistema_2/mov_bancarios.html')
