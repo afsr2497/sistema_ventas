@@ -41,7 +41,7 @@ class products(models.Model):
     precio_venta_con_igv = models.FloatField(default=0,null=True)
     codigo_sunat = models.CharField(max_length=128,null=True)
     moneda = models.CharField(max_length=128,default='SOLES')
-    stock = ArrayField(ArrayField(models.CharField(max_length=20)),null=True)
+    stock = ArrayField(ArrayField(models.CharField(max_length=20)),default=list())
     stockTotal = models.CharField(max_length=128,default='0')
     pesoProducto = models.CharField(max_length=128,default='0')
 

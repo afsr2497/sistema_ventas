@@ -454,7 +454,7 @@ def productos(request):
             producto_id = 1
         products(pesoProducto=producto_peso,id=producto_id,nombre=producto_nombre,codigo=producto_codigo,categoria=producto_categoria,sub_categoria=producto_subCategoria,unidad_med=producto_unidad,precio_compra_sin_igv=producto_pcsinIGV,precio_compra_con_igv=producto_pcconIGV,precio_venta_sin_igv=producto_pvsinIGV,precio_venta_con_igv=producto_pvconIGV,codigo_sunat=producto_sunat,moneda=producto_moneda).save()
         return HttpResponseRedirect(reverse('sistema_2:productos'))
-    return render(request,'sistema_2/productos.html',{
+    return render(request,'sistema_2/prods.html',{
         'pro': pro.order_by('id'),
         'usr':usr.order_by('id')
     })
@@ -612,15 +612,43 @@ def agregar_stock(request):
 @csrf_exempt
 def proformas(request):
     if request.method == 'POST':
-        fecha_inicial = str(request.POST.get('fecha_inicio'))
-        fecha_final = str(request.POST.get('fecha_fin'))
-        if fecha_inicial != '' and fecha_final != '':
-            cotizaciones_filtradas = cotizaciones.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
-            return render(request,'sistema_2/proformas.html',{
-                'cotizaciones':cotizaciones_filtradas.order_by('id'),
-                'fecha_inicial':fecha_inicial,
-                'fecha_final':fecha_final
-            })
+        if 'Filtrar' in request.POST:
+            print('Se esta filtrando la info')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                cotizaciones_filtradas = cotizaciones.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                return render(request,'sistema_2/proformas.html',{
+                    'cotizaciones':cotizaciones_filtradas.order_by('id'),
+                    'fecha_inicial':fecha_inicial,
+                    'fecha_final':fecha_final
+                })
+        elif 'Exportar' in request.POST:
+            print('Se solicita el excel')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                cotizaciones_filtradas = cotizaciones.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                info_coti=[]
+                for coti in cotizaciones_filtradas:
+                    info_coti.append([coti.codigoProforma,coti.fechaProforma])
+                tabla_excel = pd.DataFrame(info_coti,columns=['Codigo','Fecha'])
+                tabla_excel.to_excel('info_excel.xlsx')
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                coti_exportar = cotizaciones.objects.all()
+                info_coti = []
+                for coti in coti_exportar:
+                    info_coti.append([coti.codigoProforma,coti.fechaProforma])
+                tabla_excel = pd.DataFrame(info_coti,columns=['Codigo','Fecha'])
+                tabla_excel.to_excel('info_excel.xlsx')
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
     return render(request,'sistema_2/proformas.html',{
         'cotizaciones': cotizaciones.objects.all().order_by('-id')
     })
@@ -5399,3 +5427,62 @@ def obtener_datos_ruc(request,ind):
         return JsonResponse({'status': 'Invalid request'}, status=400)
     else:
         return HttpResponseBadRequest('Invalid request')
+
+def obtener_stock_producto(request,ind):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        if request.method == 'GET':
+            print(ind)
+            producto_informacion = products.objects.get(id=ind)
+            print(producto_informacion.stock)
+            return JsonResponse(
+                {
+                    'stockPro': producto_informacion.stock,
+                })
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request')
+
+def actualizar_info_producto(request,ind):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        if request.method == 'GET':
+            print(ind)
+            producto_informacion = products.objects.get(id=ind)
+            return JsonResponse(
+                {
+                    'nombre': producto_informacion.nombre,
+                    'codigo': producto_informacion.codigo,
+                    'categoria': producto_informacion.categoria,
+                    'subCategoria': producto_informacion.sub_categoria,
+                    'unidad_med': producto_informacion.unidad_med,
+                    'cod_sunat': producto_informacion.codigo_sunat,
+                    'pv_sinIGV': producto_informacion.precio_venta_sin_igv,
+                    'pc_sinIGV': producto_informacion.precio_compra_sin_igv,
+                    'moneda': producto_informacion.moneda,
+                    'peso': producto_informacion.pesoProducto,
+                })
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request')
+
+def eliminar_producto_tabla(request,ind):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        if request.method == 'GET':
+            print(ind)
+            producto_informacion = products.objects.get(id=ind)
+            producto_informacion.delete()
+            return JsonResponse(
+                {
+                    'status':'Exitoso'
+                })
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request')
+
+def update_producto(request,ind):
+    producto_actualizar = products.objects.get(id=ind)
+    return render(request,'sistema_2/update_producto.html',{
+        'producto':producto_actualizar
+    })

@@ -82,4 +82,8 @@ urlpatterns = [
     path('verificar_factura_teFacturo/<str:ind>',views.verificar_factura_teFacturo,name='verificar_factura_teFacturo'),
     path('verificar_boleta_teFacturo/<str:ind>',views.verificar_boleta_teFacturo,name='verificar_boleta_teFacturo'),
     path('obtener_datos_ruc/<str:ind>',views.obtener_datos_ruc,name='objener_datos_ruc'),
+    path('obtener_stock_producto/<str:ind>',views.obtener_stock_producto,name='obtener_stock_producto'),
+    path('actualizar_info_producto/<str:ind>',views.actualizar_info_producto,name='obtener_info_producto'),
+    path('eliminar_producto_tabla/<str:ind>',views.eliminar_producto_tabla,name='eliminar_producto_tabla'),
+    path('update_producto/<str:ind>',views.update_producto,name='update_producto'),
 ]
