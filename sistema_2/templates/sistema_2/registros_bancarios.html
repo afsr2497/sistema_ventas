@@ -181,6 +181,7 @@
 
 
 
+<!--Importar movimientos bancarios-->
 <div class="modal fade" tabindex="-1" role="dialog" id="cargarMov">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -188,15 +189,28 @@
                 <h5 class="modal-title">Cargar movimientos</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <input class="form-control" type="file">
+            <form method="post" action="{% url 'sistema_2:importar_movimientos' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Seleccionar cuenta bancaria</label>
+                        <select class="selectpicker form-control" data-live-search="true" name="idCuenta">
+                            {% for cuenta in cuentasBancos %}
+                                <option value="{{ cuenta.id }}">{{ cuenta.bancoCuenta }} - {{ cuenta.nroCuenta }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label>Seleccionar archivo de excel</label>
+                        <input class="form-control" type="file" name="archivoExcel">
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary">Cargar</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Cargar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

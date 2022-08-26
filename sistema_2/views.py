@@ -5511,6 +5511,51 @@ def actualizar_cuenta(request,ind):
         return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
 
 def importar_movimientos(request):
+    if request.method == 'POST':
+        columnas_movimientos = ['FECHA','DETALLE','MONTO','SALDO']
+        archivo=request.FILES['archivoExcel']
+        idCuenta = request.POST.get('idCuenta')
+        identificador = 0
+        try:
+            datos_archivo = pd.read_excel(archivo)
+            datos_archivo = datos_archivo.replace(np.nan,'',regex=True)
+            identificador = 1
+        except:
+            identificador = 0
+        if identificador == 1:
+            mensaje = 'Es un archivo de excel'
+            identificador = 0
+            if len(datos_archivo.columns) == len(columnas_movimientos):
+                mensaje = 'Archivo y columnas correctas'
+                identificador = 0
+                for columna in datos_archivo.columns:
+                    if not (columna in columnas_movimientos):
+                        identificador = 1
+                if identificador == 1:
+                    mensaje = 'Las columnas del archivo no son las apropiadas'
+                else: 
+                    mensaje = 'Las columnas del archivo cumplen con los requerimientos'
+                    i = 0
+                    while i < len(datos_archivo):
+                        fechaOperacion = str(datos_archivo.loc[i,'FECHA'])
+                        fechaOperacion = parse(fechaOperacion)
+                        detalleOperacion = str(datos_archivo.loc[i,'DETALLE'])
+                        montoOperacion = str(datos_archivo.loc[i,'MONTO'])
+                        saldoOperacion = str(datos_archivo.loc[i,'SALDO'])
+                        try:
+                            ultimo_movimiento = regOperacion.objects.latest('id')
+                            dat_id = ultimo_movimiento.id + 1
+                        except:
+                            dat_id = 1
+                        regOperacion(id=dat_id,idCuentaBank=idCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,montoOperacion=montoOperacion,saldoOperacion=saldoOperacion).save()
+                        i = i+1
+                    mensaje='Los datos han sido cargados correctamente'
+            else:
+                mensaje = 'Las columnas del archivo no estan completas'
+
+        else:
+            mensaje = 'No es un archivo de excel'
+            identificador = 0
     return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
 
 def eliminar_cuenta(request,ind):
@@ -5518,4 +5563,15 @@ def eliminar_cuenta(request,ind):
     return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
 
 def ver_movimientos(request,ind):
-    return render(request,'sistema_2/mov_bancarios.html')
+    registros_mov = regOperacion.objects.filter(idCuentaBank=ind)
+    cuenta_info = regCuenta.objects.get(id=ind)
+    nombreBanco = cuenta_info.bancoCuenta
+    monedaBanco = cuenta_info.monedaCuenta
+    saldoBanco = cuenta_info.saldoCuenta
+    cuenta_info.save()
+    return render(request,'sistema_2/mov_bancarios.html',{
+        'operacionBanco':registros_mov,
+        'nombreBanco': nombreBanco,
+        'monedaBanco': monedaBanco,
+        'saldoBanco':saldoBanco,
+    })
