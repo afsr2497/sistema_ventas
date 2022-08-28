@@ -205,6 +205,7 @@ class regCuenta(models.Model):
 class regOperacion(models.Model):
     idCuentaBank = models.CharField(max_length=64,default='0')
     fechaOperacion = models.DateField(default=datetime.date.today)
+    monedaOperacion = models.CharField(max_length=128,default='SOLES')
     detalleOperacion = models.CharField(max_length=256,default='')
     montoOperacion = models.CharField(max_length=256,default='0')
     saldoOperacion = models.CharField(max_length=256,default='0')

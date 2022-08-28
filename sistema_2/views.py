@@ -5512,10 +5512,55 @@ def actualizar_cuenta(request,ind):
 
 def importar_movimientos(request):
     if request.method == 'POST':
-        columnas_movimientos = ['FECHA','DETALLE','MONTO','SALDO']
         archivo=request.FILES['archivoExcel']
-        idCuenta = request.POST.get('idCuenta')
-        identificador = 0
+        cuentas_bancarias = regCuenta.objects.all()
+        nombre_excel = []
+        for cuenta in cuentas_bancarias:
+            datos_archivo = pd.read_excel(archivo,sheet_name=str(cuenta.id))
+            i = 0
+            cuenta_mod = regCuenta.objects.get(id=str((cuenta.id)))
+            cuenta_saldo = float(cuenta_mod.saldoCuenta)
+            while i < len(datos_archivo):
+                fechaOperacion = str(datos_archivo.loc[i,'FECHA'])
+                fechaOperacion = parse(fechaOperacion)
+                detalleOperacion = str(datos_archivo.loc[i,'DETALLE'])
+                montoOperacion = str(datos_archivo.loc[i,'MONTO'])
+                nroOperacion = str(datos_archivo.loc[i,'MOVIMIENTO'])
+                try:
+                    ultimo_movimiento = regOperacion.objects.latest('id')
+                    dat_id = ultimo_movimiento.id + 1
+                except:
+                    dat_id = 1
+                #Calcualo del saldo
+                cuenta_saldo = float(montoOperacion)
+                monedaOperacion = cuenta_mod.monedaCuenta
+                i = i + 1
+                regOperacion(id=dat_id,idCuentaBank=str(cuenta_mod.id),monedaOperacion=monedaOperacion,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion).save()
+            cuenta_mod.saldoCuenta = str(round(cuenta_saldo,2))
+            cuenta_mod.save()
+        print(datos_archivo)
+
+        """
+        while i < len(datos_archivo):
+            fechaOperacion = str(datos_archivo.loc[i,'FECHA'])
+            fechaOperacion = parse(fechaOperacion)
+            detalleOperacion = str(datos_archivo.loc[i,'DETALLE'])
+            montoOperacion = str(datos_archivo.loc[i,'MONTO'])
+            saldoOperacion = str(datos_archivo.loc[i,'SALDO'])
+            try:
+                ultimo_movimiento = regOperacion.objects.latest('id')
+                dat_id = ultimo_movimiento.id + 1
+            except:
+                dat_id = 1
+            regOperacion(id=dat_id,idCuentaBank=idCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,montoOperacion=montoOperacion,saldoOperacion=saldoOperacion).save()
+            i = i+1
+            mensaje = 'No es un archivo de excel'
+            identificador = 0
+        """
+        return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+
+    """
+    identificador = 0
         try:
             datos_archivo = pd.read_excel(archivo)
             datos_archivo = datos_archivo.replace(np.nan,'',regex=True)
@@ -5536,34 +5581,14 @@ def importar_movimientos(request):
                 else: 
                     mensaje = 'Las columnas del archivo cumplen con los requerimientos'
                     i = 0
-                    while i < len(datos_archivo):
-                        fechaOperacion = str(datos_archivo.loc[i,'FECHA'])
-                        fechaOperacion = parse(fechaOperacion)
-                        detalleOperacion = str(datos_archivo.loc[i,'DETALLE'])
-                        montoOperacion = str(datos_archivo.loc[i,'MONTO'])
-                        saldoOperacion = str(datos_archivo.loc[i,'SALDO'])
-                        try:
-                            ultimo_movimiento = regOperacion.objects.latest('id')
-                            dat_id = ultimo_movimiento.id + 1
-                        except:
-                            dat_id = 1
-                        regOperacion(id=dat_id,idCuentaBank=idCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,montoOperacion=montoOperacion,saldoOperacion=saldoOperacion).save()
-                        i = i+1
-                    mensaje='Los datos han sido cargados correctamente'
-            else:
-                mensaje = 'Las columnas del archivo no estan completas'
-
-        else:
-            mensaje = 'No es un archivo de excel'
-            identificador = 0
-    return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+    """
 
 def eliminar_cuenta(request,ind):
     regCuenta.objects.get(id=ind).delete()
     return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
 
 def ver_movimientos(request,ind):
-    registros_mov = regOperacion.objects.filter(idCuentaBank=ind)
+    registros_mov = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
     cuenta_info = regCuenta.objects.get(id=ind)
     nombreBanco = cuenta_info.bancoCuenta
     monedaBanco = cuenta_info.monedaCuenta
@@ -5575,3 +5600,101 @@ def ver_movimientos(request,ind):
         'monedaBanco': monedaBanco,
         'saldoBanco':saldoBanco,
     })
+
+def update_mov(request,ind):
+    mov_actualizar = regOperacion.objects.get(id=ind)
+    clientes = clients.objects.all()
+    users_info = userProfile.objects.all()
+    facturas_info = facturas.objects.all()
+    guias_info = guias.objects.all()
+    return render(request,'sistema_2/update_mov.html',{
+        'operacion':mov_actualizar,
+        'clientes':clientes,
+        'usuarios':users_info,
+        'facturas':facturas_info,
+        'guias':guias_info,
+    })
+
+def actualizar_mov(request,ind):
+    if request.method == 'POST':
+        mov_actualizar = regOperacion.objects.get(id=ind)
+        info_cliente = request.POST.get('infoCliente')
+        info_factura = request.POST.get('infoFactura')
+        info_guia = request.POST.get('infoGuia')
+        info_vendedor = request.POST.get('infoVendedor')
+        clienteReg = clients.objects.get(id=info_cliente)
+        arreglo_cliente = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
+        clienteReg.save()
+        arreglo_guias = info_guia.split(',')
+        print(info_vendedor)
+        vendedorReg = userProfile.objects.get(id=info_vendedor)
+        arreglo_vendedor = [vendedorReg.id,vendedorReg.usuario.username,vendedorReg.codigo]
+        vendedorReg.save()
+        mov_actualizar.clienteOperacion = arreglo_cliente
+        mov_actualizar.comprobanteOperacion = [info_factura]
+        mov_actualizar.guiaOperacion = arreglo_guias
+        mov_actualizar.vendedorOperacion = arreglo_vendedor
+
+        print(mov_actualizar.comprobanteOperacion[0] == None)
+        if mov_actualizar.comprobanteOperacion[0] == None or mov_actualizar.comprobanteOperacion[0] == 'SinSeleccion':
+            mov_actualizar.estadoOperacion = 'INCOMPLETA'
+        else:
+            mov_actualizar.estadoOperacion = 'COMPLETA'
+        mov_actualizar.save()
+        return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+    
+
+def obtener_facturas_cliente(request,ind):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        if request.method == 'GET':
+            print(ind)
+            cliente_info = clients.objects.get(id=ind)
+            facturas_info = facturas.objects.all()
+            boletas_info = boletas.objects.all()
+            facturas_seleccionadas = list()
+            boletas_seleccionadas = list()
+            tipoCliente = ''
+            if cliente_info.nombre == '':
+                tipoCliente = 'Empresa'
+                for facturaSeleccionada in facturas_info:
+                    if facturaSeleccionada.cliente[5] == cliente_info.ruc:
+                        arreglo_info = []
+                        arreglo_info.append(facturaSeleccionada.codigoFactura)
+                        facturas_seleccionadas.append(arreglo_info)
+            else:
+                tipoCliente = 'Persona'
+                for boletaSeleccionada in boletas_info:
+                    if boletaSeleccionada.cliente[4] == cliente_info.dni:
+                        arreglo_info = []
+                        arreglo_info.append(boletaSeleccionada.codigoBoleta)
+                        boletas_seleccionadas.append(arreglo_info)
+            return JsonResponse(
+                {
+                    'facturas': facturas_seleccionadas,
+                    'boletas':boletas_seleccionadas,
+                    'tipoCliente':tipoCliente,
+                })
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request')
+
+def obtener_guias_factura(request,ind):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        if request.method == 'GET':
+            if(ind != 'SinSeleccion'):
+                facturas_info = facturas.objects.get(codigoFactura=ind)
+                print(facturas_info.codigosGuias)
+                return JsonResponse(
+                    {
+                        'guias': facturas_info.codigosGuias
+                    })
+            else:
+                return JsonResponse(
+                    {
+                        'guias': []
+                    })
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request')

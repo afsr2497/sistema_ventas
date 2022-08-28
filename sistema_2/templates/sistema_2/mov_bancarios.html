@@ -42,11 +42,11 @@
                     <td scope="row">{{ registro.fechaOperacion }}</td>
                     <td scope="row">{{ registro.detalleOperacion }}</td>
                     <td scope="row">{{ registro.nroOperacion }}</td>
-                    <td scope="row">{{ registro.cliente.0 }}</td>
+                    <td scope="row">{{ registro.clienteOperacion.0 }}</td>
                     <td scope="row">{{ registro.montoOperacion }}</td>
                     <td scope="row">{{ registro.tipoOperacion }}</td>
                     <td scope="row">{{ registro.estadoOperacion }}</td>
-                    <td style="text-align: center;"><a class="btn btn-warning"><i class="fa fa-edit"></i></a></td>
+                    <td style="text-align: center;"><a class="btn btn-warning" href="{% url 'sistema_2:update_mov' registro.id %}"><i class="fa fa-edit"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>

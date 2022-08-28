@@ -192,14 +192,6 @@
             <form method="post" action="{% url 'sistema_2:importar_movimientos' %}" enctype="multipart/form-data">
             {% csrf_token %}
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Seleccionar cuenta bancaria</label>
-                        <select class="selectpicker form-control" data-live-search="true" name="idCuenta">
-                            {% for cuenta in cuentasBancos %}
-                                <option value="{{ cuenta.id }}">{{ cuenta.bancoCuenta }} - {{ cuenta.nroCuenta }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
                     <br>
                     <div class="form-group">
                         <label>Seleccionar archivo de excel</label>

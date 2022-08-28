@@ -90,4 +90,8 @@ urlpatterns = [
     path('actualizar_cuenta/<str:ind>',views.actualizar_cuenta,name='actualizar_cuenta'),
     path('eliminar_cuenta/<str:ind>',views.eliminar_cuenta,name='eliminar_cuenta'),
     path('registrar_movimientos',views.importar_movimientos,name='importar_movimientos'),
+    path('actualizar_mov/<str:ind>',views.actualizar_mov,name='actualizar_mov'),
+    path('update_mov/<str:ind>',views.update_mov,name='update_mov'),
+    path('obtener_facturas_cliente/<str:ind>',views.obtener_facturas_cliente,name='obtener_facturas_cliente'),
+    path('obtener_guias_factura/<str:ind>',views.obtener_guias_factura,name='obtener_guias_factura'),
 ]
