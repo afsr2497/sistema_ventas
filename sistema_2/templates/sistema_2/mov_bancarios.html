@@ -20,15 +20,45 @@
 <div class="container">
     <h3>{{ nombreBanco }} - {{ monedaBanco }} : {{ saldoBanco }}</h3>
     <br>
+    <div>
+        <form class="row" method="post" action="{% url 'sistema_2:ver_movimientos' identificador %}">
+        {% csrf_token %}
+            <div class="col-md-2">
+                <label>Fecha inicial</label>
+                <input type="date" class="form-control col-md-1" name="fecha_inicio" value="{{ fecha_inicial }}">
+            </div>
+            <div class="col-md-2">
+                <label>Fecha final</label>
+                <input type="date" class="form-control col-md-1" name="fecha_fin" value="{{ fecha_final }}">
+            </div>
+            <br>
+            <br>
+            <div class="col-md-1">
+                <br>
+                <button type="submit" class="btn btn-success" name="Filtrar">Filtrar</button>
+            </div>
+            <div class="col-md-2">
+                <br>
+                <button type="submit" class="btn btn-success" name="Exportar">Exportar Excel</button>
+            </div>
+            <div class="col-md-1 float-end">
+                <br>
+                <a class="btn btn-success" type="button" style="color: white;" href="{% url 'sistema_2:ver_movimientos' identificador %}">Restablecer</a>
+            </div>
+        </form>
+    </div>
+    <br>
     <div style="height: 1000px; overflow: scroll;">
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
-                    <th scope="col">ID</th>
                     <th scope="col">Fecha</th>
                     <th scope="col">Concepto</th>
                     <th scope="col">Nro de Operacion</th>
                     <th scope="col">Cliente</th>
+                    <th scope="col">Vendedor</th>
+                    <th scope="col">Comprobante</th>
+                    <th scope="col">Cotizacion</th>
                     <th scope="col">Monto</th>
                     <th scope="col">Tipo</th>
                     <th scope="col">Estado</th>
@@ -38,11 +68,29 @@
             <tbody>
                 {% for registro in operacionBanco %}
                 <tr>
-                    <td scope="row">{{ registro.id }}</td>
-                    <td scope="row">{{ registro.fechaOperacion }}</td>
+                    <td scope="row">{{ registro.fechaOperacion|date:'d-m-Y' }}</td>
                     <td scope="row">{{ registro.detalleOperacion }}</td>
                     <td scope="row">{{ registro.nroOperacion }}</td>
-                    <td scope="row">{{ registro.clienteOperacion.0 }}</td>
+                    {% if registro.clienteOperacion.1 != '' %}
+                        <td scope="row">{{ registro.clienteOperacion.1 }} {{ registro.clienteOperacion.2 }}</td>
+                    {% else %}
+                        <td scope="row">{{ registro.clienteOperacion.3 }}</td>
+                    {% endif %}
+                    {% if registro.vendedorOperacion.2 != '' %}
+                        <td scope="row">{{ registro.vendedorOperacion.2 }}</td>
+                    {% else %}
+                        <td scope="row"></td>
+                    {% endif %}
+                    {% if registro.comprobanteOperacion.0 != '' %}
+                        <td scope="row">{{ registro.comprobanteOperacion.0 }}</td>
+                    {% else %}
+                        <td scope="row"></td>
+                    {% endif %}
+                    {% if registro.cotizacionOperacion.0 != '' %}
+                        <td scope="row">{{ registro.cotizacionOperacion.0 }}</td>
+                    {% else %}
+                        <td scope="row"></td>
+                    {% endif %}
                     <td scope="row">{{ registro.montoOperacion }}</td>
                     <td scope="row">{{ registro.tipoOperacion }}</td>
                     <td scope="row">{{ registro.estadoOperacion }}</td>

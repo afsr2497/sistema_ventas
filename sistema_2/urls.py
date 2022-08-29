@@ -92,6 +92,8 @@ urlpatterns = [
     path('registrar_movimientos',views.importar_movimientos,name='importar_movimientos'),
     path('actualizar_mov/<str:ind>',views.actualizar_mov,name='actualizar_mov'),
     path('update_mov/<str:ind>',views.update_mov,name='update_mov'),
-    path('obtener_facturas_cliente/<str:ind>',views.obtener_facturas_cliente,name='obtener_facturas_cliente'),
+    path('obtener_facturas_cotizaciones_cliente/<str:ind>',views.obtener_facturas_cotizaciones_cliente,name='obtener_facturas_cliente'),
     path('obtener_guias_factura/<str:ind>',views.obtener_guias_factura,name='obtener_guias_factura'),
+    path('exportar_todo',views.exportar_todo,name='exportar_todo'),
+    path('descargar_filtrado',views.descargar_filtrado,name='descargar_filtrado')
 ]

@@ -18,10 +18,11 @@
         let clienteSeleccionado = document.getElementById('clienteSeleccionado')
         let facturaSeleccionada = document.getElementById('facturaSeleccionada')
         let guiaSeleccionada = document.getElementById('guiaSeleccionada')
+        let cotiSeleccionada= document.getElementById('cotiSeleccionada')
 
         clienteSeleccionado.onchange = function() 
         {
-            url = '/sistema_2/obtener_facturas_cliente/' + clienteSeleccionado.value
+            url = '/sistema_2/obtener_facturas_cotizaciones_cliente/' + clienteSeleccionado.value
             async function get_data() {
                 const res = await fetch(url,{
                                         method:"GET",
@@ -31,8 +32,13 @@
                 cliente_info=await res.json()
                 console.log(cliente_info)
                 facturaSeleccionada.innerHTML = ''
+                cotiSeleccionada.innerHTML = ''
                 if(cliente_info.tipoCliente === 'Empresa')
                 {
+                    var opcionCreada = document.createElement('option')
+                    opcionCreada.value = 'SinSeleccion'
+                    opcionCreada.text = 'SinSeleccion'
+                    facturaSeleccionada.add(opcionCreada)
                     for(var i = 0; i < cliente_info.facturas.length; i++)
                     {
                         console.log('Se ingreso al bucle')
@@ -41,13 +47,28 @@
                         opcionCreada.text = cliente_info.facturas[i]
                         facturaSeleccionada.add(opcionCreada)
                     }
+                    
+
+                    var opcionCreada = document.createElement('option')
+                    opcionCreada.value = 'SinSeleccion'
+                    opcionCreada.text = 'SinSeleccion'
+                    cotiSeleccionada.add(opcionCreada)
+                    for(var i = 0; i < cliente_info.cotizaciones.length; i++)
+                    {
+                        console.log('Se ingreso al bucle')
+                        var opcionCreada = document.createElement('option')
+                        opcionCreada.value = cliente_info.cotizaciones[i]
+                        opcionCreada.text = cliente_info.cotizaciones[i]
+                        cotiSeleccionada.add(opcionCreada)
+                    }
+                    
+                }
+                if(cliente_info.tipoCliente === 'Persona')
+                {
                     var opcionCreada = document.createElement('option')
                     opcionCreada.value = 'SinSeleccion'
                     opcionCreada.text = 'SinSeleccion'
                     facturaSeleccionada.add(opcionCreada)
-                }
-                if(cliente_info.tipoCliente === 'Persona')
-                {
                     for(var i = 0; i < cliente_info.boletas.length; i++)
                     {
                         var opcionCreada = document.createElement('option')
@@ -55,10 +76,19 @@
                         opcionCreada.text = cliente_info.boletas[i]
                         facturaSeleccionada.add(opcionCreada)
                     }
+                    
                     var opcionCreada = document.createElement('option')
                     opcionCreada.value = 'SinSeleccion'
                     opcionCreada.text = 'SinSeleccion'
-                    facturaSeleccionada.add(opcionCreada)
+                    cotiSeleccionada.add(opcionCreada)
+                    for(var i = 0; i < cliente_info.cotizaciones.length; i++)
+                    {
+                        console.log('Se ingreso al bucle')
+                        var opcionCreada = document.createElement('option')
+                        opcionCreada.value = cliente_info.cotizaciones[i]
+                        opcionCreada.text = cliente_info.cotizaciones[i]
+                        cotiSeleccionada.add(opcionCreada)
+                    }
                 }
             }
             get_data()
@@ -145,12 +175,17 @@
     <h6>Documentos asociados</h6>
     <br>
     <div class="row mb-3">
-        <div class="col-md-4">
-            <label>Factura / Boleta</label>
-            <select class="form-control" name="infoFactura" id="facturaSeleccionada" >
+        <div class="col-md-3">
+            <label>Cotizacion</label>
+            <select class="form-select" name="infoCotizacion" id="cotiSeleccionada" >
             </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <label>Factura / Boleta</label>
+            <select class="form-select" name="infoFactura" id="facturaSeleccionada" >
+            </select>
+        </div>
+        <div class="col-md-3">
             <label>Guia</label>
             <input class="form-control" name="infoGuia" id="guiaSeleccionada">
         </div>

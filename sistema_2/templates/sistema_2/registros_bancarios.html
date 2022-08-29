@@ -13,6 +13,57 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
 <script src="{% static 'sistema_2/productos.js' %}"></script>
+
+<script>
+    function eliminarCampos()
+    {
+        let nombreArchivo = document.getElementById('nombreArchivo')
+        nombreArchivo.value = ''
+    }
+
+    function validarNombre()
+    {
+        let nombreArchivo = document.getElementById('nombreArchivo')
+        let cargarArchivo = document.getElementById('cargarArchivo')
+        if(nombreArchivo.value === '')
+        {
+            cargarArchivo.disabled = true
+            alert('No se ha cargado ningun archivo')
+        }
+        else
+        {
+            if(nombreArchivo.value.length > 4)
+            {
+                let extensionArchivo = nombreArchivo.value.substring(nombreArchivo.value.length - 4)
+                if(extensionArchivo === 'xlsx')
+                {
+                    cargarArchivo.disabled = false
+                    alert('Extension validada, puede proceder a cargar el archivo')
+                }
+                else
+                {
+                    cargarArchivo.disabled = true
+                    alert('Es un archivo sin extension "xlsx" ')
+                }
+            }
+            else
+            {
+                cargarArchivo.disabled = true
+                alert('Es un archivo sin extension "xlsx" ')
+            }
+        }
+    }
+
+    addEventListener('DOMContentLoaded',()=>{
+        let nombreArchivo = document.getElementById('nombreArchivo')
+        let cargarArchivo = document.getElementById('cargarArchivo')
+        nombreArchivo.onchange = function()
+        {
+            cargarArchivo.disabled = true
+        }
+    })
+</script>
+
 {% endblock %}
 
 
@@ -27,13 +78,48 @@
     <br>
     <div>
         <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#cargarMov">Importar Movimientos Bancarios<i class="fas fa-file-import"></i></a>
+        <a class="btn btn-success float-end" style="color: white;" href="{% url 'sistema_2:exportar_todo' %}">Exportar Movimientos Bancarios<i class="fas fa-file-export"></i></a>
     </div>
+    <br>
+    <h5>Filtrar informacion :</h5>
+    <br>
+    <form method="post" action="{% url 'sistema_2:descargar_filtrado' %}" class="row">
+    {% csrf_token %}
+        <div class="col-md-2">
+            <label>Mes :</label>
+            <select class="selectpicker form-control" name="monthInfo">
+                <option value="1" selected>Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label>Año :</label>
+            <select class="selectpicker form-control" name="yearInfo">
+                <option value="2022" selected>2022</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+            </select> 
+        </div>
+        <div class="col-md-2">
+            <br>
+            <button type="submit" class="btn btn-success">Exportar</button>
+        </div>
+    </form>
     <br>
     <div style="height: 1000px; overflow: scroll;">
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
-                    <th scope="col">ID</th>
                     <th scope="col">Banco</th>
                     <th scope="col">Moneda</th>
                     <th scope="col">Nro de cuenta</th>
@@ -46,7 +132,6 @@
             <tbody>
                 {% for cuenta in cuentasBancos %}
                 <tr>
-                    <td scope="row">{{ cuenta.id }}</td>
                     <td>{{ cuenta.bancoCuenta }}</td>
                     <td>{{ cuenta.monedaCuenta }}</td>
                     <td>{{ cuenta.nroCuenta }}</td>
@@ -187,20 +272,20 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Cargar movimientos</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="eliminarCampos()"></button>
             </div>
             <form method="post" action="{% url 'sistema_2:importar_movimientos' %}" enctype="multipart/form-data">
             {% csrf_token %}
                 <div class="modal-body">
-                    <br>
                     <div class="form-group">
-                        <label>Seleccionar archivo de excel</label>
-                        <input class="form-control" type="file" name="archivoExcel">
+                        <label>Seleccionar archivo de excel : </label>
+                        <input class="form-control" type="file" name="archivoExcel" id="nombreArchivo">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Cargar</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-info" onclick="validarNombre()">Validar</button>
+                    <button type="submit" class="btn btn-primary" disabled id="cargarArchivo">Cargar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarCampos()">Cancelar</button>
                 </div>
             </form>
         </div>

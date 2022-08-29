@@ -1,4 +1,6 @@
+import math
 from datetime import datetime,timedelta
+from tokenize import Number
 from dateutil.relativedelta import relativedelta
 from distutils.command.config import config
 from django.contrib.auth.models import User
@@ -803,7 +805,10 @@ def agregar_proforma(request):
             while len(nro_imprimir) < 4:
                 nro_imprimir = '0' + nro_imprimir
             cot_codigo = str(cot_serie) + '-' + str(nro_imprimir)
-            cotizaciones(fecha_emision=fecha_nueva,cliente=cot_cliente,productos=cot_productos,servicios=cot_servicios,vendedor=cot_vendedor,pagoProforma=cot_pago,monedaProforma=cot_moneda,fechaProforma=cot_fecha,fechaVencProforma=cot_fechaVenc,tipoProforma=cot_tipo,codigoProforma=cot_codigo,tipoCambio=cot_cambio,estadoProforma=cot_estado,imprimirDescuento=cot_descuento,imprimirPU=cot_mostrarPU,imprimirVU=cot_mostrarVU,cantidadCuotas=cot_cantCuotas,observacionesCot=cot_observaciones,nroDocumento=cot_nro_documento,nroCotizacion=cot_nro,serieCotizacion=cot_serie).save()
+            id_last = cotizaciones.objects.latest('id').id
+            id_last = int(id_last)
+            id_nuevo = id_last + 1
+            cotizaciones(id=id_nuevo,fecha_emision=fecha_nueva,cliente=cot_cliente,productos=cot_productos,servicios=cot_servicios,vendedor=cot_vendedor,pagoProforma=cot_pago,monedaProforma=cot_moneda,fechaProforma=cot_fecha,fechaVencProforma=cot_fechaVenc,tipoProforma=cot_tipo,codigoProforma=cot_codigo,tipoCambio=cot_cambio,estadoProforma=cot_estado,imprimirDescuento=cot_descuento,imprimirPU=cot_mostrarPU,imprimirVU=cot_mostrarVU,cantidadCuotas=cot_cantCuotas,observacionesCot=cot_observaciones,nroDocumento=cot_nro_documento,nroCotizacion=cot_nro,serieCotizacion=cot_serie).save()
             time.sleep(0.5)
             return JsonResponse({'status': 'Todo added!'})
 
@@ -1100,7 +1105,7 @@ def editar_guia(request,ind):
             cot_traslado = data.get('traslado')
             cot_transporte = data.get('transporte')
             cot_vehiculo = data.get('datosVehiculo')
-            proforma_editar.fecha_emision = parse(fechaGuia)
+            proforma_editar.fecha_emision = parse(cot_fecha)
             proforma_editar.datosTraslado = cot_traslado
             proforma_editar.cliente = cot_cliente
             proforma_editar.productos = cot_productos
@@ -4156,7 +4161,10 @@ def gen_factura_cot(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     factura_codigo = str(factura_serie) + '-' + str(nro_imprimir)
-    facturas(fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=factura_productos,servicios=factura_servicios,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
+    id_last = facturas.objects.latest('id').id
+    id_last = int(id_last)
+    id_nuevo = id_last + 1
+    facturas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=factura_productos,servicios=factura_servicios,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
     time.sleep(0.5)
     return HttpResponseRedirect(reverse('sistema_2:fact'))
 
@@ -4203,7 +4211,10 @@ def gen_boleta_cot(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     boleta_codigo = str(boleta_serie) + '-' + str(nro_imprimir)
-    boletas(fecha_emision=fecha_nueva,nroDocumento=boleta_nroDocumento,codigosGuias=boleta_guias,serieBoleta=boleta_serie,nroBoleta=boleta_nro,imprimirDescuento=boleta_dscto,fechaVencBoleta=boleta_venc,cliente=boleta_cliente,productos=boleta_productos,servicios=boleta_servicios,vendedor=boleta_vendedor,pagoBoleta=boleta_pago,monedaBoleta=boleta_moneda,fechaBoleta=boleta_fecha,tipoBoleta=boleta_tipo,codigoBoleta=boleta_codigo,tipoCambio=boleta_cambio,estadoBoleta=boleta_estado).save()
+    id_last = boletas.objects.latest('id').id
+    id_last = int(id_last)
+    id_nuevo = id_last + 1
+    boletas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=boleta_nroDocumento,codigosGuias=boleta_guias,serieBoleta=boleta_serie,nroBoleta=boleta_nro,imprimirDescuento=boleta_dscto,fechaVencBoleta=boleta_venc,cliente=boleta_cliente,productos=boleta_productos,servicios=boleta_servicios,vendedor=boleta_vendedor,pagoBoleta=boleta_pago,monedaBoleta=boleta_moneda,fechaBoleta=boleta_fecha,tipoBoleta=boleta_tipo,codigoBoleta=boleta_codigo,tipoCambio=boleta_cambio,estadoBoleta=boleta_estado).save()
     time.sleep(0.5)
     return HttpResponseRedirect(reverse('sistema_2:bole'))
 
@@ -4632,7 +4643,10 @@ def gen_guia_cot(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     guia_codigo = str(guia_serie) + '-' + str(nro_imprimir)
-    guias(fecha_emision=fecha_nueva,observacionesGuia=guia_obs,nroDocumento=guia_nroDocumento,cantidadCuotas=guia_nro_cuotas,datosVehiculo=guia_vehiculo,serieGuia=guia_serie,nroGuia=guia_nro,datosTraslado=guia_traslado,datosTransportista=guia_transportista,fechaVencGuia=guia_fecha_venc,cliente=guia_cliente,productos=guia_productos,servicios=guia_servicios,vendedor=guia_vendedor,pagoGuia=guia_pago,monedaGuia=guia_moneda,fechaGuia=guia_fecha,tipoGuia=guia_tipo,codigoGuia=guia_codigo,tipoCambio=guia_cambio,estadoGuia=guia_estado).save()
+    id_last = guias.objects.latest('id').id
+    id_last = int(id_last)
+    id_nuevo = id_last + 1
+    guias(id=id_nuevo,fecha_emision=fecha_nueva,observacionesGuia=guia_obs,nroDocumento=guia_nroDocumento,cantidadCuotas=guia_nro_cuotas,datosVehiculo=guia_vehiculo,serieGuia=guia_serie,nroGuia=guia_nro,datosTraslado=guia_traslado,datosTransportista=guia_transportista,fechaVencGuia=guia_fecha_venc,cliente=guia_cliente,productos=guia_productos,servicios=guia_servicios,vendedor=guia_vendedor,pagoGuia=guia_pago,monedaGuia=guia_moneda,fechaGuia=guia_fecha,tipoGuia=guia_tipo,codigoGuia=guia_codigo,tipoCambio=guia_cambio,estadoGuia=guia_estado).save()
     cot_gen.estadoProforma = 'Emitida'
     cot_gen.save()
     return HttpResponseRedirect(reverse('sistema_2:gui'))
@@ -4688,7 +4702,10 @@ def gen_boleta_guia(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     boleta_codigo = str(boleta_serie) + '-' + str(nro_imprimir)
-    boletas(fecha_emision=fecha_nueva,nroDocumento=boleta_nroDocumento,codigosGuias=boleta_guias,serieBoleta=boleta_serie,nroBoleta=boleta_nro,imprimirDescuento=boleta_dscto,fechaVencBoleta=boleta_venc,cliente=boleta_cliente,productos=boleta_productos,servicios=boleta_servicios,vendedor=boleta_vendedor,pagoBoleta=boleta_pago,monedaBoleta=boleta_moneda,fechaBoleta=boleta_fecha,tipoBoleta=boleta_tipo,codigoBoleta=boleta_codigo,tipoCambio=boleta_cambio,estadoBoleta=boleta_estado).save()
+    id_last = boletas.objects.latest('id').id
+    id_last = int(id_last)
+    id_nuevo = id_last + 1
+    boletas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=boleta_nroDocumento,codigosGuias=boleta_guias,serieBoleta=boleta_serie,nroBoleta=boleta_nro,imprimirDescuento=boleta_dscto,fechaVencBoleta=boleta_venc,cliente=boleta_cliente,productos=boleta_productos,servicios=boleta_servicios,vendedor=boleta_vendedor,pagoBoleta=boleta_pago,monedaBoleta=boleta_moneda,fechaBoleta=boleta_fecha,tipoBoleta=boleta_tipo,codigoBoleta=boleta_codigo,tipoCambio=boleta_cambio,estadoBoleta=boleta_estado).save()
     time.sleep(0.5)
     return HttpResponseRedirect(reverse('sistema_2:bole'))
 
@@ -4745,7 +4762,10 @@ def gen_factura_guia(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     factura_codigo = str(factura_serie) + '-' + str(nro_imprimir)
-    facturas(fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=factura_productos,servicios=factura_servicios,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
+    id_last = facturas.objects.latest('id').id
+    id_last = int(id_last)
+    id_nuevo = id_last + 1
+    facturas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=factura_productos,servicios=factura_servicios,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
     time.sleep(0.5)
     return HttpResponseRedirect(reverse('sistema_2:fact'))
 
@@ -4821,7 +4841,10 @@ def crear_factura_guias(request):
                             ids_productos.append(str(producto[0]))
                             productos.append(producto)
                     guia_obtener.save()
-                facturas(fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=productos,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
+                id_last = facturas.objects.latest('id').id
+                id_last = int(id_last)
+                id_nuevo = id_last + 1
+                facturas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=productos,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
             else:
                 print('No se tiene al mismo cliente')
             return JsonResponse({'status': 'Todo added!'})
@@ -4893,7 +4916,10 @@ def crear_boleta_guias(request):
                             ids_productos.append(str(producto[0]))
                             productos.append(producto)
                     guia_obtener.save()
-                boletas(fecha_emision=fecha_nueva,cliente=boleta_cliente,productos=productos,vendedor=boleta_vendedor,pagoBoleta=boleta_pago,monedaBoleta=boleta_moneda,fechaBoleta=boleta_fecha,tipoBoleta=boleta_tipo,codigoBoleta=boleta_codigo,tipoCambio=boleta_cambio,estadoBoleta=boleta_estado,fechaVenBoleta=boleta_venc,imprimirDescuento=boleta_dscto,serieBoleta=boleta_serie,nroBoleta=boleta_nro,codigosGuias=boleta_guias,nroDocumento=boleta_nroDocumento).save()
+                id_last = boletas.objects.latest('id').id
+                id_last = int(id_last)
+                id_nuevo = id_last + 1
+                boletas(id=id_nuevo,fecha_emision=fecha_nueva,cliente=boleta_cliente,productos=productos,vendedor=boleta_vendedor,pagoBoleta=boleta_pago,monedaBoleta=boleta_moneda,fechaBoleta=boleta_fecha,tipoBoleta=boleta_tipo,codigoBoleta=boleta_codigo,tipoCambio=boleta_cambio,estadoBoleta=boleta_estado,fechaVenBoleta=boleta_venc,imprimirDescuento=boleta_dscto,serieBoleta=boleta_serie,nroBoleta=boleta_nro,codigosGuias=boleta_guias,nroDocumento=boleta_nroDocumento).save()
             else:
                 print('No se tiene al mismo cliente')
             return JsonResponse({'status': 'Todo added!'})
@@ -5513,75 +5539,117 @@ def actualizar_cuenta(request,ind):
 def importar_movimientos(request):
     if request.method == 'POST':
         archivo=request.FILES['archivoExcel']
-        cuentas_bancarias = regCuenta.objects.all()
-        nombre_excel = []
+        cuentas_bancarias = regCuenta.objects.all().order_by('id')
+        nombres_excel = []
         for cuenta in cuentas_bancarias:
-            datos_archivo = pd.read_excel(archivo,sheet_name=str(cuenta.id))
-            i = 0
-            cuenta_mod = regCuenta.objects.get(id=str((cuenta.id)))
-            cuenta_saldo = float(cuenta_mod.saldoCuenta)
-            while i < len(datos_archivo):
-                fechaOperacion = str(datos_archivo.loc[i,'FECHA'])
-                fechaOperacion = parse(fechaOperacion)
-                detalleOperacion = str(datos_archivo.loc[i,'DETALLE'])
-                montoOperacion = str(datos_archivo.loc[i,'MONTO'])
-                nroOperacion = str(datos_archivo.loc[i,'MOVIMIENTO'])
-                try:
-                    ultimo_movimiento = regOperacion.objects.latest('id')
-                    dat_id = ultimo_movimiento.id + 1
-                except:
-                    dat_id = 1
-                #Calcualo del saldo
-                cuenta_saldo = float(montoOperacion)
-                monedaOperacion = cuenta_mod.monedaCuenta
-                i = i + 1
-                regOperacion(id=dat_id,idCuentaBank=str(cuenta_mod.id),monedaOperacion=monedaOperacion,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion).save()
-            cuenta_mod.saldoCuenta = str(round(cuenta_saldo,2))
-            cuenta_mod.save()
-        print(datos_archivo)
-
-        """
-        while i < len(datos_archivo):
-            fechaOperacion = str(datos_archivo.loc[i,'FECHA'])
-            fechaOperacion = parse(fechaOperacion)
-            detalleOperacion = str(datos_archivo.loc[i,'DETALLE'])
-            montoOperacion = str(datos_archivo.loc[i,'MONTO'])
-            saldoOperacion = str(datos_archivo.loc[i,'SALDO'])
-            try:
-                ultimo_movimiento = regOperacion.objects.latest('id')
-                dat_id = ultimo_movimiento.id + 1
-            except:
-                dat_id = 1
-            regOperacion(id=dat_id,idCuentaBank=idCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,montoOperacion=montoOperacion,saldoOperacion=saldoOperacion).save()
-            i = i+1
-            mensaje = 'No es un archivo de excel'
-            identificador = 0
-        """
+            nombres_excel.append(cuenta.bancoCuenta + ' ' + cuenta.monedaCuenta)
+        #print(nombres_excel)
+        for nombre in nombres_excel:
+            datos_archivo = pd.read_excel(archivo,sheet_name=nombre)
+            nombre = nombre.split()
+            if nombre[0] == 'BCP':
+                bancoCuenta = regCuenta.objects.filter(bancoCuenta=nombre[0]).filter(monedaCuenta=nombre[1]).first()
+                if bancoCuenta is not None:
+                    i = 1
+                    saldo_inicial = round(float(bancoCuenta.saldoCuenta),2)
+                    while i < int(datos_archivo.shape[0]):
+                        saldoOperacion = str(datos_archivo.loc[i,datos_archivo.columns[4]])
+                        lugarOperacion = str(datos_archivo.loc[i,datos_archivo.columns[5]])
+                        horaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[7]])
+                        utcOperacion = str(datos_archivo.loc[i,datos_archivo.columns[9]])
+                        usuarioOperacion = str(datos_archivo.loc[i,datos_archivo.columns[8]])
+                        fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
+                        fechaOperacion = parse(fechaOperacion)
+                        detalleOperacion = str(datos_archivo.loc[i,datos_archivo.columns[2]])
+                        nroOperacion = str(datos_archivo.loc[i,datos_archivo.columns[6]])
+                        monto = str(datos_archivo.loc[i,datos_archivo.columns[3]])
+                        monto = float(monto)
+                        if monto < 0:
+                            tipoOperacion = 'EGRESO'
+                        else:
+                            tipoOperacion = 'INGRESO'
+                        saldo_inicial = saldo_inicial + monto
+                        montoOperacion = str(monto)
+                        try:
+                            ultimo_movimiento = regOperacion.objects.latest('id')
+                            dat_id = ultimo_movimiento.id + 1
+                        except:
+                            dat_id = 1
+                        regOperacion(horaOperacion=horaOperacion,usuarioOperacion=usuarioOperacion,utcOperacion=utcOperacion,lugarOperacion=lugarOperacion,saldoOperacion=saldoOperacion,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
+                        i = i + 1
+                    bancoCuenta.saldoCuenta = str(round(saldo_inicial,2))
+                    bancoCuenta.save()
+            if nombre[0] == 'BBVA':
+                bancoCuenta = regCuenta.objects.filter(bancoCuenta=nombre[0]).filter(monedaCuenta=nombre[1]).first()
+                if bancoCuenta is not None:
+                    i = 1
+                    saldo_inicial = round(float(bancoCuenta.saldoCuenta),2)
+                    while i < int(datos_archivo.shape[0]):
+                        fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
+                        fechaOperacion = parse(fechaOperacion)
+                        fechaValuta = str(datos_archivo.loc[i,datos_archivo.columns[1]])
+                        fechaValuta = parse(fechaValuta)
+                        detalleOperacion = str(datos_archivo.loc[i,datos_archivo.columns[2]])
+                        nroOperacion = str(datos_archivo.loc[i,datos_archivo.columns[5]])
+                        monto1 = float(datos_archivo.loc[i,datos_archivo.columns[3]])
+                        monto2 = float(datos_archivo.loc[i,datos_archivo.columns[4]])
+                        montoOperacion = round(monto1 + monto2,2)
+                        if montoOperacion < 0:
+                            tipoOperacion = 'EGRESO'
+                        else:
+                            tipoOperacion = 'INGRESO'
+                        saldo_inicial = saldo_inicial + montoOperacion
+                        montoOperacion = str(round(monto1,2))
+                        itfOperacion = str(round(monto2,2))
+                        try:
+                            ultimo_movimiento = regOperacion.objects.latest('id')
+                            dat_id = ultimo_movimiento.id + 1
+                        except:
+                            dat_id = 1
+                        regOperacion(itfOperacion=itfOperacion,fechaValuta=fechaValuta,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
+                        i = i + 1
+                    bancoCuenta.saldoCuenta = str(round(saldo_inicial,2))
+                    bancoCuenta.save()
+            if nombre[0] == 'SCOTIA':
+                bancoCuenta = regCuenta.objects.filter(bancoCuenta=nombre[0]).filter(monedaCuenta=nombre[1]).first()
+                if bancoCuenta is not None:
+                    i = 1
+                    saldo_inicial = round(float(bancoCuenta.saldoCuenta),2)
+                    while i < int(datos_archivo.shape[0]):
+                        fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
+                        fechaOperacion = parse(fechaOperacion)
+                        detalleOperacion = str(datos_archivo.loc[i,datos_archivo.columns[1]])
+                        nroOperacion = str(datos_archivo.loc[i,datos_archivo.columns[2]])
+                        monto1 = datos_archivo.loc[i,datos_archivo.columns[3]]
+                        if math.isnan(monto1):
+                            monto1 = 0
+                        else:
+                            monto1 = (-1)*float(monto1)
+                        monto2 = datos_archivo.loc[i,datos_archivo.columns[4]]
+                        if math.isnan(monto2):
+                            monto2 = 0
+                        else:
+                            monto2 = float(monto2)
+                        montoOperacion = round(monto1 + monto2,2)
+                        cargoOperacion = str(round(monto1,2))
+                        if montoOperacion < 0:
+                            tipoOperacion = 'EGRESO'
+                        else:
+                            tipoOperacion = 'INGRESO'
+                        try:
+                            ultimo_movimiento = regOperacion.objects.latest('id')
+                            dat_id = ultimo_movimiento.id + 1
+                        except:
+                            dat_id = 1
+                        
+                        #Actualizar Saldo:
+                        saldo_inicial = saldo_inicial + montoOperacion
+                        montoOperacion = str(round(monto2,2))
+                        regOperacion(cargoOperacion=cargoOperacion,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
+                        i = i + 1
+                    bancoCuenta.saldoCuenta = str(round(saldo_inicial,2))
+                    bancoCuenta.save()    
         return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
-
-    """
-    identificador = 0
-        try:
-            datos_archivo = pd.read_excel(archivo)
-            datos_archivo = datos_archivo.replace(np.nan,'',regex=True)
-            identificador = 1
-        except:
-            identificador = 0
-        if identificador == 1:
-            mensaje = 'Es un archivo de excel'
-            identificador = 0
-            if len(datos_archivo.columns) == len(columnas_movimientos):
-                mensaje = 'Archivo y columnas correctas'
-                identificador = 0
-                for columna in datos_archivo.columns:
-                    if not (columna in columnas_movimientos):
-                        identificador = 1
-                if identificador == 1:
-                    mensaje = 'Las columnas del archivo no son las apropiadas'
-                else: 
-                    mensaje = 'Las columnas del archivo cumplen con los requerimientos'
-                    i = 0
-    """
 
 def eliminar_cuenta(request,ind):
     regCuenta.objects.get(id=ind).delete()
@@ -5594,11 +5662,199 @@ def ver_movimientos(request,ind):
     monedaBanco = cuenta_info.monedaCuenta
     saldoBanco = cuenta_info.saldoCuenta
     cuenta_info.save()
+
+    if 'Filtrar' in request.POST:
+        print('Se esta filtrando la info')
+        fecha_inicial = str(request.POST.get('fecha_inicio'))
+        fecha_final = str(request.POST.get('fecha_fin'))
+        if fecha_inicial != '' and fecha_final != '':
+            movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
+            return render(request,'sistema_2/mov_bancarios.html',{
+                'operacionBanco':movimientos_filtrados.order_by('id'),
+                'fecha_inicial':fecha_inicial,
+                'fecha_final':fecha_final,
+                'nombreBanco': nombreBanco,
+                'monedaBanco': monedaBanco,
+                'saldoBanco':saldoBanco,
+                'identificador':ind,
+            })
+    elif 'Exportar' in request.POST:
+        print('Se solicita el excel')
+        fecha_inicial = str(request.POST.get('fecha_inicio'))
+        fecha_final = str(request.POST.get('fecha_fin'))
+        datos_banco = regCuenta.objects.get(id=ind)
+        nombre_excel = datos_banco.bancoCuenta + ' ' + datos_banco.monedaCuenta
+        if datos_banco.bancoCuenta == 'BCP':
+            if fecha_inicial != '' and fecha_final != '':
+                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
+                info_movimientos=[]
+                for movi_info in movimientos_filtrados:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.saldoOperacion,movi_info.lugarOperacion,movi_info.nroOperacion,movi_info.horaOperacion,movi_info.usuarioOperacion,movi_info.utcOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['Fecha','Fecha valuta','Descripcion operacion','Monto','Saldo','Sucursal-Agencia','Operacion numero','Operacion hora','Usuario','UTC','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
+                info_movimientos=[]
+                for movi_info in mov_exportar:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.saldoOperacion,movi_info.lugarOperacion,movi_info.nroOperacion,movi_info.horaOperacion,movi_info.usuarioOperacion,movi_info.utcOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['Fecha','Fecha valuta','Descripcion operacion','Monto','Saldo','Sucursal-Agencia','Operacion numero','Operacion hora','Usuario','UTC','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+        if datos_banco.bancoCuenta == 'BBVA':
+            if fecha_inicial != '' and fecha_final != '':
+                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
+                info_movimientos=[]
+                for movi_info in movimientos_filtrados:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
+                info_movimientos=[]
+                for movi_info in mov_exportar:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+        if datos_banco.bancoCuenta == 'SCOTIA':
+            if fecha_inicial != '' and fecha_final != '':
+                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
+                info_movimientos=[]
+                for movi_info in movimientos_filtrados:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
+                info_movimientos=[]
+                for movi_info in mov_exportar:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
     return render(request,'sistema_2/mov_bancarios.html',{
         'operacionBanco':registros_mov,
         'nombreBanco': nombreBanco,
         'monedaBanco': monedaBanco,
         'saldoBanco':saldoBanco,
+        'identificador':ind,
     })
 
 def update_mov(request,ind):
@@ -5622,6 +5878,7 @@ def actualizar_mov(request,ind):
         info_factura = request.POST.get('infoFactura')
         info_guia = request.POST.get('infoGuia')
         info_vendedor = request.POST.get('infoVendedor')
+        info_cotizacion = request.POST.get('infoCotizacion')
         clienteReg = clients.objects.get(id=info_cliente)
         arreglo_cliente = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
         clienteReg.save()
@@ -5632,11 +5889,12 @@ def actualizar_mov(request,ind):
         vendedorReg.save()
         mov_actualizar.clienteOperacion = arreglo_cliente
         mov_actualizar.comprobanteOperacion = [info_factura]
+        mov_actualizar.cotizacionOperacion = [info_cotizacion]
         mov_actualizar.guiaOperacion = arreglo_guias
         mov_actualizar.vendedorOperacion = arreglo_vendedor
 
         print(mov_actualizar.comprobanteOperacion[0] == None)
-        if mov_actualizar.comprobanteOperacion[0] == None or mov_actualizar.comprobanteOperacion[0] == 'SinSeleccion':
+        if (mov_actualizar.comprobanteOperacion[0] == None or mov_actualizar.comprobanteOperacion[0] == 'SinSeleccion') and (mov_actualizar.cotizacionOperacion[0] == None or mov_actualizar.cotizacionOperacion[0] == 'SinSeleccion'):
             mov_actualizar.estadoOperacion = 'INCOMPLETA'
         else:
             mov_actualizar.estadoOperacion = 'COMPLETA'
@@ -5644,7 +5902,7 @@ def actualizar_mov(request,ind):
         return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
     
 
-def obtener_facturas_cliente(request,ind):
+def obtener_facturas_cotizaciones_cliente(request,ind):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax:
         if request.method == 'GET':
@@ -5652,8 +5910,10 @@ def obtener_facturas_cliente(request,ind):
             cliente_info = clients.objects.get(id=ind)
             facturas_info = facturas.objects.all()
             boletas_info = boletas.objects.all()
+            cotis_info = cotizaciones.objects.all()
             facturas_seleccionadas = list()
             boletas_seleccionadas = list()
+            cotis_seleccionadas = list()
             tipoCliente = ''
             if cliente_info.nombre == '':
                 tipoCliente = 'Empresa'
@@ -5662,6 +5922,11 @@ def obtener_facturas_cliente(request,ind):
                         arreglo_info = []
                         arreglo_info.append(facturaSeleccionada.codigoFactura)
                         facturas_seleccionadas.append(arreglo_info)
+                for cotiSeleccionada in cotis_info:
+                    if cotiSeleccionada.cliente[5] == cliente_info.ruc:
+                        arreglo_info = []
+                        arreglo_info.append(cotiSeleccionada.codigoProforma)
+                        cotis_seleccionadas.append(arreglo_info)
             else:
                 tipoCliente = 'Persona'
                 for boletaSeleccionada in boletas_info:
@@ -5669,10 +5934,16 @@ def obtener_facturas_cliente(request,ind):
                         arreglo_info = []
                         arreglo_info.append(boletaSeleccionada.codigoBoleta)
                         boletas_seleccionadas.append(arreglo_info)
+                for cotiSeleccionada in cotis_info:
+                    if cotiSeleccionada.cliente[5] == cliente_info.ruc:
+                        arreglo_info = []
+                        arreglo_info.append(cotiSeleccionada.codigoProforma)
+                        cotis_seleccionadas.append(arreglo_info)
             return JsonResponse(
                 {
                     'facturas': facturas_seleccionadas,
                     'boletas':boletas_seleccionadas,
+                    'cotizaciones':cotis_seleccionadas,
                     'tipoCliente':tipoCliente,
                 })
         return JsonResponse({'status': 'Invalid request'}, status=400)
@@ -5698,3 +5969,172 @@ def obtener_guias_factura(request,ind):
         return JsonResponse({'status': 'Invalid request'}, status=400)
     else:
         return HttpResponseBadRequest('Invalid request')
+
+def exportar_todo(request):
+    excel_total = pd.ExcelWriter('info_excel.xlsx',engine='openpyxl')
+    total_cuentas = regCuenta.objects.all().order_by('id')
+    for cuenta in total_cuentas:
+        nombre_banco = cuenta.bancoCuenta
+        nombre_pagina = cuenta.bancoCuenta + ' ' + cuenta.monedaCuenta
+        if nombre_banco == 'BCP':
+            mov_exportar = regOperacion.objects.filter(idCuentaBank=cuenta.id).order_by('id')
+            info_movimientos=[]
+            for movi_info in mov_exportar:
+                if(len(movi_info.cotizacionOperacion)>0):
+                    coti_info = movi_info.cotizacionOperacion[0]
+                else:
+                    coti_info = ''
+                if(len(movi_info.guiaOperacion)>0):
+                    guia_info = movi_info.guiaOperacion
+                else:
+                    guia_info = ''
+                if(len(movi_info.comprobanteOperacion)>0):
+                    comprobante_info = movi_info.comprobanteOperacion[0]
+                else:
+                    comprobante_info = ''
+                if(len(movi_info.vendedorOperacion)>0):
+                    vendedor_info = movi_info.vendedorOperacion[2]
+                else:
+                    vendedor_info = ''
+                info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.saldoOperacion,movi_info.lugarOperacion,movi_info.nroOperacion,movi_info.horaOperacion,movi_info.usuarioOperacion,movi_info.utcOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+            tabla_excel = pd.DataFrame(info_movimientos,columns=['Fecha','Fecha valuta','Descripcion operacion','Monto','Saldo','Sucursal-Agencia','Operacion numero','Operacion hora','Usuario','UTC','Cotizacion','Guia','F/B','Vendedor'])
+            tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+        if nombre_banco == 'BBVA':
+            mov_exportar = regOperacion.objects.filter(idCuentaBank=cuenta.id).order_by('id')
+            info_movimientos=[]
+            for movi_info in mov_exportar:
+                if(len(movi_info.cotizacionOperacion)>0):
+                    coti_info = movi_info.cotizacionOperacion[0]
+                else:
+                    coti_info = ''
+                if(len(movi_info.guiaOperacion)>0):
+                    guia_info = movi_info.guiaOperacion
+                else:
+                    guia_info = ''
+                if(len(movi_info.comprobanteOperacion)>0):
+                    comprobante_info = movi_info.comprobanteOperacion[0]
+                else:
+                    comprobante_info = ''
+                if(len(movi_info.vendedorOperacion)>0):
+                    vendedor_info = movi_info.vendedorOperacion[2]
+                else:
+                    vendedor_info = ''
+                info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+            tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cotizacion','Guia','F/B','Vendedor'])
+            tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+        if nombre_banco == 'SCOTIA':
+            mov_exportar = regOperacion.objects.filter(idCuentaBank=cuenta.id).order_by('id')
+            info_movimientos=[]
+            for movi_info in mov_exportar:
+                if(len(movi_info.cotizacionOperacion)>0):
+                    coti_info = movi_info.cotizacionOperacion[0]
+                else:
+                    coti_info = ''
+                if(len(movi_info.guiaOperacion)>0):
+                    guia_info = movi_info.guiaOperacion
+                else:
+                    guia_info = ''
+                if(len(movi_info.comprobanteOperacion)>0):
+                    comprobante_info = movi_info.comprobanteOperacion[0]
+                else:
+                    comprobante_info = ''
+                if(len(movi_info.vendedorOperacion)>0):
+                    vendedor_info = movi_info.vendedorOperacion[2]
+                else:
+                    vendedor_info = ''
+                info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+            tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cotizacion','Guia','F/B','Vendedor'])
+            tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+    excel_total.save()
+    response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+    response['Content-Disposition'] = nombre
+    return response
+
+def descargar_filtrado(request):
+    if request.method == 'POST':
+        month_filter = str(request.POST.get('monthInfo'))
+        while len(month_filter) < 2:
+            month_filter = '0' + month_filter
+        year_filter = str(request.POST.get('yearInfo'))
+        print(month_filter)
+        print(year_filter)
+        excel_total = pd.ExcelWriter('info_excel.xlsx',engine='openpyxl')
+        total_cuentas = regCuenta.objects.all().order_by('id')
+        for cuenta in total_cuentas:
+            nombre_banco = cuenta.bancoCuenta
+            nombre_pagina = cuenta.bancoCuenta + ' ' + cuenta.monedaCuenta
+            if nombre_banco == 'BCP':
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=cuenta.id,fechaOperacion__month=month_filter,fechaOperacion__year=year_filter).order_by('id')
+                info_movimientos=[]
+                for movi_info in mov_exportar:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.saldoOperacion,movi_info.lugarOperacion,movi_info.nroOperacion,movi_info.horaOperacion,movi_info.usuarioOperacion,movi_info.utcOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['Fecha','Fecha valuta','Descripcion operacion','Monto','Saldo','Sucursal-Agencia','Operacion numero','Operacion hora','Usuario','UTC','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+            if nombre_banco == 'BBVA':
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=cuenta.id,fechaOperacion__month=month_filter,fechaOperacion__year=year_filter).order_by('id')
+                info_movimientos=[]
+                for movi_info in mov_exportar:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+            if nombre_banco == 'SCOTIA':
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=cuenta.id,fechaOperacion__month=month_filter,fechaOperacion__year=year_filter).order_by('id')
+                info_movimientos=[]
+                for movi_info in mov_exportar:
+                    if(len(movi_info.cotizacionOperacion)>0):
+                        coti_info = movi_info.cotizacionOperacion[0]
+                    else:
+                        coti_info = ''
+                    if(len(movi_info.guiaOperacion)>0):
+                        guia_info = movi_info.guiaOperacion
+                    else:
+                        guia_info = ''
+                    if(len(movi_info.comprobanteOperacion)>0):
+                        comprobante_info = movi_info.comprobanteOperacion[0]
+                    else:
+                        comprobante_info = ''
+                    if(len(movi_info.vendedorOperacion)>0):
+                        vendedor_info = movi_info.vendedorOperacion[2]
+                    else:
+                        vendedor_info = ''
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cotizacion','Guia','F/B','Vendedor'])
+                tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+        excel_total.save()
+        response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+        response['Content-Disposition'] = nombre
+        return response
