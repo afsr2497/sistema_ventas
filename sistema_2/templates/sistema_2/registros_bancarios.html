@@ -73,48 +73,59 @@
     <h1>Registros bancarios</h1>
     <br>
     <div>
-        <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoReg">Registrar Cuenta Bancaria <i class="fas fa-plus"></i></a>
+        
     </div>
     <br>
-    <div>
-        <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#cargarMov">Importar Movimientos Bancarios<i class="fas fa-file-import"></i></a>
-        <a class="btn btn-success float-end" style="color: white;" href="{% url 'sistema_2:exportar_todo' %}">Exportar Movimientos Bancarios<i class="fas fa-file-export"></i></a>
-    </div>
-    <br>
-    <h5>Filtrar informacion :</h5>
-    <br>
-    <form method="post" action="{% url 'sistema_2:descargar_filtrado' %}" class="row">
-    {% csrf_token %}
+    <div class="row">
         <div class="col-md-2">
-            <label>Mes :</label>
-            <select class="selectpicker form-control" name="monthInfo">
-                <option value="1" selected>Enero</option>
-                <option value="2">Febrero</option>
-                <option value="3">Marzo</option>
-                <option value="4">Abril</option>
-                <option value="5">Mayo</option>
-                <option value="6">Junio</option>
-                <option value="7">Julio</option>
-                <option value="8">Agosto</option>
-                <option value="9">Setiembre</option>
-                <option value="10">Octubre</option>
-                <option value="11">Noviembre</option>
-                <option value="12">Diciembre</option>
-            </select>
+            <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoReg">Registrar Cuenta <i class="fas fa-plus"></i></a>
+            <br>
+            <br>
+            <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#cargarMov">Importar Bancos<i class="fas fa-file-import"></i></a>
         </div>
-        <div class="col-md-2">
-            <label>Año :</label>
-            <select class="selectpicker form-control" name="yearInfo">
-                <option value="2022" selected>2022</option>
-                <option value="2023">2023</option>
-                <option value="2024">2024</option>
-            </select> 
+        <div class="col-md-8">
+            <form method="post" action="{% url 'sistema_2:descargar_filtrado' %}" class="row">
+            {% csrf_token %}
+                <div class="row">
+                    <h5>Filtrar informacion :</h5>
+                </div>
+                <div class="col-md-3">
+                    <label>Mes :</label>
+                    <select class="selectpicker form-control" name="monthInfo">
+                        <option value="1" selected>Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>Año :</label>
+                    <select class="selectpicker form-control" name="yearInfo">
+                        <option value="2022" selected>2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select> 
+                </div>
+                <div class="col-md-2">
+                    <br>
+                    <button type="submit" class="btn btn-success">Exportar</button>
+                </div>
+            </form>
         </div>
         <div class="col-md-2">
             <br>
-            <button type="submit" class="btn btn-success">Exportar</button>
+            <br>
+            <a class="btn btn-success float-end" style="color: white;" href="{% url 'sistema_2:exportar_todo' %}">Exportar Bancos<i class="fas fa-file-export"></i></a>
         </div>
-    </form>
+    </div>
     <br>
     <div style="height: 1000px; overflow: scroll;">
         <table class="table table-bordered table-hover">

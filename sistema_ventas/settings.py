@@ -88,8 +88,8 @@ DATABASES = {
         #'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 """
+
 #Base de datos de produccion
 DATABASES = {
     'default': {
