@@ -6137,3 +6137,6 @@ def descargar_filtrado(request):
         nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
         response['Content-Disposition'] = nombre
         return response
+
+def comisiones(request):
+    return render(request,'sistema_2/comisiones.html')

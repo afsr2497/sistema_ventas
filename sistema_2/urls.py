@@ -95,5 +95,6 @@ urlpatterns = [
     path('obtener_facturas_cotizaciones_cliente/<str:ind>',views.obtener_facturas_cotizaciones_cliente,name='obtener_facturas_cliente'),
     path('obtener_guias_factura/<str:ind>',views.obtener_guias_factura,name='obtener_guias_factura'),
     path('exportar_todo',views.exportar_todo,name='exportar_todo'),
-    path('descargar_filtrado',views.descargar_filtrado,name='descargar_filtrado')
+    path('descargar_filtrado',views.descargar_filtrado,name='descargar_filtrado'),
+    path('comisiones',views.comisiones,name='comsiones')
 ]
