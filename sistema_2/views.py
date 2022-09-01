@@ -6139,4 +6139,20 @@ def descargar_filtrado(request):
         return response
 
 def comisiones(request):
-    return render(request,'sistema_2/comisiones.html')
+    registros_vendedor = []
+    if request.method == 'POST':
+        id_vendedor = request.POST.get('id_vendedor')
+        vendedor_info = userProfile.objects.get(id=id_vendedor)
+        registros_totales = regOperacion.objects.all()
+        for registro in registros_totales:
+            if len(registro.vendedorOperacion) > 0:
+                if registro.vendedorOperacion[0] == str(id_vendedor):
+                    registros_vendedor.append(registro)
+        return render(request,'sistema_2/comisiones.html',{
+            'usuariosInfo':userProfile.objects.all().order_by('id'),
+            'operacionesVendedor':registros_vendedor,
+        })
+    return render(request,'sistema_2/comisiones.html',{
+        'usuariosInfo':userProfile.objects.all().order_by('id'),
+        'operacionesVendedor':registros_vendedor,
+    })

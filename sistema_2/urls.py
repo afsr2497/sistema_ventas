@@ -96,5 +96,5 @@ urlpatterns = [
     path('obtener_guias_factura/<str:ind>',views.obtener_guias_factura,name='obtener_guias_factura'),
     path('exportar_todo',views.exportar_todo,name='exportar_todo'),
     path('descargar_filtrado',views.descargar_filtrado,name='descargar_filtrado'),
-    path('comisiones',views.comisiones,name='comsiones')
+    path('comisiones',views.comisiones,name='comisiones')
 ]
