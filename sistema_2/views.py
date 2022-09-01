@@ -6141,17 +6141,34 @@ def descargar_filtrado(request):
 def comisiones(request):
     registros_vendedor = []
     if request.method == 'POST':
-        id_vendedor = request.POST.get('id_vendedor')
-        vendedor_info = userProfile.objects.get(id=id_vendedor)
-        registros_totales = regOperacion.objects.all()
-        for registro in registros_totales:
-            if len(registro.vendedorOperacion) > 0:
-                if registro.vendedorOperacion[0] == str(id_vendedor):
-                    registros_vendedor.append(registro)
-        return render(request,'sistema_2/comisiones.html',{
-            'usuariosInfo':userProfile.objects.all().order_by('id'),
-            'operacionesVendedor':registros_vendedor,
-        })
+        if 'Filtrar' in request.POST:
+            id_vendedor = request.POST.get('id_vendedor')
+            fecha_inicio = request.POST.get('fecha_inicio')
+            fecha_fin = request.POST.get('fecha_fin')
+            registros_totales = regOperacion.objects.all()
+            if fecha_inicio != '' and fecha_fin != '':
+                registros_totales = registros_totales.filter(fecha_operacion__range = [fecha_inicio,fecha_fin])
+            for registro in registros_totales:
+                if len(registro.vendedorOperacion) > 0:
+                    if registro.vendedorOperacion[0] == str(id_vendedor):
+                        registros_vendedor.append(registro)
+            return render(request,'sistema_2/comisiones.html',{
+                'usuariosInfo':userProfile.objects.all().order_by('id'),
+                'operacionesVendedor':registros_vendedor,
+            })
+        elif 'Exportar' in request.POST:
+            id_vendedor = request.POST.get('id_vendedor')
+            fecha_inicio = request.POST.get('fecha_inicio')
+            fecha_fin = request.POST.get('fecha_fin')
+            registros_totales = regOperacion.objects.all()
+            if fecha_inicio != '' and fecha_fin != '':
+                registros_totales = registros_totales.filter(fecha_operacion__range = [fecha_inicio,fecha_fin])
+            for registro in registros_totales:
+                if len(registro.vendedorOperacion) > 0:
+                    if registro.vendedorOperacion[0] == str(id_vendedor):
+                        registros_vendedor.append(registro)
+            #Metodo a efectuar con el arreglo registro vendedor y exportar sus registros en excel
+            #Fin del metodo de exportacion
     return render(request,'sistema_2/comisiones.html',{
         'usuariosInfo':userProfile.objects.all().order_by('id'),
         'operacionesVendedor':registros_vendedor,
