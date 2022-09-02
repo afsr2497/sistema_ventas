@@ -20,16 +20,22 @@
 
 {% block content%}
 <div class="container">
-    <h1>Comisiones</h1>
+    <h1 style="font-size: 30px;">Comisiones</h1>
     <!--Filtros de busqueda-->
+    <br>
     <div>
-        <form class="row" method="post" action="{% url 'sistema_2:comisiones' %}">
+        <form class="row" method="post" action="{% url 'sistema_2:comisiones' %}" style="font-size: 15px;">
         {% csrf_token %}
             <div class="col-md-2">
-                <select class="selectpicker form-control" name="id_vendedor">
-                    <option value="0" selected>Seleccionar</option>
+                <label>Seleccionar usuario</label>
+                <select class="selectpicker form-control" name="id_vendedor" style="font-size: 12px;">
+                    <option value="0" style="font-size: 12px;">Seleccionar</option>
                 {% for usuario in usuariosInfo %}
-                    <option value="{{ usuario.id }}">{{ usuario.codigo }}</option>
+                    {% if usuario.codigo == id_vendedor %}
+                        <option value="{{ usuario.id }}" selected style="font-size: 12px;">{{ usuario.codigo }}</option>
+                    {% else %}
+                        <option value="{{ usuario.id }}" style="font-size: 12px;">{{ usuario.codigo }}</option>
+                    {% endif %}
                 {% endfor %}
                 </select>
             </div>
@@ -38,11 +44,11 @@
             <div class="row">
                 <div class="col-md-2">
                     <label>Fecha de inicio</label>
-                    <input type="date" class="form-control" name="fecha_inicio">
+                    <input type="date" class="form-control" name="fecha_inicio" value="{{ fechaInicio }}">
                 </div>
                 <div class="col-md-2">
                     <label>Fecha de fin</label>
-                    <input type="date" class="form-control" name="fecha_fin">
+                    <input type="date" class="form-control" name="fecha_fin" value="{{ fechaFin }}">
                 </div>
                 <div class="col-md-1">
                     <br>
@@ -60,7 +66,7 @@
     <br>
     <br>
     <!--Tabla de resultados-->
-    <table class="table table-bordered table-hover" id="proformasTable">
+    <table class="table table-bordered table-hover" id="proformasTable" style="font-size: 12px;">
         <thead class="table-dark">
             <tr>
                 <th scope="col">ID</th>
@@ -85,8 +91,8 @@
         </tbody>
     </table>
     <!--Resumen de los resultados-->
-    <div>
-
+    <div style="font-size: 12px;">
+        <p>El monto total en soles registrados por este vendedor es {{ monto_total }}</p>
     </div>
 </div>
 {% endblock %}

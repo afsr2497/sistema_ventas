@@ -1,3 +1,4 @@
+from distutils.log import info
 import math
 from datetime import datetime,timedelta
 from tokenize import Number
@@ -6140,21 +6141,37 @@ def descargar_filtrado(request):
 
 def comisiones(request):
     registros_vendedor = []
+    fecha_inicio = ''
+    fecha_fin = ''
+    codigoVendedor = ''
+    monto_total = 0
     if request.method == 'POST':
         if 'Filtrar' in request.POST:
             id_vendedor = request.POST.get('id_vendedor')
+            codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
             fecha_inicio = request.POST.get('fecha_inicio')
             fecha_fin = request.POST.get('fecha_fin')
             registros_totales = regOperacion.objects.all()
             if fecha_inicio != '' and fecha_fin != '':
-                registros_totales = registros_totales.filter(fecha_operacion__range = [fecha_inicio,fecha_fin])
+                registros_totales = registros_totales.filter(fechaOperacion__range = [fecha_inicio,fecha_fin])
             for registro in registros_totales:
                 if len(registro.vendedorOperacion) > 0:
                     if registro.vendedorOperacion[0] == str(id_vendedor):
                         registros_vendedor.append(registro)
+            for registro in registros_vendedor:
+                if registro.monedaOperacion == 'DOLARES':
+                    dato_sumar = float(registro.montoOperacion)*(3.85)
+                if registro.monedaOperacion == 'SOLES':
+                    dato_sumar = float(registro.montoOperacion)
+                monto_total = monto_total + dato_sumar
+            monto_total = "{:.2f}".format(round(float(monto_total),2))
             return render(request,'sistema_2/comisiones.html',{
                 'usuariosInfo':userProfile.objects.all().order_by('id'),
                 'operacionesVendedor':registros_vendedor,
+                'fechaInicio':fecha_inicio,
+                'fechaFin':fecha_fin,
+                'id_vendedor':codigoVendedor,
+                'monto_total':str(monto_total),
             })
         elif 'Exportar' in request.POST:
             id_vendedor = request.POST.get('id_vendedor')
@@ -6162,14 +6179,35 @@ def comisiones(request):
             fecha_fin = request.POST.get('fecha_fin')
             registros_totales = regOperacion.objects.all()
             if fecha_inicio != '' and fecha_fin != '':
-                registros_totales = registros_totales.filter(fecha_operacion__range = [fecha_inicio,fecha_fin])
+                registros_totales = registros_totales.filter(fechaOperacion__range = [fecha_inicio,fecha_fin])
             for registro in registros_totales:
                 if len(registro.vendedorOperacion) > 0:
                     if registro.vendedorOperacion[0] == str(id_vendedor):
                         registros_vendedor.append(registro)
+            for registro in registros_vendedor:
+                if registro.monedaOperacion == 'DOLARES':
+                    dato_sumar = float(registro.montoOperacion)*(3.85)
+                if registro.monedaOperacion == 'SOLES':
+                    dato_sumar = float(registro.montoOperacion)
+                monto_total = monto_total + dato_sumar
+            monto_total = "{:.2f}".format(round(float(monto_total),2))
             #Metodo a efectuar con el arreglo registro vendedor y exportar sus registros en excel
+            info_registro = []
+            for registro in registros_vendedor:
+                info_registro.append([registro.fechaOperacion.strftime('%d/%m/%Y'),registro.detalleOperacion,registro.monedaOperacion,registro.montoOperacion,registro.nroOperacion,registro.vendedorOperacion[2]])            
+            info_registro.append(['','','Monto total',str(monto_total)])
+            tabla_excel = pd.DataFrame(info_registro,columns=['Fecha','Descricion','Moneda','Monto','Nro de operacion','Codigo del vendedor'])
+            tabla_excel.to_excel('info_excel.xlsx',index=False)
+            response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+            response['Content-Disposition'] = nombre
+            return response
             #Fin del metodo de exportacion
     return render(request,'sistema_2/comisiones.html',{
         'usuariosInfo':userProfile.objects.all().order_by('id'),
         'operacionesVendedor':registros_vendedor,
+        'fechaInicio':fecha_inicio,
+        'fechaFin':fecha_fin,
+        'id_vendedor':codigoVendedor,
+        'monto_total':str(monto_total),
     })
