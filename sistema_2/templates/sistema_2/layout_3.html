@@ -32,11 +32,18 @@
                     <a class="nav-item nav-link" href="{% url 'sistema_2:productos' %}">Productos</a>
                     <a class="nav-item nav-link" href="{% url 'sistema_2:ingresos' %}">Ingresos</a>
                     <a class="nav-item nav-link" href="{% url 'sistema_2:configurar_documentos' %}">Configuracion</a>
-                    <a class="nav-item nav-link" href="{% url 'sistema_2:registros_bancarios' %}">Registros bancarios</a>
-                    <a class="nav-item nav-link" href="{% url 'sistema_2:comisiones' %}">Comisiones</a>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                          Ventas
+                            Datos contables
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'sistema_2:registros_bancarios' %}">Registros bancarios</a></li>
+                            <li><a class="dropdown-item" href="{% url 'sistema_2:comisiones' %}">Comisiones</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Ventas
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{% url 'sistema_2:proformas' %}">Cotizaciones</a></li>
