@@ -36,6 +36,29 @@
     }
     get_data()
   }
+
+  function eliminarInfo()
+  {
+    let nuevoRuc = document.getElementById('nuevoRuc')
+    let nuevoDni = document.getElementById('nuevoDni')
+    let nuevoNombre = document.getElementById('nuevoNombre')
+    let nuevoApellido = document.getElementById('nuevoApellido')
+    let nuevoRazon = document.getElementById('nuevoRazon')
+    let nuevoEmail = document.getElementById('nuevoEmail')
+    let nuevoContacto = document.getElementById('nuevoContacto')
+    let nuevoTelefono = document.getElementById('nuevoTelefono')
+    let nuevoDireccion = document.getElementById('nuevoDireccion')
+
+    nuevoRuc.value = ''
+    nuevoNombre.value = ''
+    nuevoDni.value = ''
+    nuevoApellido.value = ''
+    nuevoRazon.value = ''
+    nuevoEmail.value = ''
+    nuevoContacto.value = ''
+    nuevoTelefono.value = ''
+    nuevoDireccion.value = ''
+  }
 </script>
 
 {% endblock %}
@@ -261,7 +284,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Agregar cliente</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="eliminarInfo()"></button>
       </div>
       <div class="modal-body">
         <h6>Campos obligatorios (*)</h6>
@@ -270,12 +293,12 @@
         {% csrf_token %}
           <div class="row mb-3">
             <div class="col-md-6">
-              <label>Ruc</label>
+              <label>Ruc (*)</label>
               <input type="text" class="form-control" name="ruc" id="nuevoRuc">
             </div>
             <div class="col-md-6">
-              <label>Dni</label>
-              <input type="text" class="form-control" name="dni">
+              <label>Dni (*)</label>
+              <input type="text" class="form-control" name="dni" id="nuevoDni">
             </div>
           </div>
           <button type="button" onclick="get_info_cliente()" class="btn btn-primary">Consultar RUC</button>
@@ -283,42 +306,42 @@
           <br>
           <div class="row mb-3">
             <div class="col-md-6">
-              <label>Nombre</label>
-              <input type="text" class="form-control" name="nombre">
+              <label>Nombre (*)</label>
+              <input type="text" class="form-control" name="nombre" id="nuevoNombre">
             </div>
             <div class="col-md-6">
-              <label>Apellido</label>
-              <input type="text" class="form-control" name="apellido">
+              <label>Apellido (*)</label>
+              <input type="text" class="form-control" name="apellido" id="nuevoApellido">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
-              <label>Razon social</label>
-              <input type="text" class="form-control" name="razon" id="nuevaRazon">
+              <label>Razon social (*)</label>
+              <input type="text" class="form-control" name="razon" id="nuevoRazon">
             </div>
             <div class="col-md-6">
-              <label>Email</label>
-              <input type="text" class="form-control" name="email">
+              <label>Email (*)</label>
+              <input type="text" class="form-control" name="email" id="nuevoEmail">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Contacto</label>
-              <input type="text" class="form-control" name="contacto">
+              <input type="text" class="form-control" name="contacto" id="nuevoContacto">
             </div>
             <div class="col-md-6">
               <label>Telefono</label>
-              <input type="text" class="form-control" name="telefono">
+              <input type="text" class="form-control" name="telefono" id="nuevoTelefono">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Direccion fiscal (*)</label>
-              <input type="text" class="form-control" required name="direccion" id="nuevaDireccion">
+              <input type="text" class="form-control" required name="direccion" id="nuevoDireccion">
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarInfo()">Cancelar</button>
             <button type="submit" class="btn btn-primary">Agregar</button>
           </div>
         </form>

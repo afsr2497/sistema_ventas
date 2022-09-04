@@ -25,7 +25,7 @@ class clients(models.Model):
     email = models.CharField(max_length=64,null=True)
     contacto = models.CharField(max_length=64,null=True)
     telefono = models.CharField(max_length=64,null=True)
-    direccion_fiscal = models.CharField(max_length=256,default='SinDireccion')
+    direccion_fiscal = models.CharField(max_length=512,default='SinDireccion')
     direcciones = ArrayField(models.CharField(max_length=256),null=True)
 
 class products(models.Model):

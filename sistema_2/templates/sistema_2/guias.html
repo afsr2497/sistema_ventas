@@ -100,6 +100,26 @@
       serching: true,
       bInfo: false,
       bSort: false,
+      language: {
+            "decimal": "",
+            "emptyTable": "No hay información",
+            "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+            "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+            "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Mostrar _MENU_ Entradas",
+            "loadingRecords": "Cargando...",
+            "processing": "Procesando...",
+            "search": "Buscar:",
+            "zeroRecords": "Sin resultados encontrados",
+            "paginate": {
+                "first": "Primero",
+                "last": "Ultimo",
+                "next": "Siguiente",
+                "previous": "Anterior"
+            }
+      }
     })
 
   })
@@ -111,12 +131,20 @@
 
 <div class="container">
   <h1>Guias</h1>
-  <br>
-  <button class="btn btn-success" onclick="crearFactura()">Crear factura</button>
-  <br>
-  <br>
-  <button class="btn btn-success" onclick="crearBoleta()">Crear boleta</button>
-  <br>
+  <div class="row">
+    <div class="col-lg-4">
+      <div class="row">
+        <div class="col-lg-4">
+          <br>
+          <button class="btn btn-success" onclick="crearFactura()">Crear factura</button>
+        </div>
+        <div class="col-lg-4">
+          <br>
+          <button class="btn btn-success" onclick="crearBoleta()">Crear boleta</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <br>
   <div>
     <form class="row g-12" method="post" action="{% url 'sistema_2:gui' %}">
@@ -129,15 +157,18 @@
             <label>Fecha final</label>
             <input type="date" class="form-control col-md-1" name="fecha_fin" value="{{ fecha_final }}">
         </div>
-        <br>
-        <br>
-        <br>
-        <div>
-            <button type="submit" class="btn btn-success">Filtrar</button>
+        <div class="col-md-1">
+          <br>
+          <button type="submit" class="btn btn-success">Filtrar</button>
+        </div>
+        <div class="col-md-5">
+
+        </div>
+        <div class="col-md-2">
+          <br>
+          <a class="btn btn-success float-end" style="color: white;" href="{% url 'sistema_2:gui' %}">Reestablecer</a>
         </div>
     </form>
-    <br>
-    <a class="btn btn-success float-left" style="color: white;" href="{% url 'sistema_2:gui' %}">Reestablecer</a>
   </div>
   <br>
   <br>

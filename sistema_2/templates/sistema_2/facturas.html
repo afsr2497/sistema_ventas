@@ -30,15 +30,18 @@
             <label>Fecha final</label>
             <input type="date" class="form-control col-md-1" name="fecha_fin" value="{{ fecha_final }}">
         </div>
-        <br>
-        <br>
-        <br>
-        <div>
-            <button type="submit" class="btn btn-success">Filtrar</button>
+        <div class="col-md-1">
+          <br>
+          <button type="submit" class="btn btn-success">Filtrar</button>
+        </div>
+        <div class="col-md-5">
+
+        </div>
+        <div class="col-md-2">
+          <br>
+          <a class="btn btn-success float-end" style="color: white;" href="{% url 'sistema_2:fact' %}">Reestablecer</a>
         </div>
     </form>
-    <br>
-    <a class="btn btn-success float-left" style="color: white;" href="{% url 'sistema_2:fact' %}">Reestablecer</a>
   </div>
   <br>
   <table class="table table-bordered table-hover" id="facturasTable" style="font-size: 12px;">

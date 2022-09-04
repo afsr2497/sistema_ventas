@@ -32,16 +32,22 @@
             <label>Fecha final</label>
             <input type="date" class="form-control col-md-1" name="fecha_fin" value="{{ fecha_final }}">
         </div>
-        <br>
-        <br>
-        <br>
-        <div>
+        <div class="col-md-1">
+            <br>
             <button type="submit" class="btn btn-success" name="Filtrar">Filtrar</button>
-            <button type="submit" class="btn btn-success float-end" name="Exportar">Exportar Excel</button>
+        </div>
+        <div class="col-md-2">
+            <br>
+            <button type="submit" class="btn btn-success" name="Exportar">Exportar Excel</button>
+        </div>
+        <div class="col-md-3">
+
+        </div>
+        <div class="col-md-2">
+            <br>
+            <a class="btn btn-success float-end" style="color: white;" href="{% url 'sistema_2:proformas' %}">Reestablecer</a>
         </div>
     </form>
-    <br>
-    <a class="btn btn-success float-left" style="color: white;" href="{% url 'sistema_2:proformas' %}">Reestablecer</a>
   </div>
   <br>
   <table class="table table-bordered table-hover" id="proformasTable" style="font-size: 12px;">
@@ -51,10 +57,12 @@
               <th scope="col">Codigo</th>
               <th scope="col">Vendedor</th>
               <th scope="col">Fecha</th>
+              <th scope="col">Moneda</th>
               <th scope="col">Tipo</th>
               <th scope="col">Estado</th>
               <th scope="col">Cliente</th>
-              <th scope="col">Descargar Cotizacion</th>
+              <th scope="col">Descargar (Soles)</th>
+              <th scope="col">Descargar (Dolares)</th>
               <th scope="col">Generar comprobante</th>
               <th scope="col">Editar</th>
               <th scope="col">Anular</th>
@@ -67,6 +75,7 @@
               <td>{{ cot.codigoProforma }}</td>
               <td>{{ cot.vendedor.1 }}</td>
               <td>{{ cot.fechaProforma }}</td>
+              <td>{{ cot.monedaProforma }}</td>
               <td>{{ cot.tipoProforma }}</td>
               <td>
                 {% if cot.estadoProforma == 'Generada' %}
@@ -85,6 +94,7 @@
               <td>{{ cot.cliente.1 }} {{ cot.cliente.2 }}</td>
               {% endif %}
               <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:descargar_proforma' cot.id %}"><i class="fas fa-download"></i></a></td>
+              <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:descargar_proforma_dolares' cot.id %}"><i class="fas fa-download"></i></a></td>
               <td style="text-align: center;">
                 {% if cot.estadoProforma == 'Generada' %}
                     {% if cot.cliente.1 == '' %}

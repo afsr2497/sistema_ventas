@@ -68,19 +68,69 @@
   }
   
 </script>
+<script>
+  function eliminarInfo()
+  {
+    let nuevoNombre = document.getElementById('nuevoNombre')
+    let nuevoCodigo = document.getElementById('nuevoCodigo')
+    let nuevoCategoria = document.getElementById('nuevoCategoria')
+    let nuevoSubCategoria = document.getElementById('nuevoSubCategoria')
+    let nuevoUnidadMed = document.getElementById('nuevoUnidadMed')
+    let nuevoCodSunat = document.getElementById('nuevoCodSunat')
+    let nuevoPVsinIGV = document.getElementById('nuevoPVsinIGV')
+    let nuevoPCsinIGV = document.getElementById('nuevoPCsinIGV')
+
+    nuevoNombre.value = ''
+    nuevoCodigo.value = ''
+    nuevoCategoria.value = ''
+    nuevoSubCategoria.value = ''
+    nuevoUnidadMed.value = ''
+    nuevoCodSunat.value = ''
+    nuevoPVsinIGV.value = ''
+    nuevoPCsinIGV.value = ''
+  }
+</script>
 {% endblock %}
 
 {% block content%}
 
 <div class="container">
   <h1>Productos</h1>
-  <div>
-    <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoPro">Nuevo<i class="fa fa-plus"></i></a>
+  <div class="row">
+    <div class="col-md-2">
+      <a class="btn btn-success" style="color: white; font-size: 11px;" data-bs-toggle="modal" data-bs-target="#nuevoPro">Nuevo<i class="fa fa-plus"></i></a>
+    </div>
+    <div class="col-md-8"></div>
+    <div class="col-md-2">
+      <a class="btn btn-info float-end" style="color: white; font-size: 11px;" href="{% url 'sistema_2:descargar_manual' %}">Descargar manual <i class="fa fa-download"></i></a>
+    </div>
   </div>
   <br>
-  <div>
-    <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#importarPro">Importar <i class="fas fa-file-import"></i></a>
-    <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#agregarStock">Agregar Stock <i class="fa fa-plus"></i></a>
+  <div class="row">
+    <div class="col-md-1">
+      <a class="btn btn-success" style="color: white; font-size: 11px;" data-bs-toggle="modal" data-bs-target="#importarPro">Importar <i class="fas fa-file-import"></i></a>
+    </div>
+    <div class="col-md-2">
+      <a class="btn btn-success" style="color: white; font-size: 11px;" data-bs-toggle="modal" data-bs-target="#agregarStock">Agregar Stock <i class="fa fa-plus"></i></a>
+    </div>
+    <form method="post" action="{% url 'sistema_2:productos' %}" class="col-md-4">
+    {% csrf_token %}
+      <div class="row">
+        <div class="col-md-6">
+          <input class="form-control" style="font-size: 11px;" placeholder="Categoria ..." name="filtroCategoria">
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-success" style="font-size: 11px;" name="Filtrar">Filtrar</button>
+        </div>
+        <div class="col-md-4">
+          <a class="btn btn-success" style="font-size: 11px;" href="{% url 'sistema_2:productos' %}">Reestablecer</a>
+        </div>
+      </div>
+    </form>
+    <div class="col-md-2"></div>
+    <div class="col-md-3">
+      <a class="btn btn-danger float-end" style="color: white; font-size: 11px;" data-bs-toggle="modal" data-bs-target="#eliminarTodo">Eliminar todo <i class="fa fa-trash"></i></a>
+    </div>
   </div>
   <br>
   <div style="height: 1000px;overflow: scroll;">
@@ -103,7 +153,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for producto in pro %}
+      {% for producto in pro_tabla %}
       <tr>
               <th scope="row">{{ producto.id }}</th>
               <td>{{ producto.codigo }}</td>
@@ -150,6 +200,25 @@
   </div>
 </div>
 
+<!--Eliminar todos los productos-->
+<div class="modal fade" tabindex="-1" role="dialog" id="eliminarTodo">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar todos los productos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Esta seguro que desea eliminar todos los productos?</p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-primary" href="{% url 'sistema_2:eliminarTodo' %}">Eliminar</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!--Agregar Stock-->
 <div class="modal fade" tabindex="-1" role="dialog" id="agregarStock">
@@ -183,17 +252,18 @@
             <label>Agregar stock</label>
             <input type="number" step="0.01" class="form-control" id="nuevoStock" placeholder="Añadir stock" name="cantidadStock">
             <br>
-            <label>Fecha</label>
-            <input type="date" class="form-control" id="fechaStock" placeholder="Fecha ..." name="fecha">
-            <br>
             <label>Vendedor</label>
-            <select class="selectpicker form-control" id="vendedor" data-live-search="true" name="vendedorStock">
-                {% for usuario in usr %}
-                    {% if usuario.tipo == 'vendedor' %}
-                    <option value="{{ usuario.id }}">{{ usuario.usuario.username }}</option>
-                    {% endif %}
-                {% endfor %}
-            </select>
+            {% if user_logued.tipo == 'admin' %}
+              <select class="selectpicker form-control" id="vendedor" data-live-search="true" name="vendedorStock">
+                  {% for usuario in usr %}
+                      {% if usuario.tipo == 'vendedor' %}
+                      <option value="{{ usuario.id }}">{{ usuario.usuario.username }}</option>
+                      {% endif %}
+                  {% endfor %}
+              </select>
+            {% else %}
+              <p>El vendedor es {{ user_logued.usuario.username }}</p>
+            {% endif %}
             <br>
           </div>
           <br>
@@ -213,7 +283,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Agregar producto</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="eliminarInfo()"></button>
       </div>
       <div class="modal-body">
         <h6>Campos obligatorios (*)</h6>
@@ -223,41 +293,41 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Nombre</label>
-              <input type="text" class="form-control" name="nombre">
+              <input type="text" class="form-control" name="nombre" id="nuevoNombre">
             </div>
             <div class="col-md-6">
               <label>Codigo (*)</label>
-              <input type="text" class="form-control" required name="codigo">
+              <input type="text" class="form-control" required name="codigo" id="nuevoCodigo">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Categoria</label>
-              <input type="text" class="form-control" name="categoria">
+              <input type="text" class="form-control" name="categoria" id="nuevoCategoria">
             </div>
             <div class="col-md-6">
               <label>Sub Categoria</label>
-              <input type="text" class="form-control" name="subCategoria">
+              <input type="text" class="form-control" name="subCategoria" id="nuevoSubCategoria">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Unidad de medida</label>
-              <input type="text" class="form-control" name="unidadMed">
+              <input type="text" class="form-control" name="unidadMed" id="nuevoUnidadMed">
             </div>
             <div class="col-md-6">
               <label>Codigo Sunat (*)</label>
-              <input type="text" class="form-control" required name="codSunat">
+              <input type="text" class="form-control" required name="codSunat" id="nuevoCodsunat">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Precio de venta sin IGV (*)</label>
-              <input type="number" step="0.01" class="form-control" required name="pvsinIGV">
+              <input type="number" step="0.01" class="form-control" required name="pvsinIGV" id="nuevoPVsinIGV">
             </div>
             <div class="col-md-6">
               <label>Precio de compra sin IGV (*)</label>
-              <input type="number" step="0.01" class="form-control" required name="pcsinIGV">
+              <input type="number" step="0.01" class="form-control" required name="pcsinIGV" id="nuevoPCsinIGV">
             </div>
           </div>
           <div class="row mb-3">
@@ -274,8 +344,8 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Agregar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarInfo()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" name="Crear">Agregar</button>
           </div>
         </form>
       </div>

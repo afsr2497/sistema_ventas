@@ -9,6 +9,20 @@
 <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 <script src="{% static 'sistema_2/usuarios.js' %}"></script>
+<script>
+  function eliminarInfo()
+  {
+    let nombreNuevo = document.getElementById('nombreNuevo')
+    let contraNuevo = document.getElementById('contraNuevo')
+    let emailNuevo = document.getElementById('emailNuevo')
+    let celularNuevo = document.getElementById('celularNuevo')
+
+    nombreNuevo.value = ''
+    contraNuevo.value = ''
+    emailNuevo.value = ''
+    celularNuevo.value = ''
+  }
+</script>
 
 {% endblock %}
 
@@ -66,7 +80,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Agregar usuario</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="eliminarInfo()"></button>
       </div>
       <div class="modal-body">
         <form method="post" action="{% url 'sistema_2:usuarios' %}">
@@ -74,17 +88,17 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Usuario</label>
-              <input type="text" class="form-control" required name="usuario">
+              <input type="text" class="form-control" required name="usuario" id="nombreNuevo">
             </div>
             <div class="col-md-6">
               <label>Contraseña</label>
-              <input type="password" class="form-control" required name="contra">
+              <input type="password" class="form-control" required name="contra" id="contraNuevo">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Email</label>
-              <input type="text" class="form-control" required name="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$">
+              <input type="text" class="form-control" required name="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" id="emailNuevo">
             </div>
             <div class="col-md-6">
               <label for="inputState">Tipo</label>
@@ -97,11 +111,11 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Celular</label>
-              <input type="tel" class="form-control" pattern="[0-9]{9}" required name="celular" placeholder="Numero de celular">
+              <input type="tel" class="form-control" pattern="[0-9]{9}" required name="celular" placeholder="Numero de celular" id="celularNuevo">
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarInfo()">Cancelar</button>
             <button type="submit" class="btn btn-primary">Agregar</button>
           </div>
         </form>

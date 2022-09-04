@@ -8,6 +8,22 @@
 <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 <script src="{% static 'sistema_2/servicios.js' %}"></script>
+<script>
+  function eliminarInfo() 
+  {
+    let nuevoNombre = document.getElementById('nuevoNombre')
+    let nuevoCategoria = document.getElementById('nuevoCategoria')
+    let nuevoSubCategoria = document.getElementById('nuevoSubCategoria')
+    let nuevoUnidadMed = document.getElementById('nuevoUnidadMed')
+    let nuevoPVsinIGV = document.getElementById('nuevoPVsinIGV')
+
+    nuevoNombre.value = ''
+    nuevoSubCategoria.value = ''
+    nuevoSubCategoria.value = ''
+    nuevoUnidadMed.value = ''
+    nuevoPVsinIGV.value = ''
+  }
+</script>
 {% endblock %}
 
 
@@ -106,7 +122,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Agregar servicio</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="eliminarInfo()"></button>
       </div>
       <div class="modal-body">
         <form method="post" action="{% url 'sistema_2:servicios' %}">
@@ -114,31 +130,31 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Nombre</label>
-              <input type="text" class="form-control" required name="nombre">
+              <input type="text" class="form-control" required name="nombre" id="nuevoNombre">
             </div>
             <div class="col-md-6">
               <label>Categoria</label>
-              <input type="text" class="form-control" required name="categoria">
+              <input type="text" class="form-control" required name="categoria" id="nuevoCategoria">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Sub Categoria</label>
-              <input type="text" class="form-control" required name="subCategoria">
+              <input type="text" class="form-control" required name="subCategoria" id="nuevoSubCategoria">
             </div>
             <div class="col-md-6">
               <label>Unidad de medida</label>
-              <input type="text" class="form-control" required name="unidadMed">
+              <input type="text" class="form-control" required name="unidadMed" id="nuevoUnidadMed">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Precio de venta sin IGV</label>
-              <input type="number" step="0.01" class="form-control" required name="pvsinIGV">
+              <input type="number" step="0.01" class="form-control" required name="pvsinIGV" id="nuevoPVsinIGV">
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarInfo()">Cancelar</button>
             <button type="submit" class="btn btn-primary">Agregar</button>
           </div>
         </form>
