@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django import forms
 from reportlab.pdfgen import canvas
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta
 from PyPDF2 import PdfFileWriter, PdfFileReader
@@ -5898,8 +5898,10 @@ def actualizar_mov(request,ind):
             mov_actualizar.estadoOperacion = 'INCOMPLETA'
         else:
             mov_actualizar.estadoOperacion = 'COMPLETA'
+        ruta_nombre = '/sistema_2/ver_movimientos/' + str(mov_actualizar.idCuentaBank)
         mov_actualizar.save()
-        return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+        return redirect(ruta_nombre)
+        #return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
     
 
 def obtener_facturas_cotizaciones_cliente(request,ind):
@@ -6152,6 +6154,8 @@ def comisiones(request):
             fecha_inicio = request.POST.get('fecha_inicio')
             fecha_fin = request.POST.get('fecha_fin')
             registros_totales = regOperacion.objects.all()
+            registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
+            registros_totales = registros_totales.filter(estadoOperacion='COMPLETA')
             if fecha_inicio != '' and fecha_fin != '':
                 registros_totales = registros_totales.filter(fechaOperacion__range = [fecha_inicio,fecha_fin])
             for registro in registros_totales:
@@ -6160,10 +6164,13 @@ def comisiones(request):
                         registros_vendedor.append(registro)
             for registro in registros_vendedor:
                 if registro.monedaOperacion == 'DOLARES':
-                    dato_sumar = float(registro.montoOperacion)*(3.85)
+                    factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
+                    tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
+                    dato_sumar = float(registro.montoOperacion)*(tipo_Cambio)
                 if registro.monedaOperacion == 'SOLES':
                     dato_sumar = float(registro.montoOperacion)
                 monto_total = monto_total + dato_sumar
+            monto_total = monto_total / 1.18
             monto_total = "{:.2f}".format(round(float(monto_total),2))
             return render(request,'sistema_2/comisiones.html',{
                 'usuariosInfo':userProfile.objects.all().order_by('id'),
@@ -6178,6 +6185,8 @@ def comisiones(request):
             fecha_inicio = request.POST.get('fecha_inicio')
             fecha_fin = request.POST.get('fecha_fin')
             registros_totales = regOperacion.objects.all()
+            registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
+            registros_totales = registros_totales.filter(estadoOperacion='COMPLETA')
             if fecha_inicio != '' and fecha_fin != '':
                 registros_totales = registros_totales.filter(fechaOperacion__range = [fecha_inicio,fecha_fin])
             for registro in registros_totales:
@@ -6186,17 +6195,30 @@ def comisiones(request):
                         registros_vendedor.append(registro)
             for registro in registros_vendedor:
                 if registro.monedaOperacion == 'DOLARES':
-                    dato_sumar = float(registro.montoOperacion)*(3.85)
+                    factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
+                    tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
+                    dato_sumar = float(registro.montoOperacion)*(tipo_Cambio)
                 if registro.monedaOperacion == 'SOLES':
                     dato_sumar = float(registro.montoOperacion)
                 monto_total = monto_total + dato_sumar
+            monto_total = monto_total / 1.18
             monto_total = "{:.2f}".format(round(float(monto_total),2))
             #Metodo a efectuar con el arreglo registro vendedor y exportar sus registros en excel
             info_registro = []
             for registro in registros_vendedor:
-                info_registro.append([registro.fechaOperacion.strftime('%d/%m/%Y'),registro.detalleOperacion,registro.monedaOperacion,registro.montoOperacion,registro.nroOperacion,registro.vendedorOperacion[2]])            
-            info_registro.append(['','','Monto total',str(monto_total)])
-            tabla_excel = pd.DataFrame(info_registro,columns=['Fecha','Descricion','Moneda','Monto','Nro de operacion','Codigo del vendedor'])
+                if registro.monedaOperacion == 'DOLARES':
+                    factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
+                    tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
+                    monto_convertido = round(float(registro.montoOperacion)*(tipo_Cambio),2)
+                    tipo_Cambio = str(round(float(tipo_Cambio),2))
+                else:
+                    monto_convertido =round(float(registro.montoOperacion),2)
+                    tipo_Cambio = str(1.00)
+                monto_convertido = str(monto_convertido)
+                monto_sinigv = str(round(float(monto_convertido)/1.18,2))
+                info_registro.append([registro.fechaOperacion.strftime('%d/%m/%Y'),registro.detalleOperacion,registro.nroOperacion,registro.vendedorOperacion[2],registro.monedaOperacion,registro.montoOperacion,tipo_Cambio,monto_convertido,monto_sinigv])            
+            info_registro.append(['','','','','','','','Monto total',str(monto_total)])
+            tabla_excel = pd.DataFrame(info_registro,columns=['Fecha','Descricion','Nro de operacion','Codigo del vendedor','Moneda','Monto','Tipo de Cambio','Monto (S./)','Monto final'])
             tabla_excel.to_excel('info_excel.xlsx',index=False)
             response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
