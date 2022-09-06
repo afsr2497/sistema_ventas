@@ -3539,7 +3539,7 @@ def armar_json_factura(factura_info):
             "formaPago":factura_info.pagoFactura,
             "medioPago": "DEPOSITO_CUENTA",
             "condicionPago": null,
-            "ordencompra":null,
+            "ordencompra":factura_info.nroDocumento,
             "puntoEmisor":null,
             "glosa":null
         },
