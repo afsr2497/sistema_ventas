@@ -19,6 +19,8 @@
         let facturaSeleccionada = document.getElementById('facturaSeleccionada')
         let guiaSeleccionada = document.getElementById('guiaSeleccionada')
         let cotiSeleccionada= document.getElementById('cotiSeleccionada')
+        let infoComprobante = document.getElementById('infoComprobante')
+        let infoCotizacion = document.getElementById('infoCotizacion')
 
         clienteSeleccionado.onchange = function() 
         {
@@ -96,6 +98,7 @@
 
         facturaSeleccionada.onchange = function()
         {
+            infoComprobante.value = facturaSeleccionada.value
             url = '/sistema_2/obtener_guias_factura/' + facturaSeleccionada.value
             async function get_data() {
                 const res = await fetch(url,{
@@ -109,6 +112,13 @@
                 guiaSeleccionada.value = cliente_info.guias
             }
             get_data()
+        }
+
+        cotiSeleccionada.onchange = function()
+        {
+            infoCotizacion.value = cotiSeleccionada.value
+            infoComprobante.value = ''
+            guiaSeleccionada.value = ''
         }
 
 
@@ -166,33 +176,49 @@
             <label>Código del vendedor</label>
             <select class="selectpicker form-control" name="infoVendedor">
                 {% for usuario in usuarios %}
-                    <option value="{{ usuario.id }}">{{ usuario.codigo }}</option>
+                    {% if usuario.id == vendedor %}
+                        <option value="{{ usuario.id }}" selected>{{ usuario.codigo }}</option>
+                    {% else %}
+                        <option value="{{ usuario.id }}">{{ usuario.codigo }}</option>
+                    {% endif %}
                 {% endfor %}
             </select>
         </div>
     </div>
     <br>
-    <h6>Documentos asociados</h6>
+    <h6>Actualizar documentos</h6>
     <br>
     <div class="row mb-3">
         <div class="col-md-3">
-            <label>Cotizacion</label>
+            <label>Cotizacion (*)</label>
             <select class="form-select" name="infoCotizacion" id="cotiSeleccionada" >
             </select>
         </div>
         <div class="col-md-3">
-            <label>Factura / Boleta</label>
+            <label>Factura / Boleta (*)</label>
             <select class="form-select" name="infoFactura" id="facturaSeleccionada" >
             </select>
         </div>
+    </div>
+    <br>
+    <h6>Documentos seleccionados</h6>
+    <div class="row mb-3">
         <div class="col-md-3">
-            <label>Guia</label>
+            <label>Cotizacion</label>
+            <input class="form-control" id="infoCotizacion" value="{{ operacion.cotizacionOperacion.0 }}">
+        </div>
+        <div class="col-md-3">
+            <label>Factura / Boleta</label>
+            <input class="form-control" id="infoComprobante" value="{{ operacion.comprobanteOperacion.0 }}">
+        </div>
+        <div class="col-md-3">
+            <label>Guia (*)</label>
             <input class="form-control" name="infoGuia" id="guiaSeleccionada">
         </div>
     </div>
     <br>
     <div>
-        <button type="button" class="btn btn-secondary"><a type="button" href="{% url 'sistema_2:dashboard' %}" style="color: white; text-decoration: none;">Salir</a></button>
+        <button type="button" class="btn btn-secondary"><a type="button" href="{% url 'sistema_2:ver_movimientos' id_bank %}" style="color: white; text-decoration: none;">Salir</a></button>
         <button type="submit" class="btn btn-primary">Guardar</button>
     </div>
 </form>

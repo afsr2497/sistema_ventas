@@ -33,7 +33,10 @@ import random
 import requests
 import traceback
 import sys
+from apis_net_pe import ApisNetPe
 
+APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
+api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
 
 null = None
@@ -696,8 +699,8 @@ def proformas(request):
                 cotizaciones_filtradas = cotizaciones.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
                 info_coti=[]
                 for coti in cotizaciones_filtradas:
-                    info_coti.append([coti.codigoProforma,coti.fechaProforma])
-                tabla_excel = pd.DataFrame(info_coti,columns=['Codigo','Fecha'])
+                    info_coti.append([coti.codigoProforma,coti.vendedor[1],coti.fechaProforma,coti.monedaProforma,coti.estadoProforma,coti.cliente[3]])
+                tabla_excel = pd.DataFrame(info_coti,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
                 tabla_excel.to_excel('info_excel.xlsx')
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -707,8 +710,8 @@ def proformas(request):
                 coti_exportar = cotizaciones.objects.all()
                 info_coti = []
                 for coti in coti_exportar:
-                    info_coti.append([coti.codigoProforma,coti.fechaProforma])
-                tabla_excel = pd.DataFrame(info_coti,columns=['Codigo','Fecha'])
+                    info_coti.append([coti.codigoProforma,coti.vendedor[1],coti.fechaProforma,coti.monedaProforma,coti.estadoProforma,coti.cliente[3]])
+                tabla_excel = pd.DataFrame(info_coti,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
                 tabla_excel.to_excel('info_excel.xlsx')
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -1111,15 +1114,42 @@ def editar_proforma(request,ind):
 @csrf_exempt
 def gui(request):
     if request.method == 'POST':
-        fecha_inicial = str(request.POST.get('fecha_inicio'))
-        fecha_final = str(request.POST.get('fecha_fin'))
-        if fecha_inicial != '' and fecha_final != '':
-            guias_filtradas = guias.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
-            return render(request,'sistema_2/guias.html',{
-                'gui':guias_filtradas.order_by('id'),
-                'fecha_inicial':fecha_inicial,
-                'fecha_final':fecha_final
-            })
+        if 'Filtrar' in request.POST:
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                guias_filtradas = guias.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                return render(request,'sistema_2/guias.html',{
+                    'gui':guias_filtradas.order_by('id'),
+                    'fecha_inicial':fecha_inicial,
+                    'fecha_final':fecha_final
+                })
+        elif 'Exportar' in request.POST:
+            print('Se solicita el excel')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                guias_filtradas = guias.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                info_guias=[]
+                for guia in guias_filtradas:
+                    info_guias.append([guia.codigoGuia,guia.vendedor[1],guia.fechaGuia,guia.monedaGuia,guia.estadoGuia,guia.cliente[3]])
+                tabla_excel = pd.DataFrame(info_guias,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
+                tabla_excel.to_excel('info_excel.xlsx')
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                guias_exportar = guias.objects.all()
+                info_guias=[]
+                for guia in guias_exportar:
+                    info_guias.append([guia.codigoGuia,guia.vendedor[1],guia.fechaGuia,guia.monedaGuia,guia.estadoGuia,guia.cliente[3]])
+                tabla_excel = pd.DataFrame(info_guias,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
+                tabla_excel.to_excel('info_excel.xlsx')
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
     return render(request,'sistema_2/guias.html',{
         'gui': guias.objects.all().order_by('-id')
     })
@@ -1197,15 +1227,42 @@ def editar_guia(request,ind):
 @csrf_exempt
 def fact(request):
     if request.method == 'POST':
-        fecha_inicial = str(request.POST.get('fecha_inicio'))
-        fecha_final = str(request.POST.get('fecha_fin'))
-        if fecha_inicial != '' and fecha_final != '':
-            facturas_filtradas = facturas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
-            return render(request,'sistema_2/facturas.html',{
-                'fac':facturas_filtradas.order_by('id'),
-                'fecha_inicial':fecha_inicial,
-                'fecha_final':fecha_final
-            })
+        if 'Filtrar' in request.POST:
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                facturas_filtradas = facturas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                return render(request,'sistema_2/facturas.html',{
+                    'fac':facturas_filtradas.order_by('id'),
+                    'fecha_inicial':fecha_inicial,
+                    'fecha_final':fecha_final
+                })
+        elif 'Exportar' in request.POST:
+            print('Se solicita el excel')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                facturas_filtradas = facturas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                info_facturas=[]
+                for factura in facturas_filtradas:
+                    info_facturas.append([factura.codigoFactura,factura.vendedor[1],factura.fechaFactura,factura.monedaFactura,factura.estadoFactura,factura.cliente[3]])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
+                tabla_excel.to_excel('info_excel.xlsx')
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                facturas_exportar = facturas.objects.all()
+                info_facturas=[]
+                for factura in facturas_exportar:
+                    info_facturas.append([factura.codigoFactura,factura.vendedor[1],factura.fechaFactura,factura.monedaFactura,factura.estadoFactura,factura.cliente[3]])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
+                tabla_excel.to_excel('info_excel.xlsx')
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
     return render(request,'sistema_2/facturas.html',{
         'fac': facturas.objects.all().order_by('-id')
     })
@@ -1515,15 +1572,42 @@ def editar_factura(request,ind):
 @csrf_exempt
 def bole(request):
     if request.method == 'POST':
-        fecha_inicial = str(request.POST.get('fecha_inicio'))
-        fecha_final = str(request.POST.get('fecha_fin'))
-        if fecha_inicial != '' and fecha_final != '':
-            boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
-            return render(request,'sistema_2/boletas.html',{
-                'bol':boletas_filtradas.order_by('id'),
-                'fecha_inicial':fecha_inicial,
-                'fecha_final':fecha_final
-            })
+        if 'Filtrar' in request.POST:
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                return render(request,'sistema_2/boletas.html',{
+                    'bol':boletas_filtradas.order_by('id'),
+                    'fecha_inicial':fecha_inicial,
+                    'fecha_final':fecha_final
+                })
+        elif 'Exportar' in request.POST:
+            print('Se solicita el excel')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                info_boletas=[]
+                for boleta in boletas_filtradas:
+                    info_boletas.append([boleta.codigoBoleta,boleta.vendedor[1],boleta.fechaBoleta,boleta.monedaBoleta,boleta.estadoBoleta,boleta.cliente[3]])
+                tabla_excel = pd.DataFrame(info_boletas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
+                tabla_excel.to_excel('info_excel.xlsx')
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                boletas_exportar = boletas.objects.all()
+                info_boletas=[]
+                for boleta in boletas_filtradas:
+                    info_boletas.append([boleta.codigoBoleta,boleta.vendedor[1],boleta.fechaBoleta,boleta.monedaBoleta,boleta.estadoBoleta,boleta.cliente[3]])
+                tabla_excel = pd.DataFrame(info_boletas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
+                tabla_excel.to_excel('info_excel.xlsx')
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
     return render(request,'sistema_2/boletas.html',{
         'bol': boletas.objects.all().order_by('-id')
     })
@@ -5099,12 +5183,14 @@ def obtener_datos_ruc(request,ind):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax:
         if request.method == 'GET':
-            indicador, obj_datos = ConsultarRUC(ind)
-            print(indicador)
-            print(obj_datos)
-            ruc_info = obj_datos.RUC
-            ruc_info = ruc_info.split('-')[1]
-            ruc_info = ruc_info[1:]
+            infoEmpresa = api_consultas.get_company(ind)
+            if(infoEmpresa==null):
+                indicador = 0
+            else:
+                indicador = 1
+                print(infoEmpresa['nombre'])
+                print(infoEmpresa['direccion'])
+                print(infoEmpresa)
             if indicador == 0:
                 return JsonResponse({
                     'indicador':str(indicador),
@@ -5112,9 +5198,9 @@ def obtener_datos_ruc(request,ind):
                 })
             if indicador == 1:
                 return JsonResponse({
-                    'indicador':str(indicador),
-                    'domicilioFiscal':obj_datos.DomicilioFiscal,
-                    'razonSocial':ruc_info
+                    'indicador':'1',
+                    'domicilioFiscal':infoEmpresa['direccion'],
+                    'razonSocial':infoEmpresa['nombre']
 
                 })
         return JsonResponse({'status': 'Invalid request'}, status=400)
@@ -5539,6 +5625,8 @@ def update_mov(request,ind):
         'usuarios':users_info,
         'facturas':facturas_info,
         'guias':guias_info,
+        'id_bank':mov_actualizar.idCuentaBank,
+        'vendedor':str(mov_actualizar.vendedorOperacion[0])
     })
 
 def actualizar_mov(request,ind):
@@ -5813,68 +5901,80 @@ def descargar_filtrado(request):
 
 def comisiones(request):
     registros_vendedor = []
-    fecha_inicio = ''
-    fecha_fin = ''
     codigoVendedor = ''
     monto_total = 0
+    monto_comision = 0
+    month_filter = '01'
+    year_filter = '2022'
     if request.method == 'POST':
         if 'Filtrar' in request.POST:
+            month_filter = str(request.POST.get('monthInfo'))
+            while len(month_filter) < 2:
+                month_filter = '0' + month_filter
+            year_filter = str(request.POST.get('yearInfo'))
             id_vendedor = request.POST.get('id_vendedor')
-            codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
-            fecha_inicio = request.POST.get('fecha_inicio')
-            fecha_fin = request.POST.get('fecha_fin')
-            registros_totales = regOperacion.objects.all()
-            registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
-            registros_totales = registros_totales.filter(estadoOperacion='COMPLETA')
-            if fecha_inicio != '' and fecha_fin != '':
-                registros_totales = registros_totales.filter(fechaOperacion__range = [fecha_inicio,fecha_fin])
-            for registro in registros_totales:
-                if len(registro.vendedorOperacion) > 0:
-                    if registro.vendedorOperacion[0] == str(id_vendedor):
-                        registros_vendedor.append(registro)
-            for registro in registros_vendedor:
-                if registro.monedaOperacion == 'DOLARES':
-                    factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
-                    tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
-                    dato_sumar = float(registro.montoOperacion)*(tipo_Cambio)
-                if registro.monedaOperacion == 'SOLES':
-                    dato_sumar = float(registro.montoOperacion)
-                monto_total = monto_total + dato_sumar
-            monto_total = monto_total / 1.18
-            monto_total = "{:.2f}".format(round(float(monto_total),2))
+            codigoVendedor = '0'
+            if id_vendedor != '0':
+                codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
+                registros_totales = regOperacion.objects.all()
+                registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
+                registros_totales = registros_totales.filter(estadoOperacion='COMPLETA')
+                registros_totales = registros_totales.filter(fechaOperacion__month=month_filter,fechaOperacion__year=year_filter)
+                for registro in registros_totales:
+                    if len(registro.vendedorOperacion) > 0:
+                        if registro.vendedorOperacion[0] == str(id_vendedor):
+                            registros_vendedor.append(registro)
+                for registro in registros_vendedor:
+                    if registro.monedaOperacion == 'DOLARES':
+                        factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
+                        tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
+                        dato_sumar = float(registro.montoOperacion)*(tipo_Cambio)
+                    if registro.monedaOperacion == 'SOLES':
+                        dato_sumar = float(registro.montoOperacion)
+                    monto_total = monto_total + dato_sumar
+                monto_total = (monto_total / 1.18)
+                monto_comision = monto_total*0.01
+                monto_total = "{:.2f}".format(round(float(monto_total),2))
+                monto_comision = "{:.2f}".format(round(float(monto_comision),2))
             return render(request,'sistema_2/comisiones.html',{
                 'usuariosInfo':userProfile.objects.all().order_by('id'),
                 'operacionesVendedor':registros_vendedor,
-                'fechaInicio':fecha_inicio,
-                'fechaFin':fecha_fin,
                 'id_vendedor':codigoVendedor,
+                'month_filter':month_filter,
+                'year_filter':year_filter,
                 'monto_total':str(monto_total),
+                'monto_comision':monto_comision,
             })
         elif 'Exportar' in request.POST:
+            month_filter = str(request.POST.get('monthInfo'))
+            while len(month_filter) < 2:
+                month_filter = '0' + month_filter
+            year_filter = str(request.POST.get('yearInfo'))
             id_vendedor = request.POST.get('id_vendedor')
-            fecha_inicio = request.POST.get('fecha_inicio')
-            fecha_fin = request.POST.get('fecha_fin')
-            registros_totales = regOperacion.objects.all()
-            registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
-            registros_totales = registros_totales.filter(estadoOperacion='COMPLETA')
-            if fecha_inicio != '' and fecha_fin != '':
-                registros_totales = registros_totales.filter(fechaOperacion__range = [fecha_inicio,fecha_fin])
-            for registro in registros_totales:
-                if len(registro.vendedorOperacion) > 0:
-                    if registro.vendedorOperacion[0] == str(id_vendedor):
-                        registros_vendedor.append(registro)
-            for registro in registros_vendedor:
-                if registro.monedaOperacion == 'DOLARES':
-                    factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
-                    tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
-                    dato_sumar = float(registro.montoOperacion)*(tipo_Cambio)
-                if registro.monedaOperacion == 'SOLES':
-                    dato_sumar = float(registro.montoOperacion)
-                monto_total = monto_total + dato_sumar
-            monto_total = monto_total / 1.18
-            monto_total = "{:.2f}".format(round(float(monto_total),2))
+            if id_vendedor != '0':
+                registros_totales = regOperacion.objects.all()
+                registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
+                registros_totales = registros_totales.filter(estadoOperacion='COMPLETA')
+                registros_totales = registros_totales.filter(fechaOperacion__month=month_filter,fechaOperacion__year=year_filter)
+                for registro in registros_totales:
+                    if len(registro.vendedorOperacion) > 0:
+                        if registro.vendedorOperacion[0] == str(id_vendedor):
+                            registros_vendedor.append(registro)
+                for registro in registros_vendedor:
+                    if registro.monedaOperacion == 'DOLARES':
+                        factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
+                        tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
+                        dato_sumar = float(registro.montoOperacion)*(tipo_Cambio)
+                    if registro.monedaOperacion == 'SOLES':
+                        dato_sumar = float(registro.montoOperacion)
+                    monto_total = monto_total + dato_sumar
+                monto_total = (monto_total / 1.18)
+                monto_comision = monto_total*0.01
+                monto_total = "{:.2f}".format(round(float(monto_total),2))
+                monto_comision = "{:.2f}".format(round(float(monto_comision),2))
             #Metodo a efectuar con el arreglo registro vendedor y exportar sus registros en excel
             info_registro = []
+            print(registros_vendedor)
             for registro in registros_vendedor:
                 if registro.monedaOperacion == 'DOLARES':
                     factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
@@ -5898,10 +5998,11 @@ def comisiones(request):
     return render(request,'sistema_2/comisiones.html',{
         'usuariosInfo':userProfile.objects.all().order_by('id'),
         'operacionesVendedor':registros_vendedor,
-        'fechaInicio':fecha_inicio,
-        'fechaFin':fecha_fin,
+        'month_filter':month_filter,
+        'year_filter':year_filter,
         'id_vendedor':codigoVendedor,
         'monto_total':str(monto_total),
+        'monto_comision':monto_comision,
     })
 
 def eliminarTodo(request):

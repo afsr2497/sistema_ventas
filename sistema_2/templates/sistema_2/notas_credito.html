@@ -19,7 +19,6 @@
   <table class="table table-bordered table-hover" id="notasTable" style="font-size: 12px;">
       <thead class="table-dark">
           <tr>
-              <th scope="col">ID</th>
               <th scope="col">Codigo del comprobante</th>
               <th scope="col">Tipo del comprobante</th>
               <th scope="col">Fecha de emision</th>
@@ -31,7 +30,6 @@
       <tbody>
         {% for notaCred in nota %}
           <tr>
-              <td scope="row">{{ notaCred.id }}</th>
               <td>{{ notaCred.codigoComprobante }}</td>
               <td>{{ notaCred.tipoComprobante }}</td>
               <td>{{ notaCred.fechaEmision }}</td>

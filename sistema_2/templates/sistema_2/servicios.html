@@ -42,7 +42,6 @@
     <table class="table table-bordered table-hover" id="serviciosTable" style="font-size: 12px;">
         <thead class="table-dark">
             <tr>
-                <th scope="col">ID</th>
                 <th scope="col">Nombre</th>
                 <th scope="col">Categoria</th>
                 <th scope="col">Sub Categoria</th>
@@ -56,7 +55,6 @@
         <tbody>
           {% for servicio in ser %}
             <tr>
-                <th scope="row">{{ servicio.id }}</th>
                 <td>{{ servicio.nombre }}</td>
                 <td>{{ servicio.categoria }}</td>
                 <td>{{ servicio.sub_categoria }}</td>
@@ -93,7 +91,7 @@
 {% endfor %}
 
 
-<div class="modal fade" tabindex="-1" role="dialog" id="importarSer">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="importarSer">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -117,7 +115,7 @@
 </div>
 
 
-<div class="modal fade" tabindex="-1" role="dialog" id="nuevoServicio">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="nuevoServicio">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">

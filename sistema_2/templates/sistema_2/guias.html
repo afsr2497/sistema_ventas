@@ -159,9 +159,13 @@
         </div>
         <div class="col-md-1">
           <br>
-          <button type="submit" class="btn btn-success">Filtrar</button>
+          <button type="submit" class="btn btn-success" name="Filtrar">Filtrar</button>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-2">
+          <br>
+          <button type="submit" class="btn btn-success" name="Exportar">Exportar Excel</button>
+        </div>
+        <div class="col-md-3">
 
         </div>
         <div class="col-md-2">
@@ -175,7 +179,6 @@
   <table class="table table-bordered table-hover" id="guiasTable" style="font-size: 12px;">
       <thead class="table-dark">
           <tr>
-              <th scope="col">ID</th>
               <th scope="col">Cliente</th>
               <th scope="col">Codigo</th>
               <th scope="col">Fecha</th>
@@ -192,7 +195,6 @@
       <tbody>
           {% for guia in gui %}
           <tr>
-              <th scope="row">{{ guia.id }}</th>
               <td>{{ guia.cliente.1 }}{{ guia.cliente.3 }}</td>
               <td>{{ guia.codigoGuia }}</td>
               <td>{{ guia.fechaGuia }}</td>

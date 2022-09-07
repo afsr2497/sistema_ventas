@@ -43,11 +43,11 @@
     let nuevoDni = document.getElementById('nuevoDni')
     let nuevoNombre = document.getElementById('nuevoNombre')
     let nuevoApellido = document.getElementById('nuevoApellido')
-    let nuevoRazon = document.getElementById('nuevoRazon')
+    let nuevoRazon = document.getElementById('nuevaRazon')
     let nuevoEmail = document.getElementById('nuevoEmail')
     let nuevoContacto = document.getElementById('nuevoContacto')
     let nuevoTelefono = document.getElementById('nuevoTelefono')
-    let nuevoDireccion = document.getElementById('nuevoDireccion')
+    let nuevoDireccion = document.getElementById('nuevaDireccion')
 
     nuevoRuc.value = ''
     nuevoNombre.value = ''
@@ -80,7 +80,6 @@
     <table class="table table-bordered table-hover" id="clientesTable" style="font-size: 12px;">
       <thead class="table-dark">
           <tr>
-              <th scope="col">ID</th>
               <th scope="col">Nombre</th>
               <th scope="col">Apellido</th>
               <th scope="col">Razon Social</th>
@@ -98,7 +97,6 @@
       <tbody>
         {% for cliente in cli %}
           <tr>
-              <th scope="row">{{ cliente.id }}</th>
               <td>{{ cliente.nombre }}</td>
               <td>{{ cliente.apellido }}</td>
               <td>{{ cliente.razon_social }}</td>
@@ -255,7 +253,7 @@
 {% endfor %}
 
 
-<div class="modal fade" tabindex="-1" role="dialog" id="importarCli">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="importarCli">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -279,7 +277,7 @@
 </div>
 
 
-<div class="modal fade" tabindex="-1" role="dialog" id="nuevoCli">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="nuevoCli">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -317,7 +315,7 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Razon social (*)</label>
-              <input type="text" class="form-control" name="razon" id="nuevoRazon">
+              <input type="text" class="form-control" name="razon" id="nuevaRazon">
             </div>
             <div class="col-md-6">
               <label>Email (*)</label>
@@ -337,7 +335,7 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label>Direccion fiscal (*)</label>
-              <input type="text" class="form-control" required name="direccion" id="nuevoDireccion">
+              <input type="text" class="form-control" required name="direccion" id="nuevaDireccion">
             </div>
           </div>
           <div class="modal-footer">

@@ -137,7 +137,6 @@
   <table class="table table-bordered table-hover" id="productosTable" style="font-size: 12px;">
     <thead class="table-dark">
       <tr>
-        <th scope="col">ID</th>
         <th scope="col">Codigo</th>
         <th scope="col">Nombre</th>
         <th scope="col">PV sin IGV</th>
@@ -155,7 +154,6 @@
     <tbody>
       {% for producto in pro_tabla %}
       <tr>
-              <th scope="row">{{ producto.id }}</th>
               <td>{{ producto.codigo }}</td>
               <td>{{ producto.nombre }}</td>
               <td>{{ producto.precio_venta_sin_igv }}</td>
@@ -177,7 +175,7 @@
 
 
 <!--Importar productos-->
-<div class="modal fade" tabindex="-1" role="dialog" id="importarPro">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="importarPro">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -221,7 +219,7 @@
 
 
 <!--Agregar Stock-->
-<div class="modal fade" tabindex="-1" role="dialog" id="agregarStock">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="agregarStock">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -278,7 +276,7 @@
 </div>
 
 <!--Nuevo producto-->
-<div class="modal fade" tabindex="-1" role="dialog" id="nuevoPro">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="nuevoPro">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
