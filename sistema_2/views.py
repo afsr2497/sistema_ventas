@@ -2253,10 +2253,10 @@ def descargar_proforma(request,ind):
     can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
     if proforma_info.monedaProforma == 'SOLES':
         can.drawRightString(490,lista_y[0]+4,'$')
-        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)/Decimal(proforma_info.tipoCambio[0])))))
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)/Decimal(proforma_info.tipoCambio[1])))))
     else:
         can.drawRightString(490,lista_y[0]+4,'S/')
-        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(proforma_info.tipoCambio[1])))))
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(proforma_info.tipoCambio[0])))))
     lista_y = [lista_y[0] - 15,lista_y[1] - 15]
 
     #Linea de separacion con los datos finales
@@ -6391,10 +6391,10 @@ def descargar_proforma_dolares(request,ind):
     can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
     if proforma_info.monedaProforma == 'SOLES':
         can.drawRightString(490,lista_y[0]+4,'$')
-        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)/Decimal(proforma_info.tipoCambio[0])))))
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)/Decimal(proforma_info.tipoCambio[1])))))
     else:
         can.drawRightString(490,lista_y[0]+4,'S/')
-        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(proforma_info.tipoCambio[1])))))
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(proforma_info.tipoCambio[0])))))
     lista_y = [lista_y[0] - 15,lista_y[1] - 15]
 
     #Linea de separacion con los datos finales
