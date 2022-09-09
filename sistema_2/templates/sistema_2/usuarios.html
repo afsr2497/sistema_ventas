@@ -60,7 +60,7 @@
           <td>{{ usuario.usuario.email }}</td>
           <td>{{ usuario.tipo }}</td>
           <td>{{ usuario.celular }}</td>
-          {% if usuario_logued == 'admin' %}
+          {% if usuario_logued == 'Admin' %}
             <td style="text-align: center;"><a class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#usuario{{ usuario.id }}"><i class="fa fa-edit"></i></a></td>
             <td style="text-align: center;"><a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar{{ usuario.id }}"><i class="fa fa-trash"></i></a></td>
           {% else %}
@@ -103,8 +103,8 @@
             <div class="col-md-6">
               <label for="inputState">Tipo</label>
               <select id="inputState" class="form-select" required name="tipo">
-                <option selected>admin</option>
-                <option>vendedor</option>
+                <option selected >Admin</option>
+                <option>Vendedor</option>
               </select>
             </div>
           </div>
@@ -154,13 +154,13 @@
             <div class="col-md-6">
               <label for="inputState">Tipo</label>
               <select id="inputState" class="form-control" required name="tipo" value="{{ usuario.tipo }}">
-                {% if usuario.tipo == 'admin' %}
-                  <option selected>admin</option>
-                  <option>vendedor</option>
+                {% if usuario.tipo == 'Admin' %}
+                  <option selected>Admin</option>
+                  <option>Vendedor</option>
                 {% endif %}
-                {% if usuario.tipo == 'vendedor' %}
-                  <option>admin</option>
-                  <option selected>vendedor</option>
+                {% if usuario.tipo == 'Vendedor' %}
+                  <option>Admin</option>
+                  <option selected>Vendedor</option>
                 {% endif %}
               </select>
             </div>

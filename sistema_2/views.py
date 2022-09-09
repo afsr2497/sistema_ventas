@@ -140,7 +140,7 @@ def usuarios(request):
 @login_required(login_url='/sistema_2')
 def eliminar_usuario(request,ind):
     usuario_eliminar = userProfile.objects.get(id=ind)
-    if usuario_eliminar.usuario.username == 'admin':
+    if usuario_eliminar.usuario.username == 'Admin':
         return HttpResponseRedirect(reverse('sistema_2:usuarios'))
     else:
         usuario_eliminar.usuario.delete()
@@ -587,7 +587,7 @@ def agregar_stock(request):
     if request.method == 'POST':
         usuario_logued = User.objects.get(username=request.user.username)
         user_logued = userProfile.objects.get(usuario=usuario_logued)
-        if user_logued.tipo == 'admin':
+        if user_logued.tipo == 'Admin':
             producto_id = request.POST.get('productoId')
             producto_almacen = request.POST.get('almacenStock')
             producto_cantidad = request.POST.get('cantidadStock')
@@ -632,7 +632,7 @@ def agregar_stock(request):
             ingresos_stock(producto_nombre=producto_nombre,vendedorStock=usuario_info,producto_id=producto_id,producto_codigo=producto_agregar.codigo,almacen=producto_almacen,cantidad=producto_cantidad,fechaIngreso=producto_fecha).save()
             producto_agregar.save()
             return HttpResponseRedirect(reverse('sistema_2:productos'))
-        if user_logued.tipo == 'vendedor':
+        if user_logued.tipo == 'Vendedor':
             producto_id = request.POST.get('productoId')
             producto_almacen = request.POST.get('almacenStock')
             producto_cantidad = request.POST.get('cantidadStock')
@@ -699,9 +699,25 @@ def proformas(request):
                 cotizaciones_filtradas = cotizaciones.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
                 info_coti=[]
                 for coti in cotizaciones_filtradas:
-                    info_coti.append([coti.codigoProforma,coti.vendedor[1],coti.fechaProforma,coti.monedaProforma,coti.estadoProforma,coti.cliente[3]])
-                tabla_excel = pd.DataFrame(info_coti,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
-                tabla_excel.to_excel('info_excel.xlsx')
+                    total_precio_soles = 0.00
+                    total_monto = 0.00
+                    for producto in coti.productos:
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(coti.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_monto = Decimal(total_monto) + Decimal(producto[6])*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                    info_coti.append([coti.fechaProforma,coti.codigoProforma,coti.cliente[3],coti.estadoProforma,coti.monedaProforma,'%.2f'%total_precio_soles])
+                suma_total = 0
+                for elemento in info_coti:
+                    suma_total = suma_total + float(elemento[5])
+                suma_total = round(suma_total,2)
+                info_coti.append(['','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_coti,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto (S/)'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -710,9 +726,23 @@ def proformas(request):
                 coti_exportar = cotizaciones.objects.all()
                 info_coti = []
                 for coti in coti_exportar:
-                    info_coti.append([coti.codigoProforma,coti.vendedor[1],coti.fechaProforma,coti.monedaProforma,coti.estadoProforma,coti.cliente[3]])
-                tabla_excel = pd.DataFrame(info_coti,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
-                tabla_excel.to_excel('info_excel.xlsx')
+                    total_precio_soles = 0.00
+                    for producto in coti.productos:
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(coti.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                    info_coti.append([coti.fechaProforma,coti.codigoProforma,coti.cliente[3],coti.estadoProforma,coti.monedaProforma,'%.2f'%total_precio_soles])
+                suma_total = 0
+                for elemento in info_coti:
+                    suma_total = suma_total + float(elemento[5])
+                suma_total = round(suma_total,2)
+                info_coti.append(['','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_coti,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto (S/)'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -1245,9 +1275,23 @@ def fact(request):
                 facturas_filtradas = facturas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
                 info_facturas=[]
                 for factura in facturas_filtradas:
-                    info_facturas.append([factura.codigoFactura,factura.vendedor[1],factura.fechaFactura,factura.monedaFactura,factura.estadoFactura,factura.cliente[3]])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
-                tabla_excel.to_excel('info_excel.xlsx')
+                    total_precio_soles = 0.00
+                    for producto in factura.productos:
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.monedaFactura,'%.2f'%total_precio_soles])
+                suma_total = 0
+                for elemento in info_facturas:
+                    suma_total = suma_total + float(elemento[5])
+                suma_total = round(suma_total,2)
+                info_facturas.append(['','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto (S/)'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -1256,9 +1300,23 @@ def fact(request):
                 facturas_exportar = facturas.objects.all()
                 info_facturas=[]
                 for factura in facturas_exportar:
-                    info_facturas.append([factura.codigoFactura,factura.vendedor[1],factura.fechaFactura,factura.monedaFactura,factura.estadoFactura,factura.cliente[3]])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
-                tabla_excel.to_excel('info_excel.xlsx')
+                    total_precio_soles = 0.00
+                    for producto in factura.productos:
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.monedaFactura,'%.2f'%total_precio_soles])
+                suma_total = 0
+                for elemento in info_facturas:
+                    suma_total = suma_total + float(elemento[5])
+                suma_total = round(suma_total,2)
+                info_facturas.append(['','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto (S/)'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -5619,6 +5677,10 @@ def update_mov(request,ind):
     users_info = userProfile.objects.all()
     facturas_info = facturas.objects.all()
     guias_info = guias.objects.all()
+    try:
+        vendedor_info = str(mov_actualizar.vendedorOperacion[0])
+    except:
+        vendedor_info = '0'
     return render(request,'sistema_2/update_mov.html',{
         'operacion':mov_actualizar,
         'clientes':clientes,
@@ -5626,7 +5688,7 @@ def update_mov(request,ind):
         'facturas':facturas_info,
         'guias':guias_info,
         'id_bank':mov_actualizar.idCuentaBank,
-        'vendedor':str(mov_actualizar.vendedorOperacion[0])
+        'vendedor':vendedor_info
     })
 
 def actualizar_mov(request,ind):
@@ -5642,7 +5704,7 @@ def actualizar_mov(request,ind):
         clienteReg.save()
         arreglo_guias = info_guia.split(',')
         print(info_vendedor)
-        vendedorReg = userProfile.objects.get(id=info_vendedor)
+        vendedorReg = userProfile.objects.get(codigo=info_vendedor)
         arreglo_vendedor = [vendedorReg.id,vendedorReg.usuario.username,vendedorReg.codigo]
         vendedorReg.save()
         mov_actualizar.clienteOperacion = arreglo_cliente

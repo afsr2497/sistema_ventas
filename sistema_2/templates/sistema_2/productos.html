@@ -169,7 +169,7 @@
             <label>Vendedor</label>
             <select class="selectpicker form-control" id="vendedor" data-live-search="true" name="vendedorStock">
                 {% for usuario in usr %}
-                    {% if usuario.tipo == 'vendedor' %}
+                    {% if usuario.tipo == 'Vendedor' %}
                     <option value="{{ usuario.id }}">{{ usuario.usuario.username }}</option>
                     {% endif %}
                 {% endfor %}

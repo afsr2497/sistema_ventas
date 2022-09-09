@@ -251,10 +251,10 @@
             <input type="number" step="0.01" class="form-control" id="nuevoStock" placeholder="Añadir stock" name="cantidadStock">
             <br>
             <label>Vendedor</label>
-            {% if user_logued.tipo == 'admin' %}
+            {% if user_logued.tipo == 'Admin' %}
               <select class="selectpicker form-control" id="vendedor" data-live-search="true" name="vendedorStock">
                   {% for usuario in usr %}
-                      {% if usuario.tipo == 'vendedor' %}
+                      {% if usuario.tipo == 'Vendedor' %}
                       <option value="{{ usuario.id }}">{{ usuario.usuario.username }}</option>
                       {% endif %}
                   {% endfor %}

@@ -21,6 +21,13 @@
         let cotiSeleccionada= document.getElementById('cotiSeleccionada')
         let infoComprobante = document.getElementById('infoComprobante')
         let infoCotizacion = document.getElementById('infoCotizacion')
+        let vendedorSeleccionado = document.getElementById('vendedorSeleccionado')
+
+        vendedorSeleccionado.onchange = function()
+        {
+            let vendedorCodigo = document.getElementById('vendedorCodigo')
+            vendedorCodigo.value = vendedorSeleccionado.value
+        }
 
         clienteSeleccionado.onchange = function() 
         {
@@ -174,15 +181,14 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label>Código del vendedor</label>
-            <select class="selectpicker form-control" name="infoVendedor">
+            <select class="selectpicker form-control"  id="vendedorSeleccionado">
                 {% for usuario in usuarios %}
-                    {% if usuario.id == vendedor %}
-                        <option value="{{ usuario.id }}" selected>{{ usuario.codigo }}</option>
-                    {% else %}
-                        <option value="{{ usuario.id }}">{{ usuario.codigo }}</option>
-                    {% endif %}
+                    <option value="{{ usuario.codigo }}">{{ usuario.codigo }}</option>
                 {% endfor %}
             </select>
+            <br>
+            <br>
+            <input id="vendedorCodigo" type="text" name="infoVendedor" class="form-control" value="{{ operacion.vendedorOperacion.2 }}">
         </div>
     </div>
     <br>
@@ -191,12 +197,12 @@
     <div class="row mb-3">
         <div class="col-md-3">
             <label>Cotizacion (*)</label>
-            <select class="form-select" name="infoCotizacion" id="cotiSeleccionada" >
+            <select class="form-select" id="cotiSeleccionada" >
             </select>
         </div>
         <div class="col-md-3">
             <label>Factura / Boleta (*)</label>
-            <select class="form-select" name="infoFactura" id="facturaSeleccionada" >
+            <select class="form-select"  id="facturaSeleccionada" >
             </select>
         </div>
     </div>
@@ -205,11 +211,11 @@
     <div class="row mb-3">
         <div class="col-md-3">
             <label>Cotizacion</label>
-            <input class="form-control" id="infoCotizacion" value="{{ operacion.cotizacionOperacion.0 }}">
+            <input class="form-control" id="infoCotizacion" name="infoCotizacion" value="{{ operacion.cotizacionOperacion.0 }}">
         </div>
         <div class="col-md-3">
             <label>Factura / Boleta</label>
-            <input class="form-control" id="infoComprobante" value="{{ operacion.comprobanteOperacion.0 }}">
+            <input class="form-control" id="infoComprobante" name="infoFactura" value="{{ operacion.comprobanteOperacion.0 }}">
         </div>
         <div class="col-md-3">
             <label>Guia (*)</label>
