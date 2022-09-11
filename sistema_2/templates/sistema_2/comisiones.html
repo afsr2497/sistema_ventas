@@ -27,17 +27,30 @@
         <form class="row" method="post" action="{% url 'sistema_2:comisiones' %}" style="font-size: 15px;">
         {% csrf_token %}
             <div class="col-md-2">
-                <label>Seleccionar usuario</label>
-                <select class="selectpicker form-control" name="id_vendedor" style="font-size: 12px;">
-                    <option value="0" style="font-size: 12px;">Seleccionar</option>
-                {% for usuario in usuariosInfo %}
-                    {% if usuario.codigo == id_vendedor %}
-                        <option value="{{ usuario.id }}" selected style="font-size: 12px;">{{ usuario.codigo }}</option>
-                    {% else %}
-                        <option value="{{ usuario.id }}" style="font-size: 12px;">{{ usuario.codigo }}</option>
-                    {% endif %}
-                {% endfor %}
-                </select>
+                {% if tipoUsuario == 'Admin' %}
+                    <label>Seleccionar usuario</label>
+                    <select class="selectpicker form-control" name="id_vendedor" style="font-size: 12px;">
+                        <option value="0" style="font-size: 12px;">Seleccionar</option>
+                    {% for usuario in usuariosInfo %}
+                        {% if usuario.codigo == id_vendedor %}
+                            <option value="{{ usuario.id }}" selected style="font-size: 12px;">{{ usuario.codigo }}</option>
+                        {% else %}
+                            <option value="{{ usuario.id }}" style="font-size: 12px;">{{ usuario.codigo }}</option>
+                        {% endif %}
+                    {% endfor %}
+                    </select>
+                {% endif %}
+                {% if tipoUsuario == 'Vendedor' %}
+                    <label>Seleccionar usuario</label>
+                    <select class="selectpicker form-control" name="id_vendedor" style="font-size: 12px;">
+                        <option value="0" style="font-size: 12px;">Seleccionar</option>
+                    {% for usuario in usuariosInfo %}
+                        {% if usuario.codigo == usuarioSistema %}
+                            <option value="{{ usuario.id }}" selected style="font-size: 12px;">{{ usuario.codigo }}</option>
+                        {% endif %}
+                    {% endfor %}
+                    </select>
+                {% endif %}                
             </div>
             <div class="col-md-2">
                 <label>Mes :</label>

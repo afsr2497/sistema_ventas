@@ -114,6 +114,7 @@ class guias(models.Model):
     nroDocumento = models.CharField(max_length=128,null=True)
     estadoSunat = models.CharField(max_length=128,null=True)
     fecha_emision = models.DateField(null=True)
+    cotiRelacionada = models.CharField(max_length=128,default='')
     
 
 class facturas(models.Model):
@@ -135,11 +136,12 @@ class facturas(models.Model):
     nroFactura = models.CharField(max_length=64,null=True)
     cuotasFactura = models.CharField(max_length=64,null=True)
     fechasCuotas = ArrayField(models.CharField(max_length=64,null=True),null=True)
-    codigosGuias = ArrayField(models.CharField(max_length=128),null=True)
+    codigosGuias = ArrayField(models.CharField(max_length=128),default=list())
     nroDocumento = models.CharField(max_length=128,null=True)
     estadoSunat = models.CharField(max_length=128,default='')
     fecha_emision = models.DateField(null=True)
     registroFactura = models.CharField(max_length=64,default='0')
+    codigosCotis = ArrayField(models.CharField(max_length=128),default=list())
 
 class boletas(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)

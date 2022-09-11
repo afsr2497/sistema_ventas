@@ -23,6 +23,53 @@
         let infoCotizacion = document.getElementById('infoCotizacion')
         let vendedorSeleccionado = document.getElementById('vendedorSeleccionado')
 
+        if(infoComprobante.value !== '')
+        {
+            comprobantes = infoComprobante.value.substring(1,infoComprobante.value.length - 1).split(',')
+            console.log(comprobantes)
+            for(let i = 0; i < comprobantes.length;i++)
+            {
+                comprobantes[i] = comprobantes[i].replace(/ /g, "")
+                comprobantes[i] = comprobantes[i].substring(1,comprobantes[i].length-1)
+            }
+            console.log(comprobantes)
+            datos_comprobantes = comprobantes.join(',')
+            console.log(datos_comprobantes)
+            infoComprobante.value = datos_comprobantes
+        }
+
+        if(infoCotizacion.value !== '')
+        {
+            cotis = infoCotizacion.value.substring(1,infoCotizacion.value.length - 1).split(',')
+            console.log(cotis)
+            for(let i = 0; i < cotis.length;i++)
+            {
+                cotis[i] = cotis[i].replace(/ /g, "")
+                cotis[i] = cotis[i].substring(1,cotis[i].length-1)
+            }
+            console.log(cotis)
+            datos_cotis = cotis.join(',')
+            console.log(datos_cotis)
+            infoCotizacion.value = datos_cotis
+        }
+
+        if(guiaSeleccionada.value !== '')
+        {
+            guias = guiaSeleccionada.value.substring(1,guiaSeleccionada.value.length - 1).split(',')
+            console.log(guias)
+            for(let i = 0; i < guias.length;i++)
+            {
+                guias[i] = guias[i].replace(/ /g, "")
+                guias[i] = guias[i].substring(1,guias[i].length-1)
+            }
+            console.log(guias)
+            datos_guias = guias.join(',')
+            console.log(datos_guias)
+            guiaSeleccionada.value = datos_guias
+        }
+
+
+
         vendedorSeleccionado.onchange = function()
         {
             let vendedorCodigo = document.getElementById('vendedorCodigo')
@@ -116,7 +163,10 @@
                 cliente_info=await res.json()
                 console.log(cliente_info)
                 guiaSeleccionada.value = ''
+                cotiSeleccionada.value = ''
+                infoCotizacion.value = cliente_info.proformas
                 guiaSeleccionada.value = cliente_info.guias
+
             }
             get_data()
         }
@@ -153,12 +203,20 @@
         </div>
         <div class="col-md-6">
             <label>Cliente</label>
-            <select class="selectpicker form-control" name="infoCliente" id="clienteSeleccionado">
+            <select class="selectpicker form-control" data-live-search="true" name="infoCliente" id="clienteSeleccionado">
                 {% for cliente in clientes %}
                     {% if cliente.nombre != '' %}
+                        {% if cliente_info == cliente.id %}
+                        <option value="{{ cliente.id }}" selected>{{ cliente.nombre }} {{ cliente.apellido }}</option>
+                        {% else %}
                         <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }}</option>
+                        {% endif %}
                     {% else %}
+                        {% if cliente.id == cliente_info %}
+                        <option value="{{ cliente.id }}" selected>{{ cliente.razon_social }}</option>
+                        {% else %}
                         <option value="{{ cliente.id }}">{{ cliente.razon_social }}</option>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </select>
@@ -195,7 +253,7 @@
     <h6>Actualizar documentos</h6>
     <br>
     <div class="row mb-3">
-        <div class="col-md-3">
+        <div class="col-md-3" hidden>
             <label>Cotizacion (*)</label>
             <select class="form-select" id="cotiSeleccionada" >
             </select>
@@ -210,16 +268,16 @@
     <h6>Documentos seleccionados</h6>
     <div class="row mb-3">
         <div class="col-md-3">
-            <label>Cotizacion</label>
-            <input class="form-control" id="infoCotizacion" name="infoCotizacion" value="{{ operacion.cotizacionOperacion.0 }}">
+            <label>Factura / Boleta</label>
+            <input class="form-control" id="infoComprobante" name="infoFactura" value="{{ operacion.comprobanteOperacion }}">
         </div>
         <div class="col-md-3">
-            <label>Factura / Boleta</label>
-            <input class="form-control" id="infoComprobante" name="infoFactura" value="{{ operacion.comprobanteOperacion.0 }}">
+            <label>Cotizacion</label>
+            <input class="form-control" id="infoCotizacion" name="infoCotizacion" value="{{ operacion.cotizacionOperacion }}">
         </div>
         <div class="col-md-3">
             <label>Guia (*)</label>
-            <input class="form-control" name="infoGuia" id="guiaSeleccionada">
+            <input class="form-control" name="infoGuia" id="guiaSeleccionada" value="{{ operacion.guiaOperacion }}">
         </div>
     </div>
     <br>

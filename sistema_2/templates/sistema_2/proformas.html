@@ -10,6 +10,79 @@
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 <script src="{% static 'sistema_2/cotizaciones.js' %}"></script>
 
+<script>
+    function alternar()
+    {
+        let elemento_soles = document.getElementById('seleccionSoles')
+        let elemento_dolares = document.getElementById('seleccionDolares')
+        
+        if(elemento_soles.checked === true)
+        {
+            elemento_dolares.disabled = true
+        }
+        else
+        {
+            elemento_dolares.disabled = false
+        }
+
+        if(elemento_dolares.checked === true)
+        {
+            elemento_soles.disabled = true
+        }
+        else
+        {
+            elemento_soles.disabled = false
+        }
+    }
+
+    function cargarOpciones(identificador)
+    {
+        info_comprobante = identificador.substring(0,4)
+        dato_comprobante = identificador.substring(4)
+        elemento_titulo = document.getElementById('tituloGenerador')
+        opciones_generar = document.getElementById('opcionesGenerar')
+        generar_documento = document.getElementById('generar_documento')
+
+        generar_documento.method = 'post'
+        opciones_generar.innerHTML = ''
+        elemento_titulo.innerHTML = ''
+
+        if(info_comprobante === 'fact')
+        {
+            elemento_titulo.innerHTML = 'Generar Factura'
+            url = '/sistema_2/gen_factura_cot/' + dato_comprobante
+            //url = '{% ' + '\'' + 'sistema_2:gen_factura_cot' + '\'' + ' '+ dato_comprobante + " %\}"
+            console.log(url)
+            generar_documento.action = url
+        }
+
+        if(info_comprobante === 'guia')
+        {
+            elemento_titulo.innerHTML = 'Generar Guia'
+            url = '/sistema_2/gen_guia_cot/' + dato_comprobante
+            //url = '{% ' + '\'' + 'sistema_2:gen_guia_cot' + '\'' + ' '+ dato_comprobante + " %\}"
+            console.log(url)
+            generar_documento.action = url
+        }
+
+        if(info_comprobante === 'bole')
+        {
+            elemento_titulo.innerHTML = 'Generar Boleta'
+            url = '/sistema_2/gen_boleta_cot/' + dato_comprobante
+            //url = '{% ' + '\'' + 'sistema_2:gen_guia_cot' + '\'' + ' '+ dato_comprobante + " %\}"
+            console.log(url)
+            generar_documento.action = url
+        }
+
+        console.log(generar_documento)
+        opciones_generar.innerHTML = `
+            <button type="submit" class="btn btn-primary">Generar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        `
+
+    }
+</script>
+
 {% endblock %}
 
 
@@ -97,17 +170,17 @@
                 {% if cot.estadoProforma == 'Generada' %}
                     {% if cot.cliente.1 == '' %}
                         {% if cot.tipoProforma == 'Productos' %}
-                        <a class="btn btn-success" href="{% url 'sistema_2:gen_factura_cot' cot.id %}">F</a>
-                        <a class="btn btn-success" href="{% url 'sistema_2:gen_guia_cot' cot.id %}">G</a>
+                        <a class="btn btn-success" id="fact{{ cot.id }}" onclick="cargarOpciones(this.id)" data-bs-toggle="modal" data-bs-target="#crearDocumento">F</a>
+                        <a class="btn btn-success" id="guia{{ cot.id }}" onclick="cargarOpciones(this.id)" data-bs-toggle="modal" data-bs-target="#crearDocumento">G</a>
                         {% else %}
-                        <a class="btn btn-success" href="{% url 'sistema_2:gen_factura_cot' cot.id %}">F</a>
+                        <a class="btn btn-success" id="fact{{ cot.id }}" onclick="cargarOpciones(this.id)" data-bs-toggle="modal" data-bs-target="#crearDocumento">F</a>
                         {% endif %}
                     {% else %}
                         {% if cot.tipoProforma == 'Productos' %}
-                        <a class="btn btn-success" href="{% url 'sistema_2:gen_boleta_cot' cot.id %}">B</a>
-                        <a class="btn btn-success" href="{% url 'sistema_2:gen_guia_cot' cot.id %}">G</a>
+                        <a class="btn btn-success" id="bole{{ cot.id }}" onclick="cargarOpciones(this.id)" data-bs-toggle="modal" data-bs-target="#crearDocumento">B</a>
+                        <a class="btn btn-success" id="guia{{ cot.id }}" onclick="cargarOpciones(this.id)" data-bs-toggle="modal" data-bs-target="#crearDocumento">G</a>
                         {% else %}
-                        <a class="btn btn-success" href="{% url 'sistema_2:gen_boleta_cot' cot.id %}">B</a>
+                        <a class="btn btn-success" id="bole{{ cot.id }}" onclick="cargarOpciones(this.id)" data-bs-toggle="modal" data-bs-target="#crearDocumento">B</a>
                         {% endif %}
                     {% endif %}
                 {% endif %}
@@ -127,5 +200,37 @@
   </table>
 </div>
 
+
+<!--Verificar moneda de la guia a generar-->
+<div class="modal fade" tabindex="-1" role="dialog" id="crearDocumento" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="generar_documento">
+            {% csrf_token %}
+                <div class="modal-header">
+                    <h5 id="tituloGenerador"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="seleccionSoles" name="monedaSoles" onclick="alternar()">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            Soles
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="seleccionDolares" name="monedaDolares" onclick="alternar()">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            Dolares
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer" id="opcionesGenerar">
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

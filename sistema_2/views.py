@@ -1310,14 +1310,14 @@ def fact(request):
                     total_precio_soles = 0.00
                     total_precio = 0.00
                     for producto in factura.productos:
-                        if factura.monedaProforma == 'SOLES':
+                        if factura.monedaFactura == 'SOLES':
                             if producto[5] == 'DOLARES':
                                 v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                             if producto[5] == 'SOLES':
                                 v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
-                        if factura.monedaProforma == 'DOLARES':
+                        if factura.monedaFactura == 'DOLARES':
                             if producto[5] == 'SOLES':
                                 v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
@@ -1332,13 +1332,13 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_facturas:
-                    suma_total = suma_total + float(elemento[5])
+                    suma_total = suma_total + float(elemento[7])
                 suma_total = round(suma_total,2)
-                info_facturas.append(['','','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto de la factura','Monto (S/)'])
+                info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -1351,14 +1351,14 @@ def fact(request):
                     total_precio_soles = 0.00
                     total_precio = 0.00
                     for producto in factura.productos:
-                        if factura.monedaProforma == 'SOLES':
+                        if factura.monedaFactura == 'SOLES':
                             if producto[5] == 'DOLARES':
                                 v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                             if producto[5] == 'SOLES':
                                 v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
-                        if factura.monedaProforma == 'DOLARES':
+                        if factura.monedaFactura == 'DOLARES':
                             if producto[5] == 'SOLES':
                                 v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
@@ -1373,13 +1373,13 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.monedaFactura,'%.2f'%total_precio_soles])
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_facturas:
-                    suma_total = suma_total + float(elemento[5])
+                    suma_total = suma_total + float(elemento[7])
                 suma_total = round(suma_total,2)
-                info_facturas.append(['','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto de la factura','Monto (S/)'])
+                info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -3991,6 +3991,15 @@ def gen_guia_boleta(request):
 
 @login_required(login_url='/sistema_2')
 def gen_factura_cot(request,ind):
+    moneda_soles = request.POST.get('monedaSoles')
+    moneda_dolares = request.POST.get('monedaDolares')
+
+    if moneda_soles == 'on':
+        moneda_factura = 'SOLES'
+    if moneda_dolares == 'on':
+        moneda_factura = 'DOLARES'
+    print(moneda_soles)
+    print(moneda_dolares)
     cot_obtener = cotizaciones.objects.get(id=ind)
     cot_obtener.estadoProforma = 'Emitida'
     factura_cliente = cot_obtener.cliente
@@ -3998,7 +4007,7 @@ def gen_factura_cot(request,ind):
     factura_servicios = cot_obtener.servicios
     factura_vendedor = cot_obtener.vendedor
     factura_pago = cot_obtener.pagoProforma
-    factura_moneda = cot_obtener.monedaProforma
+    factura_moneda = moneda_factura
     if(int((datetime.now()-timedelta(hours=5)).month) < 10):
         mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
     else:
@@ -4010,6 +4019,8 @@ def gen_factura_cot(request,ind):
         dia = str((datetime.now()-timedelta(hours=5)).day)
     factura_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
     factura_venc = factura_fecha
+    cotiFactura = cot_obtener.codigoProforma
+    codigos_cotis = [cotiFactura]
     fecha_nueva = parse(factura_fecha)
     print(factura_fecha)
     factura_tipo = cot_obtener.tipoProforma
@@ -4034,15 +4045,25 @@ def gen_factura_cot(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     factura_codigo = str(factura_serie) + '-' + str(nro_imprimir)
-    id_last = facturas.objects.latest('id').id
-    id_last = int(id_last)
+    try:
+        id_last = facturas.objects.latest('id').id
+        id_last = int(id_last)
+    except:
+        id_last = 0
     id_nuevo = id_last + 1
-    facturas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=factura_productos,servicios=factura_servicios,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
+    facturas(codigosCotis=codigos_cotis,id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=factura_productos,servicios=factura_servicios,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
     time.sleep(0.5)
     return HttpResponseRedirect(reverse('sistema_2:fact'))
 
 @login_required(login_url='/sistema_2')
 def gen_boleta_cot(request,ind):
+    moneda_soles = request.POST.get('monedaSoles')
+    moneda_dolares = request.POST.get('monedaDolares')
+
+    if moneda_soles == 'on':
+        moneda_boleta = 'SOLES'
+    if moneda_dolares == 'on':
+        moneda_boleta = 'DOLARES'
     cot_obtener = cotizaciones.objects.get(id=ind)
     cot_obtener.estadoProforma = 'Emitida'
     boleta_cliente = cot_obtener.cliente
@@ -4050,7 +4071,7 @@ def gen_boleta_cot(request,ind):
     boleta_servicios = cot_obtener.servicios
     boleta_vendedor = cot_obtener.vendedor
     boleta_pago = cot_obtener.pagoProforma
-    boleta_moneda = cot_obtener.monedaProforma
+    boleta_moneda = moneda_boleta
     if(int((datetime.now()-timedelta(hours=5)).month) < 10):
         mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
     else:
@@ -4084,8 +4105,11 @@ def gen_boleta_cot(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     boleta_codigo = str(boleta_serie) + '-' + str(nro_imprimir)
-    id_last = boletas.objects.latest('id').id
-    id_last = int(id_last)
+    try:
+        id_last = boletas.objects.latest('id').id
+        id_last = int(id_last)
+    except:
+        id_last = 0
     id_nuevo = id_last + 1
     boletas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=boleta_nroDocumento,codigosGuias=boleta_guias,serieBoleta=boleta_serie,nroBoleta=boleta_nro,imprimirDescuento=boleta_dscto,fechaVencBoleta=boleta_venc,cliente=boleta_cliente,productos=boleta_productos,servicios=boleta_servicios,vendedor=boleta_vendedor,pagoBoleta=boleta_pago,monedaBoleta=boleta_moneda,fechaBoleta=boleta_fecha,tipoBoleta=boleta_tipo,codigoBoleta=boleta_codigo,tipoCambio=boleta_cambio,estadoBoleta=boleta_estado).save()
     time.sleep(0.5)
@@ -4474,6 +4498,13 @@ def verificar_guia(request,ind):
 
 @login_required(login_url='/sistema_2')
 def gen_guia_cot(request,ind):
+    moneda_soles = request.POST.get('monedaSoles')
+    moneda_dolares = request.POST.get('monedaDolares')
+
+    if moneda_soles == 'on':
+        moneda_guia = 'SOLES'
+    if moneda_dolares == 'on':
+        moneda_guia = 'DOLARES'
     cot_gen = cotizaciones.objects.get(id=ind)
     guia_cliente = cot_gen.cliente
     guia_productos = cot_gen.productos
@@ -4484,7 +4515,7 @@ def gen_guia_cot(request,ind):
     guia_servicios = cot_gen.servicios
     guia_vendedor = cot_gen.vendedor
     guia_pago = cot_gen.pagoProforma
-    guia_moneda = cot_gen.monedaProforma
+    guia_moneda = moneda_guia
     if(int((datetime.now()-timedelta(hours=5)).month) < 10):
         mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
     else:
@@ -4496,6 +4527,7 @@ def gen_guia_cot(request,ind):
         dia = str((datetime.now()-timedelta(hours=5)).day)
     
     guia_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+    cotiGuia = cot_gen.codigoProforma
     guia_fecha_venc = guia_fecha
     fecha_nueva = parse(guia_fecha)
     guia_tipo = cot_gen.tipoProforma
@@ -4516,10 +4548,13 @@ def gen_guia_cot(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     guia_codigo = str(guia_serie) + '-' + str(nro_imprimir)
-    id_last = guias.objects.latest('id').id
-    id_last = int(id_last)
+    try:
+        id_last = guias.objects.latest('id').id
+        id_last = int(id_last)
+    except:
+        id_last = 0
     id_nuevo = id_last + 1
-    guias(id=id_nuevo,fecha_emision=fecha_nueva,observacionesGuia=guia_obs,nroDocumento=guia_nroDocumento,cantidadCuotas=guia_nro_cuotas,datosVehiculo=guia_vehiculo,serieGuia=guia_serie,nroGuia=guia_nro,datosTraslado=guia_traslado,datosTransportista=guia_transportista,fechaVencGuia=guia_fecha_venc,cliente=guia_cliente,productos=guia_productos,servicios=guia_servicios,vendedor=guia_vendedor,pagoGuia=guia_pago,monedaGuia=guia_moneda,fechaGuia=guia_fecha,tipoGuia=guia_tipo,codigoGuia=guia_codigo,tipoCambio=guia_cambio,estadoGuia=guia_estado).save()
+    guias(cotiRelacionada=cotiGuia,id=id_nuevo,fecha_emision=fecha_nueva,observacionesGuia=guia_obs,nroDocumento=guia_nroDocumento,cantidadCuotas=guia_nro_cuotas,datosVehiculo=guia_vehiculo,serieGuia=guia_serie,nroGuia=guia_nro,datosTraslado=guia_traslado,datosTransportista=guia_transportista,fechaVencGuia=guia_fecha_venc,cliente=guia_cliente,productos=guia_productos,servicios=guia_servicios,vendedor=guia_vendedor,pagoGuia=guia_pago,monedaGuia=guia_moneda,fechaGuia=guia_fecha,tipoGuia=guia_tipo,codigoGuia=guia_codigo,tipoCambio=guia_cambio,estadoGuia=guia_estado).save()
     cot_gen.estadoProforma = 'Emitida'
     cot_gen.save()
     return HttpResponseRedirect(reverse('sistema_2:gui'))
@@ -4575,8 +4610,11 @@ def gen_boleta_guia(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     boleta_codigo = str(boleta_serie) + '-' + str(nro_imprimir)
-    id_last = boletas.objects.latest('id').id
-    id_last = int(id_last)
+    try:
+        id_last = boletas.objects.latest('id').id
+        id_last = int(id_last)
+    except:
+        id_last = 0
     id_nuevo = id_last + 1
     boletas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=boleta_nroDocumento,codigosGuias=boleta_guias,serieBoleta=boleta_serie,nroBoleta=boleta_nro,imprimirDescuento=boleta_dscto,fechaVencBoleta=boleta_venc,cliente=boleta_cliente,productos=boleta_productos,servicios=boleta_servicios,vendedor=boleta_vendedor,pagoBoleta=boleta_pago,monedaBoleta=boleta_moneda,fechaBoleta=boleta_fecha,tipoBoleta=boleta_tipo,codigoBoleta=boleta_codigo,tipoCambio=boleta_cambio,estadoBoleta=boleta_estado).save()
     time.sleep(0.5)
@@ -4625,6 +4663,8 @@ def gen_factura_guia(request,ind):
     cod_guia = guia_obtener.serieGuia + '-' + nro_Guia
     factura_guias = []
     factura_guias.append(cod_guia)
+    factura_cotis = []
+    factura_cotis.append(guia_obtener.cotiRelacionada) 
     datos_doc = config_docs.objects.get(id=1)
     factura_serie = datos_doc.facturaSerie
     factura_nro = datos_doc.facturaNro
@@ -4635,10 +4675,13 @@ def gen_factura_guia(request,ind):
     while len(nro_imprimir) < 4:
         nro_imprimir = '0' + nro_imprimir
     factura_codigo = str(factura_serie) + '-' + str(nro_imprimir)
-    id_last = facturas.objects.latest('id').id
-    id_last = int(id_last)
+    try:
+        id_last = facturas.objects.latest('id').id
+        id_last = int(id_last)
+    except:
+        id_last = 0
     id_nuevo = id_last + 1
-    facturas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=factura_productos,servicios=factura_servicios,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
+    facturas(codigosCotis=factura_cotis,id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=factura_productos,servicios=factura_servicios,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
     time.sleep(0.5)
     return HttpResponseRedirect(reverse('sistema_2:fact'))
 
@@ -4717,7 +4760,12 @@ def crear_factura_guias(request):
                 id_last = facturas.objects.latest('id').id
                 id_last = int(id_last)
                 id_nuevo = id_last + 1
-                facturas(id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=productos,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
+                factura_cotis = []
+                for guia_info in factura_guias:
+                    guia_mod = guias.objects.get(codigoGuia=guia_info)
+                    factura_cotis.append(guia_mod.cotiRelacionada)
+                    guia_mod.save()
+                facturas(codigosCotis=factura_cotis,id=id_nuevo,fecha_emision=fecha_nueva,nroDocumento=factura_nroDocumento,codigosGuias=factura_guias,fechasCuotas=fechas_cuotas,cuotasFactura=factura_cuotas,serieFactura=factura_serie,nroFactura=factura_nro,imprimirDescuento=factura_dscto,fechaVencFactura=factura_venc,cliente=factura_cliente,productos=productos,vendedor=factura_vendedor,pagoFactura=factura_pago,monedaFactura=factura_moneda,fechaFactura=factura_fecha,tipoFactura=factura_tipo,codigoFactura=factura_codigo,tipoCambio=factura_cambio,estadoFactura=factura_estado).save()
             else:
                 print('No se tiene al mismo cliente')
             return JsonResponse({'status': 'Todo added!'})
@@ -5745,6 +5793,10 @@ def update_mov(request,ind):
         vendedor_info = str(mov_actualizar.vendedorOperacion[0])
     except:
         vendedor_info = '0'
+    try:
+        cliente_info = int(mov_actualizar.clienteOperacion[0])
+    except:
+        cliente_info = 0
     return render(request,'sistema_2/update_mov.html',{
         'operacion':mov_actualizar,
         'clientes':clientes,
@@ -5752,7 +5804,8 @@ def update_mov(request,ind):
         'facturas':facturas_info,
         'guias':guias_info,
         'id_bank':mov_actualizar.idCuentaBank,
-        'vendedor':vendedor_info
+        'vendedor':vendedor_info,
+        'cliente_info':cliente_info,
     })
 
 def actualizar_mov(request,ind):
@@ -5767,18 +5820,23 @@ def actualizar_mov(request,ind):
         arreglo_cliente = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
         clienteReg.save()
         arreglo_guias = info_guia.split(',')
+        arreglo_facturas = info_factura.split(',')
+        arreglo_cotis = info_cotizacion.split(',')
         print(info_vendedor)
-        vendedorReg = userProfile.objects.get(codigo=info_vendedor)
-        arreglo_vendedor = [vendedorReg.id,vendedorReg.usuario.username,vendedorReg.codigo]
+        if info_vendedor != '':
+            vendedorReg = userProfile.objects.get(codigo=info_vendedor)
+            arreglo_vendedor = [vendedorReg.id,vendedorReg.usuario.username,vendedorReg.codigo]
+        else:
+            arreglo_vendedor = []
         vendedorReg.save()
         mov_actualizar.clienteOperacion = arreglo_cliente
-        mov_actualizar.comprobanteOperacion = [info_factura]
-        mov_actualizar.cotizacionOperacion = [info_cotizacion]
+        mov_actualizar.comprobanteOperacion = arreglo_facturas
+        mov_actualizar.cotizacionOperacion = arreglo_cotis
         mov_actualizar.guiaOperacion = arreglo_guias
         mov_actualizar.vendedorOperacion = arreglo_vendedor
 
         print(mov_actualizar.comprobanteOperacion[0] == None)
-        if (mov_actualizar.comprobanteOperacion[0] == None or mov_actualizar.comprobanteOperacion[0] == 'SinSeleccion') and (mov_actualizar.cotizacionOperacion[0] == None or mov_actualizar.cotizacionOperacion[0] == 'SinSeleccion'):
+        if (mov_actualizar.comprobanteOperacion[0] == None or mov_actualizar.comprobanteOperacion[0] == 'SinSeleccion'):
             mov_actualizar.estadoOperacion = 'INCOMPLETA'
         else:
             mov_actualizar.estadoOperacion = 'COMPLETA'
@@ -5845,12 +5903,14 @@ def obtener_guias_factura(request,ind):
                 print(facturas_info.codigosGuias)
                 return JsonResponse(
                     {
-                        'guias': facturas_info.codigosGuias
+                        'guias': facturas_info.codigosGuias,
+                        'proformas':facturas_info.codigosCotis
                     })
             else:
                 return JsonResponse(
                     {
-                        'guias': []
+                        'guias': [],
+                        'proformas':[]
                     })
         return JsonResponse({'status': 'Invalid request'}, status=400)
     else:
@@ -6026,6 +6086,9 @@ def descargar_filtrado(request):
         return response
 
 def comisiones(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     registros_vendedor = []
     codigoVendedor = ''
     monto_total = 0
@@ -6070,6 +6133,8 @@ def comisiones(request):
                 'year_filter':year_filter,
                 'monto_total':str(monto_total),
                 'monto_comision':monto_comision,
+                'tipoUsuario':str(user_logued.tipo),
+                'usuarioSistema':str(user_logued.codigo),
             })
         elif 'Exportar' in request.POST:
             month_filter = str(request.POST.get('monthInfo'))
@@ -6129,6 +6194,8 @@ def comisiones(request):
         'id_vendedor':codigoVendedor,
         'monto_total':str(monto_total),
         'monto_comision':monto_comision,
+        'tipoUsuario':str(user_logued.tipo),
+        'usuarioSistema':str(user_logued.codigo),
     })
 
 def eliminarTodo(request):
