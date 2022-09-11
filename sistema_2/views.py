@@ -701,7 +701,23 @@ def proformas(request):
                 for coti in cotizaciones_filtradas:
                     total_precio_soles = 0.00
                     total_monto = 0.00
+                    total_precio = 0.00
                     for producto in coti.productos:
+                        if coti.monedaProforma == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(coti.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if coti.monedaProforma == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(coti.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
                         if producto[5] == 'DOLARES':
                             v_producto = Decimal(producto[6])*Decimal(coti.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
@@ -710,13 +726,13 @@ def proformas(request):
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_monto = Decimal(total_monto) + Decimal(producto[6])*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_coti.append([coti.fechaProforma,coti.codigoProforma,coti.cliente[3],coti.estadoProforma,coti.monedaProforma,'%.2f'%total_precio_soles])
+                    info_coti.append([coti.fechaProforma,coti.codigoProforma,coti.cliente[3],coti.estadoProforma,coti.monedaProforma,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_coti:
                     suma_total = suma_total + float(elemento[5])
                 suma_total = round(suma_total,2)
-                info_coti.append(['','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_coti,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto (S/)'])
+                info_coti.append(['','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_coti,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto de la proforma','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -727,7 +743,23 @@ def proformas(request):
                 info_coti = []
                 for coti in coti_exportar:
                     total_precio_soles = 0.00
+                    total_precio = 0.00
                     for producto in coti.productos:
+                        if coti.monedaProforma == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(coti.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if coti.monedaProforma == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(coti.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
                         if producto[5] == 'DOLARES':
                             v_producto = Decimal(producto[6])*Decimal(coti.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
@@ -735,13 +767,13 @@ def proformas(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_coti.append([coti.fechaProforma,coti.codigoProforma,coti.cliente[3],coti.estadoProforma,coti.monedaProforma,'%.2f'%total_precio_soles])
+                    info_coti.append([coti.fechaProforma,coti.codigoProforma,coti.cliente[3],coti.estadoProforma,coti.monedaProforma,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_coti:
                     suma_total = suma_total + float(elemento[5])
                 suma_total = round(suma_total,2)
-                info_coti.append(['','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_coti,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto (S/)'])
+                info_coti.append(['','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_coti,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto de la proforma','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -1276,7 +1308,23 @@ def fact(request):
                 info_facturas=[]
                 for factura in facturas_filtradas:
                     total_precio_soles = 0.00
+                    total_precio = 0.00
                     for producto in factura.productos:
+                        if factura.monedaProforma == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if factura.monedaProforma == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
                         if producto[5] == 'DOLARES':
                             v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
@@ -1284,13 +1332,13 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.monedaFactura,'%.2f'%total_precio_soles])
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_facturas:
                     suma_total = suma_total + float(elemento[5])
                 suma_total = round(suma_total,2)
-                info_facturas.append(['','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto (S/)'])
+                info_facturas.append(['','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto de la factura','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -1301,7 +1349,23 @@ def fact(request):
                 info_facturas=[]
                 for factura in facturas_exportar:
                     total_precio_soles = 0.00
+                    total_precio = 0.00
                     for producto in factura.productos:
+                        if factura.monedaProforma == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if factura.monedaProforma == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
                         if producto[5] == 'DOLARES':
                             v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
@@ -1315,7 +1379,7 @@ def fact(request):
                     suma_total = suma_total + float(elemento[5])
                 suma_total = round(suma_total,2)
                 info_facturas.append(['','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto (S/)'])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto de la factura','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
