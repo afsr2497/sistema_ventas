@@ -1,17 +1,41 @@
 {% extends "sistema_2/layout_0.html" %}
 
+{% load static %}
+
 {% block body %}
-<div class="login-box">
-    <h1>Ingrese a su cuenta</h1>
-    <form action="{% url 'sistema_2:login_view' %}" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Ingresar"/>
-    </form>
-</div>
-{% if message %}
-<div class="mensaje-fallido">
-    {{ message }}
-</div>
-{% endif %}
+<section class="vh-100 bg-primary" >
+    <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="text-center bg-white" style="border-radius: 1rem;">
+                        <img src="{% static '/images/logo.png' %}" width="150px">
+                </div>
+                <br>
+                <div class="card shadow-2-strong" style="border-radius: 1rem;">
+                    <div class="card-body p-5 text-center">
+                        <h3 class="mb-5">Ingrese a su cuenta</h3>
+                        <form action="{% url 'sistema_2:login_view' %}" method="post">
+                        {% csrf_token %}
+                            <div class="form-outline mb-4">
+                                <input type="user" name="user" placeholder="Usuario" class="form-control form-control-lg" />
+                            </div>
+        
+                            <div class="form-outline mb-4">
+                                <input type="password" name="user_psw" placeholder="Contraseña" class="form-control form-control-lg" />
+                            </div>
+                            <div>
+                                <button class="btn btn-primary btn-lg btn-block" type="submit">Ingresar</button>
+                            </div>
+                            {% if message %}
+                            <div>
+                                {{ message }}
+                            </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

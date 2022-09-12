@@ -61,8 +61,8 @@ def dashboard(request):
 
 def login_view(request):
     if request.method == "POST":
-        usuario_sistema = request.POST["user"]
-        password_sistema = request.POST["user_psw"]
+        usuario_sistema = request.POST.get("user")
+        password_sistema = request.POST.get("user_psw")
         usuario = authenticate(request,username=usuario_sistema,password=password_sistema)
         if usuario is not None:
             login(request, usuario)
@@ -70,12 +70,9 @@ def login_view(request):
         else:
             return render(request,'sistema_2/log_in.html',{
                 "message": "DATOS INVALIDOS!",
-                "form": authen_form()
             })
 
-    return render(request,'sistema_2/log_in.html',{
-        "form": authen_form()
-    })
+    return render(request,'sistema_2/log_in.html')
 
 def log_out(request):
     logout(request)
