@@ -34,6 +34,7 @@ import requests
 import traceback
 import sys
 from apis_net_pe import ApisNetPe
+import openpyxl
 
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
@@ -731,6 +732,17 @@ def proformas(request):
                 info_coti.append(['','','','','','Monto Total',str(suma_total)])
                 tabla_excel = pd.DataFrame(info_coti,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto de la proforma','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -772,6 +784,17 @@ def proformas(request):
                 info_coti.append(['','','','','','Monto Total',str(suma_total)])
                 tabla_excel = pd.DataFrame(info_coti,columns=['Fecha','Comprobante','Cliente','Estado','Moneda','Monto de la proforma','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -1194,6 +1217,17 @@ def gui(request):
                     info_guias.append([guia.codigoGuia,guia.vendedor[1],guia.fechaGuia,guia.monedaGuia,guia.estadoGuia,guia.cliente[3]])
                 tabla_excel = pd.DataFrame(info_guias,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
                 tabla_excel.to_excel('info_excel.xlsx')
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -1205,6 +1239,17 @@ def gui(request):
                     info_guias.append([guia.codigoGuia,guia.vendedor[1],guia.fechaGuia,guia.monedaGuia,guia.estadoGuia,guia.cliente[3]])
                 tabla_excel = pd.DataFrame(info_guias,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
                 tabla_excel.to_excel('info_excel.xlsx')
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -1337,6 +1382,17 @@ def fact(request):
                 info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
                 tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -1378,6 +1434,17 @@ def fact(request):
                 info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
                 tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -1712,6 +1779,17 @@ def bole(request):
                     info_boletas.append([boleta.codigoBoleta,boleta.vendedor[1],boleta.fechaBoleta,boleta.monedaBoleta,boleta.estadoBoleta,boleta.cliente[3]])
                 tabla_excel = pd.DataFrame(info_boletas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
                 tabla_excel.to_excel('info_excel.xlsx')
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -1723,6 +1801,17 @@ def bole(request):
                     info_boletas.append([boleta.codigoBoleta,boleta.vendedor[1],boleta.fechaBoleta,boleta.monedaBoleta,boleta.estadoBoleta,boleta.cliente[3]])
                 tabla_excel = pd.DataFrame(info_boletas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
                 tabla_excel.to_excel('info_excel.xlsx')
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -5482,6 +5571,8 @@ def importar_movimientos(request):
                         utcOperacion = str(datos_archivo.loc[i,datos_archivo.columns[9]])
                         usuarioOperacion = str(datos_archivo.loc[i,datos_archivo.columns[8]])
                         fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
+                        fechaOperacion = datetime.strptime(fechaOperacion,'%d/%m/%Y')
+                        fechaOperacion = fechaOperacion.strftime('%d-%m-%Y')
                         fechaOperacion = parse(fechaOperacion)
                         detalleOperacion = str(datos_archivo.loc[i,datos_archivo.columns[2]])
                         nroOperacion = str(datos_archivo.loc[i,datos_archivo.columns[6]])
@@ -5510,8 +5601,6 @@ def importar_movimientos(request):
                     while i < int(datos_archivo.shape[0]):
                         fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
                         fechaOperacion = parse(fechaOperacion)
-                        fechaValuta = str(datos_archivo.loc[i,datos_archivo.columns[1]])
-                        fechaValuta = parse(fechaValuta)
                         detalleOperacion = str(datos_archivo.loc[i,datos_archivo.columns[2]])
                         nroOperacion = str(datos_archivo.loc[i,datos_archivo.columns[5]])
                         monto1 = float(datos_archivo.loc[i,datos_archivo.columns[3]])
@@ -5529,7 +5618,7 @@ def importar_movimientos(request):
                             dat_id = ultimo_movimiento.id + 1
                         except:
                             dat_id = 1
-                        regOperacion(itfOperacion=itfOperacion,fechaValuta=fechaValuta,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
+                        regOperacion(itfOperacion=itfOperacion,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
                         i = i + 1
                     bancoCuenta.saldoCuenta = str(round(saldo_inicial,2))
                     bancoCuenta.save()
@@ -5631,6 +5720,17 @@ def ver_movimientos(request,ind):
                     info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.saldoOperacion,movi_info.lugarOperacion,movi_info.nroOperacion,movi_info.horaOperacion,movi_info.usuarioOperacion,movi_info.utcOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
                 tabla_excel = pd.DataFrame(info_movimientos,columns=['Fecha','Fecha valuta','Descripcion operacion','Monto','Saldo','Sucursal-Agencia','Operacion numero','Operacion hora','Usuario','UTC','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -5658,6 +5758,17 @@ def ver_movimientos(request,ind):
                     info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.saldoOperacion,movi_info.lugarOperacion,movi_info.nroOperacion,movi_info.horaOperacion,movi_info.usuarioOperacion,movi_info.utcOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
                 tabla_excel = pd.DataFrame(info_movimientos,columns=['Fecha','Fecha valuta','Descripcion operacion','Monto','Saldo','Sucursal-Agencia','Operacion numero','Operacion hora','Usuario','UTC','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -5686,6 +5797,17 @@ def ver_movimientos(request,ind):
                     info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
                 tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -5713,6 +5835,17 @@ def ver_movimientos(request,ind):
                     info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
                 tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -5741,6 +5874,17 @@ def ver_movimientos(request,ind):
                     info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
                 tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -5768,6 +5912,17 @@ def ver_movimientos(request,ind):
                     info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
                 tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
                 response['Content-Disposition'] = nombre
@@ -5942,6 +6097,17 @@ def exportar_todo(request):
                 info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.saldoOperacion,movi_info.lugarOperacion,movi_info.nroOperacion,movi_info.horaOperacion,movi_info.usuarioOperacion,movi_info.utcOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
             tabla_excel = pd.DataFrame(info_movimientos,columns=['Fecha','Fecha valuta','Descripcion operacion','Monto','Saldo','Sucursal-Agencia','Operacion numero','Operacion hora','Usuario','UTC','Cotizacion','Guia','F/B','Vendedor'])
             tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+            doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+            doc_excel.active.column_dimensions['A'].width = 30
+            doc_excel.active.column_dimensions['B'].width = 30
+            doc_excel.active.column_dimensions['C'].width = 30
+            doc_excel.active.column_dimensions['D'].width = 30
+            doc_excel.active.column_dimensions['E'].width = 30
+            doc_excel.active.column_dimensions['F'].width = 30
+            doc_excel.active.column_dimensions['G'].width = 30
+            doc_excel.active.column_dimensions['H'].width = 30
+            doc_excel.active.column_dimensions['I'].width = 30
+            doc_excel.save("info_excel.xlsx")
         if nombre_banco == 'BBVA':
             mov_exportar = regOperacion.objects.filter(idCuentaBank=cuenta.id).order_by('id')
             info_movimientos=[]
@@ -5965,6 +6131,17 @@ def exportar_todo(request):
                 info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
             tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cotizacion','Guia','F/B','Vendedor'])
             tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+            doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+            doc_excel.active.column_dimensions['A'].width = 30
+            doc_excel.active.column_dimensions['B'].width = 30
+            doc_excel.active.column_dimensions['C'].width = 30
+            doc_excel.active.column_dimensions['D'].width = 30
+            doc_excel.active.column_dimensions['E'].width = 30
+            doc_excel.active.column_dimensions['F'].width = 30
+            doc_excel.active.column_dimensions['G'].width = 30
+            doc_excel.active.column_dimensions['H'].width = 30
+            doc_excel.active.column_dimensions['I'].width = 30
+            doc_excel.save("info_excel.xlsx")
         if nombre_banco == 'SCOTIA':
             mov_exportar = regOperacion.objects.filter(idCuentaBank=cuenta.id).order_by('id')
             info_movimientos=[]
@@ -5988,6 +6165,17 @@ def exportar_todo(request):
                 info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,coti_info,guia_info,comprobante_info,vendedor_info])
             tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cotizacion','Guia','F/B','Vendedor'])
             tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
+            doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+            doc_excel.active.column_dimensions['A'].width = 30
+            doc_excel.active.column_dimensions['B'].width = 30
+            doc_excel.active.column_dimensions['C'].width = 30
+            doc_excel.active.column_dimensions['D'].width = 30
+            doc_excel.active.column_dimensions['E'].width = 30
+            doc_excel.active.column_dimensions['F'].width = 30
+            doc_excel.active.column_dimensions['G'].width = 30
+            doc_excel.active.column_dimensions['H'].width = 30
+            doc_excel.active.column_dimensions['I'].width = 30
+            doc_excel.save("info_excel.xlsx")
     excel_total.save()
     response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -6077,6 +6265,23 @@ def descargar_filtrado(request):
                 tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel(excel_total,sheet_name=nombre_pagina,index=False)
         excel_total.save()
+        doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+        for sheet in doc_excel.sheetnames:
+            doc_excel[sheet].column_dimensions['A'].width = 30
+            doc_excel[sheet].column_dimensions['B'].width = 30
+            doc_excel[sheet].column_dimensions['C'].width = 30
+            doc_excel[sheet].column_dimensions['D'].width = 30
+            doc_excel[sheet].column_dimensions['E'].width = 30
+            doc_excel[sheet].column_dimensions['F'].width = 30
+            doc_excel[sheet].column_dimensions['G'].width = 30
+            doc_excel[sheet].column_dimensions['H'].width = 30
+            doc_excel[sheet].column_dimensions['I'].width = 30
+            doc_excel[sheet].column_dimensions['J'].width = 30
+            doc_excel[sheet].column_dimensions['K'].width = 30
+            doc_excel[sheet].column_dimensions['L'].width = 30
+            doc_excel[sheet].column_dimensions['M'].width = 30
+            doc_excel[sheet].column_dimensions['N'].width = 30
+        doc_excel.save("info_excel.xlsx")
         response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
         response['Content-Disposition'] = nombre
@@ -6178,6 +6383,17 @@ def comisiones(request):
             info_registro.append(['','','','','','','','Monto total',str(monto_total)])
             tabla_excel = pd.DataFrame(info_registro,columns=['Fecha','Descricion','Nro de operacion','Codigo del vendedor','Moneda','Monto','Tipo de Cambio','Monto (S./)','Monto final'])
             tabla_excel.to_excel('info_excel.xlsx',index=False)
+            doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+            doc_excel.active.column_dimensions['A'].width = 30
+            doc_excel.active.column_dimensions['B'].width = 30
+            doc_excel.active.column_dimensions['C'].width = 30
+            doc_excel.active.column_dimensions['D'].width = 30
+            doc_excel.active.column_dimensions['E'].width = 30
+            doc_excel.active.column_dimensions['F'].width = 30
+            doc_excel.active.column_dimensions['G'].width = 30
+            doc_excel.active.column_dimensions['H'].width = 30
+            doc_excel.active.column_dimensions['I'].width = 30
+            doc_excel.save("info_excel.xlsx")
             response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
             response['Content-Disposition'] = nombre
