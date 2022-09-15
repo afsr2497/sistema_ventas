@@ -246,7 +246,7 @@
             </select>
             <br>
             <br>
-            <input id="vendedorCodigo" type="text" name="infoVendedor" class="form-control" value="{{ operacion.vendedorOperacion.2 }}">
+            <input id="vendedorCodigo" type="text" name="infoVendedor" class="form-control" value="{{ operacion.vendedorOperacion.2 }}" required>
         </div>
     </div>
     <br>
@@ -269,11 +269,11 @@
     <div class="row mb-3">
         <div class="col-md-3">
             <label>Factura / Boleta</label>
-            <input class="form-control" id="infoComprobante" name="infoFactura" value="{{ operacion.comprobanteOperacion }}">
+            <input class="form-control" id="infoComprobante" name="infoFactura" value="{{ operacion.comprobanteOperacion }}" required>
         </div>
         <div class="col-md-3">
             <label>Cotizacion</label>
-            <input class="form-control" id="infoCotizacion" name="infoCotizacion" value="{{ operacion.cotizacionOperacion }}">
+            <input class="form-control" id="infoCotizacion" name="infoCotizacion" value="{{ operacion.cotizacionOperacion }}" required>
         </div>
         <div class="col-md-3">
             <label>Guia (*)</label>
