@@ -229,3 +229,5 @@ class regOperacion(models.Model):
     utcOperacion = models.CharField(max_length=128,default='')
     itfOperacion = models.CharField(max_length=128,default='0')
     cargoOperacion = models.CharField(max_length=128,default='0')
+    clienteExcel = models.CharField(max_length=256,default='')
+    referencia2 = models.CharField(max_length=256,default='')
