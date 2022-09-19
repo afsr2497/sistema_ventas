@@ -2398,12 +2398,24 @@ def descargar_proforma(request,ind):
     #Linea de separacion
     can.line(480,lista_y[1],580,lista_y[1])
 
+    #Calculo de la proforma en dolares
+    total_dolares = Decimal(0.0000)
+    for producto in proforma_info.productos:
+        if producto[5] == 'SOLES':
+            v_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+        if producto[5] == 'DOLARES':
+            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+        total_dolares = Decimal(total_dolares) + Decimal(v_producto)
+    final_dolares = Decimal('%.2f' % total_dolares)*Decimal(1.18)
+
     #Impresion de importe en otra moneda
     precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
     can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
     if proforma_info.monedaProforma == 'SOLES':
         can.drawRightString(490,lista_y[0]+4,'$')
-        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)/Decimal(proforma_info.tipoCambio[0])))))
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(final_dolares))))
     else:
         can.drawRightString(490,lista_y[0]+4,'S/')
         can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(proforma_info.tipoCambio[1])))))
@@ -6730,6 +6742,19 @@ def descargar_proforma_dolares(request,ind):
     #Linea de separacion
     can.line(480,lista_y[1],580,lista_y[1])
 
+    #Calculo del valor en soles
+    total_soles = Decimal(0.0000)
+    for producto in proforma_info.productos:
+        if producto[5] == 'DOLARES':
+            v_producto = Decimal(producto[6])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+        if producto[5] == 'SOLES':
+            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+        total_soles = Decimal(total_soles) + Decimal(v_producto)
+    final_soles = Decimal('%.2f' % total_soles)*Decimal(1.18)
+
+
     #Impresion de importe en otra moneda
     precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
     can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
@@ -6738,7 +6763,7 @@ def descargar_proforma_dolares(request,ind):
         can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)/Decimal(proforma_info.tipoCambio[0])))))
     else:
         can.drawRightString(490,lista_y[0]+4,'S/')
-        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(proforma_info.tipoCambio[1])))))
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(final_soles))))
     lista_y = [lista_y[0] - 15,lista_y[1] - 15]
 
     #Linea de separacion con los datos finales
