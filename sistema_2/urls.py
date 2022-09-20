@@ -100,4 +100,5 @@ urlpatterns = [
     path('eliminarTodo',views.eliminarTodo,name='eliminarTodo'),
     path('descargar_manual',views.descargar_manual,name='descargar_manual'),
     path('descargar_proforma_dolares/<str:ind>',views.descargar_proforma_dolares,name='descargar_proforma_dolares'),
+    path('registro_abonos',views.registro_abonos,name='registro_abonos'),
 ]

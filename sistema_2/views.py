@@ -3812,7 +3812,10 @@ def armar_json_factura(factura_info):
         i = 0
         tiempo_actual = datetime.today()
         tiempo_cuota = tiempo_actual
-        monto = round(((valor_total*1.18)/int(factura_info.cuotasFactura)),2)
+        print(valor_total)
+        valor_cuotas = float('%.2f' % valor_total)
+        monto = '%.2f' % ((valor_cuotas*1.18)/int(factura_info.cuotasFactura))
+        print(monto)
         while i < int(factura_info.cuotasFactura):
             cuota = {
                 "numero":'00' + str(i + 1),
@@ -5584,10 +5587,16 @@ def importar_movimientos(request):
                         horaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[7]])
                         utcOperacion = str(datos_archivo.loc[i,datos_archivo.columns[9]])
                         usuarioOperacion = str(datos_archivo.loc[i,datos_archivo.columns[8]])
-                        fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
-                        fechaOperacion = datetime.strptime(fechaOperacion,'%d/%m/%Y')
-                        fechaOperacion = fechaOperacion.strftime('%d-%m-%Y')
-                        fechaOperacion = parse(fechaOperacion)
+                        try:
+                            fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
+                            print(fechaOperacion)
+                            fechaOperacion = datetime.strptime(fechaOperacion,'%d/%m/%Y')
+                            fechaOperacion = fechaOperacion.strftime('%d-%m-%Y')
+                            fechaOperacion = parse(fechaOperacion)
+                        except:
+                            print('Error en la fecha anterior revisar')
+                            fechaOperacion = '2022-06-05'
+                            fechaOperacion = parse(fechaOperacion)
                         detalleOperacion = str(datos_archivo.loc[i,datos_archivo.columns[2]])
                         nroOperacion = str(datos_archivo.loc[i,datos_archivo.columns[6]])
                         monto = str(datos_archivo.loc[i,datos_archivo.columns[3]])
@@ -6802,3 +6811,12 @@ def descargar_proforma_dolares(request,ind):
     nombre = 'attachment; ' + 'filename=' + nombre_doc
     response['Content-Disposition'] = nombre
     return response
+
+def registro_abonos(request):
+    if request.method == 'POST':
+        print('Hola a todos')
+        return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
+    return render(request,'sistema_2/registro_abonos.html',{
+        'bancos_totales':regCuenta.objects.all().order_by('id'),
+        'clientes_totales':clients.objects.all().order_by('id'),
+    })
