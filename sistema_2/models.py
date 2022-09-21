@@ -1,3 +1,5 @@
+from multiprocessing.dummy import Array
+from pyexpat import model
 from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
@@ -231,3 +233,12 @@ class regOperacion(models.Model):
     cargoOperacion = models.CharField(max_length=128,default='0')
     clienteExcel = models.CharField(max_length=256,default='')
     referencia2 = models.CharField(max_length=256,default='')
+
+class abonosOperacion(models.Model):
+    datos_banco = ArrayField(models.CharField(max_length=128),default=list())
+    datos_cliente = ArrayField(models.CharField(max_length=128),default=list())
+    nro_operacion = models.CharField(max_length=64,default='0')
+    codigo_comprobante = models.CharField(max_length=64,default='')
+    codigo_guia = models.CharField(max_length=64,default='')
+    codigo_coti = models.CharField(max_length=64,default='')
+    codigo_vendedor = models.CharField(max_length=64,default='')

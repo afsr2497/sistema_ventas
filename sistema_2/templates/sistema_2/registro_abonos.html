@@ -14,27 +14,101 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
 
 <script>
-    function obtenerFacturas(cliente)
+    function nuevoAbonoInfo()
     {
-        return ['hola','adios']
+        let facturas_cliente = document.getElementById('facturas_cliente')
+        let guiaSeleccionada = document.getElementById('guiaSeleccionada')
+        let cotiSeleccionada = document.getElementById('cotiSeleccionada')
+        let vendedorSeleccionado = document.getElementById('vendedorSeleccionado')
+        let nroOperacionAbono = document.getElementById('nroOperacionAbono')
+
+        facturas_cliente.innerHTML = ''
+        $('.selectpicker').selectpicker('refresh')
+        guiaSeleccionada.value = ''
+        cotiSeleccionada.value = ''
+        vendedorSeleccionado.value = ''
+        nroOperacionAbono.value = ''
     }
 
     addEventListener('DOMContentLoaded',()=>{
 
         let clienteAbono = document.getElementById('clienteAbono')
 
-        facturasCliente = obtenerFacturas(clienteAbono)
-
 
         let facturas_cliente = document.getElementById('facturas_cliente')
+        let guiaSeleccionada = document.getElementById('guiaSeleccionada')
+        let cotiSeleccionada = document.getElementById('cotiSeleccionada')
+        let vendedorSeleccionado = document.getElementById('vendedorSeleccionado')
         console.log(facturas_cliente)
 
-        let opcion_nueva = document.createElement('option')
-        opcion_nueva.value = '1'
-        opcion_nueva.innerHTML = 'Hola'
-        facturas_cliente.appendChild(opcion_nueva)
+        //let opcion_nueva = document.createElement('option')
+        //opcion_nueva.value = '1'
+        //opcion_nueva.innerHTML = 'Hola'
+        //facturas_cliente.appendChild(opcion_nueva)
 
-        $('.selectpicker').selectpicker('refresh')
+        //$('.selectpicker').selectpicker('refresh')
+
+        clienteAbono.onchange = function() 
+        {
+            facturas_cliente.innerHTML = ''
+
+            var opcionCreada = document.createElement('option')
+            opcionCreada.value = ''
+            opcionCreada.text = ''
+            facturas_cliente.add(opcionCreada)
+            $('.selectpicker').selectpicker('refresh')
+
+            cotiSeleccionada.value = ''
+            guiaSeleccionada.value = ''
+            vendedorSeleccionado.value = ''
+            
+            url = '/sistema_2/obtener_facturas_cotizaciones_cliente/' + clienteAbono.value
+            async function get_data() {
+                const res = await fetch(url,{
+                                        method:"GET",
+                                        headers: {
+                                            "X-Requested-With": "XMLHttpRequest",
+                                        },})
+                cliente_info=await res.json()
+                console.log(cliente_info)
+                if(cliente_info.tipoCliente == 'Empresa')
+                {
+                    for(var i = 0; i < cliente_info.facturas.length; i++)
+                    {
+                        console.log('Se ingreso al bucle')
+                        var opcionCreada = document.createElement('option')
+                        opcionCreada.value = cliente_info.facturas[i]
+                        opcionCreada.text = cliente_info.facturas[i]
+                        facturas_cliente.add(opcionCreada)
+                    }
+                    $('.selectpicker').selectpicker('refresh')
+                }
+                                    }
+            get_data()
+        }
+
+        facturas_cliente.onchange = function()
+        {
+            //infoComprobante.value = facturas_cliente.value
+            url = '/sistema_2/obtener_guias_factura/' + facturas_cliente.value
+            async function get_data() {
+                const res = await fetch(url,{
+                                        method:"GET",
+                                        headers: {
+                                            "X-Requested-With": "XMLHttpRequest",
+                                        },})
+                cliente_info=await res.json()
+                console.log(cliente_info)
+                guiaSeleccionada.value = ''
+                cotiSeleccionada.value = ''
+                vendedorSeleccionado.value = ''
+                vendedorSeleccionado.value = cliente_info.vendedor
+                cotiSeleccionada.value = cliente_info.proformas
+                guiaSeleccionada.value = cliente_info.guias
+
+            }
+            get_data()
+        }
     })
 </script>
 
@@ -48,7 +122,7 @@
     <br>
     <div class="row">
         <div class="col-md-2">
-            <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoAbono">Registrar Abono <i class="fas fa-plus"></i></a>
+            <a class="btn btn-success" onclick="nuevoAbonoInfo()" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoAbono">Registrar Abono <i class="fas fa-plus"></i></a>
             <br>
         </div>
     </div>
@@ -70,8 +144,16 @@
             <tbody>
                 {% for abono in abonos_info %}
                 <tr>
-                    <td>Hola</td>
-                    <td>hola</td>
+                    <td>{{ abono.datos_banco.1 }}</td>
+                    <td>{{ abono.datos_banco.2 }}</td>
+                    <td>{{ abono.nro_operacion }}</td>
+                    <td>{{ abono.datos_cliente.1 }}</td>
+                    <td>{{ abono.codigo_comprobante }}</td>
+                    <td>{{ abono.codigo_guia }}</td>
+                    <td>{{ abono.codigo_coti }}</td>
+                    <td>{{ abono.codigo_vendedor }}</td>
+                    <td style="text-align: center;"><a class="btn btn-warning" href="#"><i class="fa fa-edit"></i></a></td>
+                    <td style="text-align: center;"><a class="btn btn-danger" href="{% url 'sistema_2:eliminar_abono' abono.id %}"><i class="fa fa-trash"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -104,7 +186,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>Nro de Operacion</label>
-                            <input class="form-control" type="text" name="nroOperacionAbono" required>
+                            <input class="form-control" type="text" name="nroOperacionAbono" id="nroOperacionAbono" required>
                         </div>
                         <div class="col-md-6">
                             <label>Cliente</label>
@@ -124,23 +206,23 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>Comprobantes</label>
-                            <select class="selectpicker" required id="facturas_cliente">
+                            <select class="selectpicker" required id="facturas_cliente" name="facturas_cliente">
                                 <option></option>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label>Guia</label>
-                            <input class="form-control" readonly>
+                            <input class="form-control" id="guiaSeleccionada" name="guiaSeleccionada" readonly>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>Cotizacion</label>
-                            <input class="form-control" readonly>
+                            <input class="form-control" id="cotiSeleccionada" name="cotiSeleccionada" readonly>
                         </div>
                         <div class="col-md-6">
                             <label>Vendedor</label>
-                            <input class="form-control" readonly>
+                            <input class="form-control" id="vendedorSeleccionado" name="vendedorSeleccionado" readonly>
                         </div>
                     </div>
                 </div>

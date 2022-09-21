@@ -13,7 +13,7 @@ from django import forms
 from reportlab.pdfgen import canvas
 from django.shortcuts import render, redirect
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta
+from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from django.db.models import Q
@@ -6089,7 +6089,8 @@ def obtener_guias_factura(request,ind):
                 return JsonResponse(
                     {
                         'guias': facturas_info.codigosGuias,
-                        'proformas':facturas_info.codigosCotis
+                        'proformas':facturas_info.codigosCotis,
+                        'vendedor':facturas_info.vendedor[2]
                     })
             else:
                 return JsonResponse(
@@ -6815,8 +6816,47 @@ def descargar_proforma_dolares(request,ind):
 def registro_abonos(request):
     if request.method == 'POST':
         print('Hola a todos')
+        id_banco = request.POST.get('bancoAbono')
+        nro_operacion = request.POST.get('nroOperacionAbono')
+        id_cliente = request.POST.get('clienteAbono')
+        codigo_comprobante = request.POST.get('facturas_cliente')
+        codigo_guia = request.POST.get('guiaSeleccionada')
+        codigo_coti = request.POST.get('cotiSeleccionada')
+        codigo_vendedor = request.POST.get('vendedorSeleccionado')
+        datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
+        datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
+        print(id_banco)
+        print(nro_operacion)
+        print(id_cliente)
+        print(codigo_comprobante)
+        print(codigo_guia)
+        print(codigo_coti)
+        print(codigo_vendedor)
+        abonosOperacion(datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
         return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
     return render(request,'sistema_2/registro_abonos.html',{
         'bancos_totales':regCuenta.objects.all().order_by('id'),
         'clientes_totales':clients.objects.all().order_by('id'),
+        'abonos_info':abonosOperacion.objects.all().order_by('id')
     })
+
+def comprobar_abonos(request):
+    registros_bancos = regOperacion.objects.all().order_by('id')
+    registros_abonos = abonosOperacion.objects.all().order_by('id')
+    for registro in registros_abonos:
+        for reg in registros_bancos:
+            if(registro.nro_operacion == reg.nroOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)):
+                reg.comprobanteOperacion = [registro.codigo_comprobante]
+                reg.guiaOperacion = [registro.codigo_guia]
+                reg.cotizacionOperacion = [registro.codigo_coti]
+                usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
+                reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
+                reg.estadoOperacion = 'COMPLETA'
+                clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
+                reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
+                reg.save()
+    return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
+
+def eliminar_abono(request,ind):
+    abonosOperacion.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
