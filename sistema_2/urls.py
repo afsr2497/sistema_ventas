@@ -103,4 +103,6 @@ urlpatterns = [
     path('registro_abonos',views.registro_abonos,name='registro_abonos'),
     path('comprobar_abonos',views.comprobar_abonos,name='comprobar_abonos'),
     path('eliminar_abono/<str:ind>',views.eliminar_abono,name='eliminar_abono'),
+    path('actualizar_abono/<str:ind>',views.actualizar_abono,name='actualizar_abono'),
+    path('descargar_guia',views.descargar_guia,name='descargar_guia'),
 ]
