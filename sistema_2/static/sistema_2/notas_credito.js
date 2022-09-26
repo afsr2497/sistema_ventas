@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     
     $('#notasTable').DataTable({
         paging: true,
-        pageLength: 10,
+        pageLength: 20,
         lenghtChange: true,
         autoWidth: false,
         serching: true,

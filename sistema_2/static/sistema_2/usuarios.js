@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     //Parametros para ordenar la tabla de usuarios luego de la carga completa del DOM
     $('#usuariosTable').DataTable({
         paging: true,
-        pageLength: 10,
+        pageLength: 20,
         lenghtChange: true,
         autoWidth: false,
         serching: true,

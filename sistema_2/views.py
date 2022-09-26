@@ -5622,7 +5622,8 @@ def importar_movimientos(request):
                     i = 1
                     saldo_inicial = round(float(bancoCuenta.saldoCuenta),2)
                     while i < int(datos_archivo.shape[0]):
-                        clienteExcel = str(datos_archivo.loc[i,datos_archivo.columns[6]])
+                        clienteExcel = str(datos_archivo.loc[i,datos_archivo.columns[7]])
+                        referencia2 = str(datos_archivo.loc[i,datos_archivo.columns[6]])
                         fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
                         fechaOperacion = parse(fechaOperacion)
                         detalleOperacion = str(datos_archivo.loc[i,datos_archivo.columns[2]])
@@ -5642,7 +5643,7 @@ def importar_movimientos(request):
                             dat_id = ultimo_movimiento.id + 1
                         except:
                             dat_id = 1
-                        regOperacion(clienteExcel=clienteExcel,itfOperacion=itfOperacion,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
+                        regOperacion(referencia2=referencia2,clienteExcel=clienteExcel,itfOperacion=itfOperacion,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
                         i = i + 1
                     bancoCuenta.saldoCuenta = str(round(saldo_inicial,2))
                     bancoCuenta.save()
@@ -5652,7 +5653,8 @@ def importar_movimientos(request):
                     i = 1
                     saldo_inicial = round(float(bancoCuenta.saldoCuenta),2)
                     while i < int(datos_archivo.shape[0]):
-                        clienteExcel = str(datos_archivo.loc[i,datos_archivo.columns[5]])
+                        clienteExcel = str(datos_archivo.loc[i,datos_archivo.columns[6]])
+                        referencia2 = str(datos_archivo.loc[i,datos_archivo.columns[5]])
                         fechaOperacion = str(datos_archivo.loc[i,datos_archivo.columns[0]])
                         fechaOperacion = parse(fechaOperacion)
                         detalleOperacion = str(datos_archivo.loc[i,datos_archivo.columns[1]])
@@ -5682,7 +5684,7 @@ def importar_movimientos(request):
                         #Actualizar Saldo:
                         saldo_inicial = saldo_inicial + montoOperacion
                         montoOperacion = str(round(monto2,2))
-                        regOperacion(clienteExcel=clienteExcel,cargoOperacion=cargoOperacion,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
+                        regOperacion(referencia2=referencia2,clienteExcel=clienteExcel,cargoOperacion=cargoOperacion,id=dat_id,idCuentaBank=str(bancoCuenta.id),monedaOperacion=bancoCuenta.monedaCuenta,fechaOperacion=fechaOperacion,detalleOperacion=detalleOperacion,nroOperacion=nroOperacion,montoOperacion=montoOperacion,tipoOperacion=tipoOperacion).save()
                         i = i + 1
                     bancoCuenta.saldoCuenta = str(round(saldo_inicial,2))
                     bancoCuenta.save()    
@@ -5823,8 +5825,8 @@ def ver_movimientos(request,ind):
                         vendedor_info = movi_info.vendedorOperacion[2]
                     else:
                         vendedor_info = ''
-                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,movi_info.clienteExcel,coti_info,guia_info,comprobante_info,vendedor_info])
-                tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cliente','Cotizacion','Guia','F/B','Vendedor'])
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,movi_info.referencia2,movi_info.clienteExcel,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Referencia2','Cliente','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
                 doc_excel.active.column_dimensions['A'].width = 30
@@ -5862,8 +5864,8 @@ def ver_movimientos(request,ind):
                         vendedor_info = movi_info.vendedorOperacion[2]
                     else:
                         vendedor_info = ''
-                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,movi_info.clienteExcel,coti_info,guia_info,comprobante_info,vendedor_info])
-                tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Cliente','Cotizacion','Guia','F/B','Vendedor'])
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.fechaValuta,movi_info.detalleOperacion,movi_info.montoOperacion,movi_info.itfOperacion,movi_info.nroOperacion,movi_info.referencia2,movi_info.clienteExcel,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['F.Operacion','F.Valor','Referencia','Importe','ITF','Num.Mvto','Referencia2','Cliente','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
                 doc_excel.active.column_dimensions['A'].width = 30
@@ -5902,8 +5904,8 @@ def ver_movimientos(request,ind):
                         vendedor_info = movi_info.vendedorOperacion[2]
                     else:
                         vendedor_info = ''
-                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,movi_info.clienteExcel,coti_info,guia_info,comprobante_info,vendedor_info])
-                tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cliente','Cotizacion','Guia','F/B','Vendedor'])
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,movi_info.clienteExcel,movi_info.referencia2,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Referencia2','Cliente','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
                 doc_excel.active.column_dimensions['A'].width = 30
@@ -5941,8 +5943,8 @@ def ver_movimientos(request,ind):
                         vendedor_info = movi_info.vendedorOperacion[2]
                     else:
                         vendedor_info = ''
-                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,movi_info.clienteExcel,coti_info,guia_info,comprobante_info,vendedor_info])
-                tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Cliente','Cotizacion','Guia','F/B','Vendedor'])
+                    info_movimientos.append([movi_info.fechaOperacion.strftime('%d/%m/%Y'),movi_info.detalleOperacion,movi_info.nroOperacion,movi_info.cargoOperacion,movi_info.montoOperacion,movi_info.referencia2,movi_info.clienteExcel,coti_info,guia_info,comprobante_info,vendedor_info])
+                tabla_excel = pd.DataFrame(info_movimientos,columns=['FECHA','DESCRIPCION','Nro.DOC','CARGO','ABONO','Referencia2','Cliente','Cotizacion','Guia','F/B','Vendedor'])
                 tabla_excel.to_excel('info_excel.xlsx',sheet_name=nombre_excel,index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
                 doc_excel.active.column_dimensions['A'].width = 30

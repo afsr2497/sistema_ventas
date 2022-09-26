@@ -20,7 +20,9 @@
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-            <a class="navbar-brand" href="#">METALPROTEC</a>
+            <div>
+                <img src="{% static 'images/logo.png' %}" width="60px">
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -56,7 +58,7 @@
                     </li>
                 </div>
             </div>
-            <div>
+            <div style="padding-right: 10px;">
                 <a class="btn btn-success float-right" style="color: white;" href="{% url 'sistema_2:log_out' %}">Salir<i class="fa fa-sign-out"></i></a>
             </div>
         </nav>

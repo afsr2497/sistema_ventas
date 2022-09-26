@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     
     $('#facturasTable').DataTable({
         paging: true,
-        pageLength: 10,
+        pageLength: 20,
         lenghtChange: true,
         autoWidth: false,
         serching: true,
