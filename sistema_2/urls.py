@@ -105,4 +105,5 @@ urlpatterns = [
     path('eliminar_abono/<str:ind>',views.eliminar_abono,name='eliminar_abono'),
     path('actualizar_abono/<str:ind>',views.actualizar_abono,name='actualizar_abono'),
     path('descargar_guia',views.descargar_guia,name='descargar_guia'),
+    path('actualizar_roles/<str:ind>',views.actualizar_roles,name='actualizar_roles'),
 ]

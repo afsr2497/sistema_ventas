@@ -1,9 +1,7 @@
-from multiprocessing.dummy import Array
-from pyexpat import model
+from email.policy import default
 from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.forms import CharField, FloatField
 import datetime
 
 # Create your models here.
@@ -16,6 +14,7 @@ class userProfile(models.Model):
     codigo = models.CharField(max_length=20)
     tipo = models.CharField(max_length=20)
     celular = models.CharField(max_length=20)
+    rolesUsuario = ArrayField(models.CharField(max_length=64),default=['1','1','1'])
 
 class clients(models.Model):
     id = models.AutoField(primary_key=True)
@@ -233,6 +232,7 @@ class regOperacion(models.Model):
     cargoOperacion = models.CharField(max_length=128,default='0')
     clienteExcel = models.CharField(max_length=256,default='')
     referencia2 = models.CharField(max_length=256,default='')
+    conectado_abono = models.CharField(max_length=64,default='0')
 
 class abonosOperacion(models.Model):
     datos_banco = ArrayField(models.CharField(max_length=128),default=list())
@@ -242,3 +242,5 @@ class abonosOperacion(models.Model):
     codigo_guia = models.CharField(max_length=64,default='')
     codigo_coti = models.CharField(max_length=64,default='')
     codigo_vendedor = models.CharField(max_length=64,default='')
+    conectado = models.CharField(max_length=64,default='0')
+    idRegistroOp = models.CharField(max_length=64,default='0')

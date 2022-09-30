@@ -49,6 +49,7 @@
           <th scope="col">Tipo</th>
           <th scope="col">Celular</th>
           <th scope="col">Editar</th>
+          <th scope="col">Roles</th>
           <th scope="col">Eliminar</th>
         </tr>
       </thead>
@@ -62,8 +63,10 @@
           <td>{{ usuario.celular }}</td>
           {% if usuario_logued == 'Admin' %}
             <td style="text-align: center;"><a class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#usuario{{ usuario.id }}"><i class="fa fa-edit"></i></a></td>
+            <td style="text-align: center;"><a class="btn btn-info" data-bs-toggle="modal" data-bs-target="#roles{{ usuario.id }}"><i class="fa fa-user"></i></a></td>
             <td style="text-align: center;"><a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar{{ usuario.id }}"><i class="fa fa-trash"></i></a></td>
           {% else %}
+            <td></td>
             <td></td>
             <td></td>
           {% endif %}  
@@ -143,7 +146,7 @@
             </div>
             <div class="col-md-6">
               <label>Contraseña</label>
-              <input type="password" class="form-control" disabled name="contra" value="">
+              <input type="password" class="form-control" name="contra" value="">
             </div>
           </div>
           <div class="row mb-3">
@@ -210,5 +213,50 @@
 </div>
 {% endfor %}
 
+{% for usuario in usr %}
+<div class="modal fade" tabindex="-1" role="dialog" id="roles{{ usuario.id }}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Roles del usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'sistema_2:actualizar_roles' usuario.id %}">
+        {% csrf_token %}
+          <div class="form-check">
+            {% if usuario.rolesUsuario.0 == '1' %}
+              <input class="form-check-input" type="checkbox" name="admin" checked>
+            {% else %}
+              <input class="form-check-input" type="checkbox" name="admin">
+            {% endif %}
+            <label class="form-check-label" for="flexCheckDefault">Admin</label>
+          </div>
+          <div class="form-check">
+            {% if usuario.rolesUsuario.1 == '1' %}
+              <input class="form-check-input" type="checkbox" name="vendedor" checked>
+            {% else %}
+              <input class="form-check-input" type="checkbox" name="vendedor">
+            {% endif %}
+            <label class="form-check-label" for="flexCheckChecked">Vendedor</label>
+          </div>
+          <div class="form-check">
+            {% if usuario.rolesUsuario.2 == '1' %}
+              <input class="form-check-input" type="checkbox" name="contable" checked>
+            {% else %}
+              <input class="form-check-input" type="checkbox" name="contable">
+            {% endif %}
+            <label class="form-check-label" for="flexCheckChecked">Contable</label>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
 
 {% endblock %}

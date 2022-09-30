@@ -27,13 +27,17 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                {% if usr_rol.rolesUsuario.0 == '1' or usr_rol.rolesUsuario.1 == '1' or usr_rol.rolesUsuario.2 == '1' %}
                 <div class="navbar-nav" >
+                    {% if usr_rol.rolesUsuario.0 == '1' %}
                     <a class="nav-item nav-link" href="{% url 'sistema_2:usuarios' %}">Usuarios</a>
+                    {% endif %}
                     <a class="nav-item nav-link" href="{% url 'sistema_2:clientes' %}">Clientes</a>
                     <a class="nav-item nav-link" href="{% url 'sistema_2:servicios' %}">Servicios</a>
                     <a class="nav-item nav-link" href="{% url 'sistema_2:productos' %}">Productos</a>
                     <a class="nav-item nav-link" href="{% url 'sistema_2:ingresos' %}">Ingresos</a>
                     <a class="nav-item nav-link" href="{% url 'sistema_2:configurar_documentos' %}">Configuracion</a>
+                    {% if usr_rol.rolesUsuario.2 == '1' %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Datos contables
@@ -44,6 +48,7 @@
                             <li><a class="dropdown-item" href="{% url 'sistema_2:registro_abonos' %}">Registro de abonos</a></li>
                         </ul>
                     </li>
+                    {% endif %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Ventas
@@ -57,6 +62,7 @@
                         </ul>
                     </li>
                 </div>
+                {% endif %}
             </div>
             <div style="padding-right: 10px;">
                 <a class="btn btn-success float-right" style="color: white;" href="{% url 'sistema_2:log_out' %}">Salir<i class="fa fa-sign-out"></i></a>

@@ -51,14 +51,23 @@ class authen_form(forms.Form):
 @login_required(login_url='/sistema_2')
 @csrf_exempt
 def ingresos(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     ing = ingresos_stock.objects.all()
     return render(request,'sistema_2/ingresos.html',{
         'ing': ing.order_by('-id'),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
 def dashboard(request):
-    return render(request,'sistema_2/dashboard.html')
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    return render(request,'sistema_2/dashboard.html',{
+        'usr_rol': user_logued,
+    })
 
 def login_view(request):
     if request.method == "POST":
@@ -122,17 +131,20 @@ def usuarios(request):
                 'usr': usr.order_by('id'),
                 'mensaje':mensaje,
                 'usuario_logued':str(user_logued.tipo),
+                'usr_rol': user_logued,
             })
         else:
             return render(request,'sistema_2/usuarios.html',{
                 'usr': usr.order_by('id'),
                 'mensaje':mensaje,
                 'usuario_logued':str(user_logued.tipo),
+                'usr_rol': user_logued,
             })
 
     return render(request,'sistema_2/usuarios.html',{
         'usr': usr.order_by('id'),
         'usuario_logued':str(user_logued.tipo),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
@@ -156,6 +168,7 @@ def actualizar_usuario(request,ind):
         usuario_email = request.POST.get('email')
         usuario_tipo = request.POST.get('tipo')
         usuario_celular = request.POST.get('celular')
+        usuario_contra = request.POST.get('contra')
 
         usuario_username = usuario_username.lower().title()
 
@@ -187,6 +200,9 @@ def actualizar_usuario(request,ind):
             usuario_django = usuario_actualizar.usuario
             usuario_django.username = usuario_username
             usuario_django.email = usuario_email
+            if usuario_contra != '':
+                print(usuario_contra)
+                usuario_django.set_password(usuario_contra)
             usuario_django.save()
             usuario_actualizar.tipo = usuario_tipo
             usuario_actualizar.celular = usuario_celular
@@ -197,22 +213,27 @@ def actualizar_usuario(request,ind):
                 'usr': userProfile.objects.all().order_by('id'),
                 'mensaje':mensaje,
                 'usuario_logued':str(user_logued.tipo),
-                
+                'usr_rol': user_logued,
             })
         else:
             return render(request,'sistema_2/usuarios.html',{
                 'usr': userProfile.objects.all().order_by('id'),
                 'mensaje':mensaje,
                 'usuario_logued':str(user_logued.tipo),
+                'usr_rol': user_logued,
             })
     return render(request,'sistema_2/usuarios.html',{
             'usr': userProfile.objects.all().order_by('id'),
             'mensaje':mensaje,
             'usuario_logued':str(user_logued.tipo),
+            'usr_rol': user_logued,
         })
 
 @login_required(login_url='/sistema_2')
 def servicios(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     ser = services.objects.all()
     if request.method == 'POST':
         print(request)
@@ -232,6 +253,7 @@ def servicios(request):
         return HttpResponseRedirect(reverse('sistema_2:servicios'))
     return render(request,'sistema_2/servicios.html',{
         'ser': ser.order_by('id'),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
@@ -314,6 +336,9 @@ def importar_servicios(request):
 
 @login_required(login_url='/sistema_2')
 def clientes(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     cli = clients.objects.all()
     if request.method == 'POST':
         cliente_nombre = request.POST.get('nombre')
@@ -334,6 +359,7 @@ def clientes(request):
         return HttpResponseRedirect(reverse('sistema_2:clientes'))
     return render(request,'sistema_2/clientes.html',{
         'cli': cli.order_by('id'),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
@@ -469,7 +495,8 @@ def productos(request):
         'pro': pro,
         'usr':usr,
         'pro_tabla':productos_totales,
-        'user_logued':user_logued
+        'user_logued':user_logued,
+        'usr_rol': user_logued,
     })
 
 def eliminar_producto(request,ind):
@@ -677,6 +704,9 @@ def agregar_stock(request):
 @login_required(login_url='/sistema_2')
 @csrf_exempt
 def proformas(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     if request.method == 'POST':
         if 'Filtrar' in request.POST:
             print('Se esta filtrando la info')
@@ -687,7 +717,8 @@ def proformas(request):
                 return render(request,'sistema_2/proformas.html',{
                     'cotizaciones':cotizaciones_filtradas.order_by('id'),
                     'fecha_inicial':fecha_inicial,
-                    'fecha_final':fecha_final
+                    'fecha_final':fecha_final,
+                    'usr_rol': user_logued,
                 })
         elif 'Exportar' in request.POST:
             print('Se solicita el excel')
@@ -800,11 +831,15 @@ def proformas(request):
                 response['Content-Disposition'] = nombre
                 return response
     return render(request,'sistema_2/proformas.html',{
-        'cotizaciones': cotizaciones.objects.all().order_by('-id')
+        'cotizaciones': cotizaciones.objects.all().order_by('-id'),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
 def crear_proforma(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
     datos = BeautifulSoup(r.text,'html.parser')
     tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
@@ -826,7 +861,8 @@ def crear_proforma(request):
         'pro':pro,
         'cli':cli,
         'tc_venta': tc_venta,
-        'tc_compra': tc_compra
+        'tc_compra': tc_compra,
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
@@ -1138,6 +1174,9 @@ def crear_boleta(request,ind):
 
 @login_required(login_url='/sistema_2')
 def editar_proforma(request,ind):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     ser = services.objects.all()
     prod = products.objects.all()
     proforma_editar = cotizaciones.objects.get(id=ind)
@@ -1189,12 +1228,16 @@ def editar_proforma(request,ind):
     return render(request,'sistema_2/editar_proforma.html',{
         'prof':proforma_editar,
         'pro':prod,
-        'ser':ser
+        'ser':ser,
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
 @csrf_exempt
 def gui(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     if request.method == 'POST':
         if 'Filtrar' in request.POST:
             fecha_inicial = str(request.POST.get('fecha_inicio'))
@@ -1204,7 +1247,8 @@ def gui(request):
                 return render(request,'sistema_2/guias.html',{
                     'gui':guias_filtradas.order_by('id'),
                     'fecha_inicial':fecha_inicial,
-                    'fecha_final':fecha_final
+                    'fecha_final':fecha_final,
+                    'usr_rol': user_logued,
                 })
         elif 'Exportar' in request.POST:
             print('Se solicita el excel')
@@ -1255,7 +1299,8 @@ def gui(request):
                 response['Content-Disposition'] = nombre
                 return response
     return render(request,'sistema_2/guias.html',{
-        'gui': guias.objects.all().order_by('-id')
+        'gui': guias.objects.all().order_by('-id'),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
@@ -1277,6 +1322,9 @@ def eliminar_guia(request,ind):
 
 @login_required(login_url='/sistema_2')
 def editar_guia(request,ind):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     ser = services.objects.all()
     prod = products.objects.all()
     proforma_editar = guias.objects.get(id=ind)
@@ -1324,12 +1372,16 @@ def editar_guia(request,ind):
     return render(request,'sistema_2/editar_guia.html',{
         'prof':proforma_editar,
         'pro':prod,
-        'ser':ser
+        'ser':ser,
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
 @csrf_exempt
 def fact(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     if request.method == 'POST':
         if 'Filtrar' in request.POST:
             fecha_inicial = str(request.POST.get('fecha_inicio'))
@@ -1339,7 +1391,8 @@ def fact(request):
                 return render(request,'sistema_2/facturas.html',{
                     'fac':facturas_filtradas.order_by('id'),
                     'fecha_inicial':fecha_inicial,
-                    'fecha_final':fecha_final
+                    'fecha_final':fecha_final,
+                    'usr_rol': user_logued,
                 })
         elif 'Exportar' in request.POST:
             print('Se solicita el excel')
@@ -1450,7 +1503,8 @@ def fact(request):
                 response['Content-Disposition'] = nombre
                 return response
     return render(request,'sistema_2/facturas.html',{
-        'fac': facturas.objects.all().order_by('-id')
+        'fac': facturas.objects.all().order_by('-id'),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
@@ -1707,6 +1761,9 @@ def armar_json_nota_factura(factura_info,nota_fecha,nota_serie,nota_nro):
 
 @login_required(login_url='/sistema_2')
 def editar_factura(request,ind):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     ser = services.objects.all()
     prod = products.objects.all()
     proforma_editar = facturas.objects.get(id=ind)
@@ -1751,12 +1808,16 @@ def editar_factura(request,ind):
     return render(request,'sistema_2/editar_factura.html',{
         'prof':proforma_editar,
         'pro':prod,
-        'ser':ser
+        'ser':ser,
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
 @csrf_exempt
 def bole(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     if request.method == 'POST':
         if 'Filtrar' in request.POST:
             fecha_inicial = str(request.POST.get('fecha_inicio'))
@@ -1766,7 +1827,8 @@ def bole(request):
                 return render(request,'sistema_2/boletas.html',{
                     'bol':boletas_filtradas.order_by('id'),
                     'fecha_inicial':fecha_inicial,
-                    'fecha_final':fecha_final
+                    'fecha_final':fecha_final,
+                    'usr_rol': user_logued,
                 })
         elif 'Exportar' in request.POST:
             print('Se solicita el excel')
@@ -1817,11 +1879,15 @@ def bole(request):
                 response['Content-Disposition'] = nombre
                 return response
     return render(request,'sistema_2/boletas.html',{
-        'bol': boletas.objects.all().order_by('-id')
+        'bol': boletas.objects.all().order_by('-id'),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
 def editar_boleta(request,ind):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     ser = services.objects.all()
     prod = products.objects.all()
     proforma_editar = boletas.objects.get(id=ind)
@@ -1858,7 +1924,8 @@ def editar_boleta(request,ind):
     return render(request,'sistema_2/editar_boleta.html',{
         'prof':proforma_editar,
         'pro':prod,
-        'ser':ser
+        'ser':ser,
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
@@ -3896,6 +3963,9 @@ def armar_json_factura(factura_info):
 
 @login_required(login_url='/sistema_2')
 def configurar_documentos(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     datos_doc = config_docs.objects.get(id=1)
     if request.method == 'POST':
         serieBol = request.POST.get('serieBoleta')
@@ -3930,6 +4000,7 @@ def configurar_documentos(request):
         return HttpResponseRedirect(reverse('sistema_2:dashboard'))
     return render(request,'sistema_2/configurar_documentos.html',{
         'info':datos_doc,
+        'usr_rol': user_logued,
     })
 
 def gen_guia_factura(request):
@@ -4217,14 +4288,18 @@ def gen_boleta_cot(request,ind):
     return HttpResponseRedirect(reverse('sistema_2:bole'))
 
 def emitir_nota_factura(request,ind):
-    return render(request,'sistema_2/dashboard.html')
+    return HttpResponseRedirect(reverse('sistema_2:dashboard'))
 
 def emitir_nota_boleta(request,ind):
-    return render(request,'sistema_2/dashboard.html')
+    return HttpResponseRedirect(reverse('sistema_2:dashboard'))
 
 def notas_credito(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     return render(request,'sistema_2/notas_credito.html',{
-        'nota':notaCredito.objects.all().order_by('id')
+        'nota':notaCredito.objects.all().order_by('id'),
+        'usr_rol': user_logued,
     })
 
 @login_required(login_url='/sistema_2')
@@ -4565,10 +4640,10 @@ def descargar_nota_credito(request,ind):
 
 
 def enviar_nota_credito(request,ind):
-    return render(request,'sistema_2/dashboard.html')
+    return HttpResponseRedirect(reverse('sistema_2:dashboard'))
 
 def eliminar_nota_credito(request,ind):
-    return render(request,'sistema_2/dashboard.html')
+    return HttpResponseRedirect(reverse('sistema_2:dashboard'))
 
 def verificar_guia(request,ind):
     guia_verificar = guias.objects.get(id=ind)
@@ -5532,12 +5607,19 @@ def eliminar_producto_tabla(request,ind):
         return HttpResponseBadRequest('Invalid request')
 
 def update_producto(request,ind):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     producto_actualizar = products.objects.get(id=ind)
     return render(request,'sistema_2/update_producto.html',{
-        'producto':producto_actualizar
+        'producto':producto_actualizar,
+        'usr_rol': user_logued,
     })
 
 def registros_bancarios(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     if request.method == 'POST':
         bancoCuenta = request.POST.get('bancoCuenta')
         monedaCuenta = request.POST.get('monedaCuenta')
@@ -5547,6 +5629,7 @@ def registros_bancarios(request):
         return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
     return render(request,'sistema_2/registros_bancarios.html',{
         'cuentasBancos':regCuenta.objects.all().order_by('id'),
+        'usr_rol': user_logued,
     })
 
 def actualizar_cuenta(request,ind):
@@ -5695,6 +5778,9 @@ def eliminar_cuenta(request,ind):
     return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
 
 def ver_movimientos(request,ind):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     registros_mov = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
     cuenta_info = regCuenta.objects.get(id=ind)
     nombreBanco = cuenta_info.bancoCuenta
@@ -5716,6 +5802,7 @@ def ver_movimientos(request,ind):
                 'monedaBanco': monedaBanco,
                 'saldoBanco':saldoBanco,
                 'identificador':ind,
+                'usr_rol': user_logued,
             })
     elif 'Exportar' in request.POST:
         print('Se solicita el excel')
@@ -5968,9 +6055,13 @@ def ver_movimientos(request,ind):
         'monedaBanco': monedaBanco,
         'saldoBanco':saldoBanco,
         'identificador':ind,
+        'usr_rol': user_logued,
     })
 
 def update_mov(request,ind):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     mov_actualizar = regOperacion.objects.get(id=ind)
     clientes = clients.objects.all()
     users_info = userProfile.objects.all()
@@ -5993,6 +6084,7 @@ def update_mov(request,ind):
         'id_bank':mov_actualizar.idCuentaBank,
         'vendedor':vendedor_info,
         'cliente_info':cliente_info,
+        'usr_rol': user_logued,
     })
 
 def actualizar_mov(request,ind):
@@ -6361,6 +6453,7 @@ def comisiones(request):
                 'monto_comision':monto_comision,
                 'tipoUsuario':str(user_logued.tipo),
                 'usuarioSistema':str(user_logued.codigo),
+                'usr_rol': user_logued,
             })
         elif 'Exportar' in request.POST:
             month_filter = str(request.POST.get('monthInfo'))
@@ -6433,6 +6526,7 @@ def comisiones(request):
         'monto_comision':monto_comision,
         'tipoUsuario':str(user_logued.tipo),
         'usuarioSistema':str(user_logued.codigo),
+        'usr_rol': user_logued,
     })
 
 def eliminarTodo(request):
@@ -6816,6 +6910,9 @@ def descargar_proforma_dolares(request,ind):
     return response
 
 def registro_abonos(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
     if request.method == 'POST':
         print('Hola a todos')
         id_banco = request.POST.get('bancoAbono')
@@ -6839,7 +6936,8 @@ def registro_abonos(request):
     return render(request,'sistema_2/registro_abonos.html',{
         'bancos_totales':regCuenta.objects.all().order_by('id'),
         'clientes_totales':clients.objects.all().order_by('id'),
-        'abonos_info':abonosOperacion.objects.all().order_by('id')
+        'abonos_info':abonosOperacion.objects.all().order_by('id'),
+        'usr_rol': user_logued,
     })
 
 def comprobar_abonos(request):
@@ -6847,7 +6945,8 @@ def comprobar_abonos(request):
     registros_abonos = abonosOperacion.objects.all().order_by('id')
     for registro in registros_abonos:
         for reg in registros_bancos:
-            if(registro.nro_operacion == reg.nroOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)):
+            if(registro.nro_operacion == reg.nroOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
+                reg.conectado_abono = '1'
                 reg.comprobanteOperacion = [registro.codigo_comprobante]
                 reg.guiaOperacion = [registro.codigo_guia]
                 reg.cotizacionOperacion = [registro.codigo_coti]
@@ -6857,10 +6956,24 @@ def comprobar_abonos(request):
                 clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
                 reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
                 reg.save()
+                registro.conectado = '1'
+                registro.idRegistroOp = str(reg.id)
+                registro.save()
     return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
 
 def eliminar_abono(request,ind):
-    abonosOperacion.objects.get(id=ind).delete()
+    abono_eliminar = abonosOperacion.objects.get(id=ind)
+    if abono_eliminar.conectado == '1':
+        regBanc = regOperacion.objects.get(id=abono_eliminar.idRegistroOp)
+        regBanc.comprobanteOperacion = []
+        regBanc.guiaOperacion = []
+        regBanc.cotizacionOperacion = []
+        regBanc.vendedorOperacion = []
+        regBanc.clienteOperacion = []
+        regBanc.estadoOperacion = 'INCOMPLETA'
+        regBanc.conectado_abono = '0'
+        regBanc.save()
+    abono_eliminar.delete()
     return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
 
 def actualizar_abono(request,ind):
@@ -6882,6 +6995,19 @@ def actualizar_abono(request,ind):
         abonoActualizar.codigo_guia = codigo_guia
         abonoActualizar.codigo_coti = codigo_coti
         abonoActualizar.codigo_vendedor = codigo_vendedor
+        #Desenlazar abono:
+        if abonoActualizar.conectado == '1':
+            regBanc = regOperacion.objects.get(id=abonoActualizar.idRegistroOp)
+            regBanc.comprobanteOperacion = []
+            regBanc.guiaOperacion = []
+            regBanc.cotizacionOperacion = []
+            regBanc.vendedorOperacion = []
+            regBanc.clienteOperacion = []
+            regBanc.estadoOperacion = 'INCOMPLETA'
+            regBanc.conectado_abono = '0'
+            regBanc.save()
+        abonoActualizar.conectado = '0'
+        abonoActualizar.idRegistroOp = '0'
         abonoActualizar.save()
     return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
 
@@ -6891,3 +7017,26 @@ def descargar_guia(request):
     nombre = 'attachment; ' + 'filename=' + nombre_doc
     response['Content-Disposition'] = nombre
     return response
+
+def actualizar_roles(request,ind):
+    if request.method == 'POST':
+        rolAdmin = request.POST.get('admin')
+        rolVendedor = request.POST.get('vendedor')
+        rolContable = request.POST.get('contable')
+        rolesUsuario = []
+        if rolAdmin == 'on':
+            rolesUsuario.append('1')
+        else:
+            rolesUsuario.append('0')
+        if rolVendedor == 'on':
+            rolesUsuario.append('1')
+        else:
+            rolesUsuario.append('0')
+        if rolContable == 'on':
+            rolesUsuario.append('1')
+        else:
+            rolesUsuario.append('0')
+        usuarioMod = userProfile.objects.get(id=ind)
+        usuarioMod.rolesUsuario = rolesUsuario
+        usuarioMod.save()
+    return HttpResponseRedirect(reverse('sistema_2:usuarios'))
