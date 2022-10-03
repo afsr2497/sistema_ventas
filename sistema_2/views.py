@@ -6981,20 +6981,9 @@ def actualizar_abono(request,ind):
         abonoActualizar = abonosOperacion.objects.get(id=ind)
         id_banco = request.POST.get('bancoAbono')
         nro_operacion = request.POST.get('nroOperacionAbono')
-        id_cliente = request.POST.get('clienteAbono')
-        codigo_comprobante = request.POST.get('facturas_cliente')
-        codigo_guia = request.POST.get('guiaSeleccionada')
-        codigo_coti = request.POST.get('cotiSeleccionada')
-        codigo_vendedor = request.POST.get('vendedorSeleccionado')
         datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
-        datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
         abonoActualizar.datos_banco = datos_banco
-        abonoActualizar.datos_cliente = datos_cliente
         abonoActualizar.nro_operacion = nro_operacion
-        abonoActualizar.codigo_comprobante = codigo_comprobante
-        abonoActualizar.codigo_guia = codigo_guia
-        abonoActualizar.codigo_coti = codigo_coti
-        abonoActualizar.codigo_vendedor = codigo_vendedor
         #Desenlazar abono:
         if abonoActualizar.conectado == '1':
             regBanc = regOperacion.objects.get(id=abonoActualizar.idRegistroOp)

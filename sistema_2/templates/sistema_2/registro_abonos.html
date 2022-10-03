@@ -12,135 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
-
-<script>
-    function nuevoAbonoInfo()
-    {
-        let facturas_cliente = document.getElementById('facturas_cliente')
-        let guiaSeleccionada = document.getElementById('guiaSeleccionada')
-        let cotiSeleccionada = document.getElementById('cotiSeleccionada')
-        let vendedorSeleccionado = document.getElementById('vendedorSeleccionado')
-        let nroOperacionAbono = document.getElementById('nroOperacionAbono')
-
-        facturas_cliente.innerHTML = ''
-        $('.selectpicker').selectpicker('refresh')
-        guiaSeleccionada.value = ''
-        cotiSeleccionada.value = ''
-        vendedorSeleccionado.value = ''
-        nroOperacionAbono.value = ''
-    }
-
-    addEventListener('DOMContentLoaded',()=>{
-
-        let clienteAbono = document.getElementById('clienteAbono')
-
-
-        let facturas_cliente = document.getElementById('facturas_cliente')
-        let guiaSeleccionada = document.getElementById('guiaSeleccionada')
-        let cotiSeleccionada = document.getElementById('cotiSeleccionada')
-        let vendedorSeleccionado = document.getElementById('vendedorSeleccionado')
-        console.log(facturas_cliente)
-
-        $('#abonosTable').DataTable({
-            paging: true,
-            pageLength: 20,
-            lenghtChange: true,
-            autoWidth: false,
-            serching: true,
-            bInfo: false,
-            bSort: false,
-            language: {
-                "decimal": "",
-                "emptyTable": "No hay información",
-                "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-                "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
-                "infoFiltered": "(Filtrado de _MAX_ total entradas)",
-                "infoPostFix": "",
-                "thousands": ",",
-                "lengthMenu": "Mostrar _MENU_ Entradas",
-                "loadingRecords": "Cargando...",
-                "processing": "Procesando...",
-                "search": "Buscar:",
-                "zeroRecords": "Sin resultados encontrados",
-                "paginate": {
-                    "first": "Primero",
-                    "last": "Ultimo",
-                    "next": "Siguiente",
-                    "previous": "Anterior"
-                }
-            }
-        })
-
-        //let opcion_nueva = document.createElement('option')
-        //opcion_nueva.value = '1'
-        //opcion_nueva.innerHTML = 'Hola'
-        //facturas_cliente.appendChild(opcion_nueva)
-
-        //$('.selectpicker').selectpicker('refresh')
-
-        clienteAbono.onchange = function() 
-        {
-            facturas_cliente.innerHTML = ''
-
-            var opcionCreada = document.createElement('option')
-            opcionCreada.value = ''
-            opcionCreada.text = ''
-            facturas_cliente.add(opcionCreada)
-            $('.selectpicker').selectpicker('refresh')
-
-            cotiSeleccionada.value = ''
-            guiaSeleccionada.value = ''
-            vendedorSeleccionado.value = ''
-            
-            url = '/sistema_2/obtener_facturas_cotizaciones_cliente/' + clienteAbono.value
-            async function get_data() {
-                const res = await fetch(url,{
-                                        method:"GET",
-                                        headers: {
-                                            "X-Requested-With": "XMLHttpRequest",
-                                        },})
-                cliente_info=await res.json()
-                console.log(cliente_info)
-                if(cliente_info.tipoCliente == 'Empresa')
-                {
-                    for(var i = 0; i < cliente_info.facturas.length; i++)
-                    {
-                        console.log('Se ingreso al bucle')
-                        var opcionCreada = document.createElement('option')
-                        opcionCreada.value = cliente_info.facturas[i]
-                        opcionCreada.text = cliente_info.facturas[i]
-                        facturas_cliente.add(opcionCreada)
-                    }
-                    $('.selectpicker').selectpicker('refresh')
-                }
-                                    }
-            get_data()
-        }
-
-        facturas_cliente.onchange = function()
-        {
-            //infoComprobante.value = facturas_cliente.value
-            url = '/sistema_2/obtener_guias_factura/' + facturas_cliente.value
-            async function get_data() {
-                const res = await fetch(url,{
-                                        method:"GET",
-                                        headers: {
-                                            "X-Requested-With": "XMLHttpRequest",
-                                        },})
-                cliente_info=await res.json()
-                console.log(cliente_info)
-                guiaSeleccionada.value = ''
-                cotiSeleccionada.value = ''
-                vendedorSeleccionado.value = ''
-                vendedorSeleccionado.value = cliente_info.vendedor
-                cotiSeleccionada.value = cliente_info.proformas
-                guiaSeleccionada.value = cliente_info.guias
-
-            }
-            get_data()
-        }
-    })
-</script>
+<script src="{% static 'sistema_2/registro_abonos.js' %}"></script>
 
 
 {% endblock %}
@@ -190,96 +62,6 @@
         </table>
     </div>
 </div>
-
-{% for abono in abonos_info %}
-<div class="modal fade" tabindex="-1" role="dialog" id="editarAbono{{ abono.id }}">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div  class="modal-header">
-                <h5 class="modal-title">Editar abono</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="{% url 'sistema_2:actualizar_abono' abono.id %}">
-            {% csrf_token %}
-                <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <label>Banco</label>
-                            <select class="selectpicker form-control" name="bancoAbono" required>
-                                <option></option>
-                                {% for banco in bancos_totales %}
-                                {% if banco.id|stringformat:"i" == abono.datos_banco.0 %}
-                                    <option value="{{ banco.id }}" selected>{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
-                                {% else %}
-                                    <option value="{{ banco.id }}">{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>Nro de Operacion</label>
-                            <input class="form-control" type="text" name="nroOperacionAbono" id="nroOperacionAbono" value="{{ abono.nro_operacion }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Cliente</label>
-                            <select class="selectpicker form-control" data-live-search="true" name="clienteAbono" required id="clienteAbono">
-                                <option></option>
-                                {% for cliente in clientes_totales %}
-                                    {% if cliente.dni != '' %}
-                                        {% if cliente.id|stringformat:"i" == abono.datos_cliente.0 %}
-                                            <option value="{{ cliente.id }}" selected>{{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.dni }}</option>
-                                        {% else %}
-                                            <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.dni }}</option>
-                                        {% endif %}
-                                    {% endif %}
-                                    {% if cliente.ruc != '' %}
-                                        {% if cliente.id|stringformat:"i" == abono.datos_cliente.0 %}
-                                            <option value="{{ cliente.id }}" selected>{{ cliente.razon_social }} - {{ cliente.ruc }}</option>
-                                        {% else %}
-                                            <option value="{{ cliente.id }}">{{ cliente.razon_social }} - {{ cliente.ruc }}</option>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>Comprobantes</label>
-                            <select class="selectpicker" required id="facturas_cliente" name="facturas_cliente">
-                                <option></option>
-                                <option value="{{ abono.codigo_comprobante }}" selected>{{ abono.codigo_comprobante }}</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Guia</label>
-                            <input class="form-control" id="guiaSeleccionada" name="guiaSeleccionada" value="{{ abono.codigo_guia }}" readonly>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>Cotizacion</label>
-                            <input class="form-control" id="cotiSeleccionada" name="cotiSeleccionada" value="{{ abono.codigo_coti }}" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Vendedor</label>
-                            <input class="form-control" id="vendedorSeleccionado" name="vendedorSeleccionado" value="{{ abono.codigo_vendedor }}" readonly>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Agregar</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                </div>
-            </form>
-        </div>        
-    </div>
-</div>
-{% endfor %}
-
-
 
 <div class="modal fade" tabindex="-1" role="dialog" id="nuevoAbono">
     <div class="modal-dialog" role="document">
@@ -353,5 +135,94 @@
         </div>        
     </div>
 </div>
+
+{% for abono in abonos_info %}
+<div class="modal fade" tabindex="-1" role="dialog" id="editarAbono{{ abono.id }}">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div  class="modal-header">
+                <h5 class="modal-title">Editar abono</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'sistema_2:actualizar_abono' abono.id %}">
+            {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label>Banco</label>
+                            <select class="selectpicker form-control" name="bancoAbono" required>
+                                <option></option>
+                                {% for banco in bancos_totales %}
+                                {% if banco.id|stringformat:"i" == abono.datos_banco.0 %}
+                                    <option value="{{ banco.id }}" selected>{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
+                                {% else %}
+                                    <option value="{{ banco.id }}">{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Nro de Operacion</label>
+                            <input class="form-control" type="text" name="nroOperacionAbono" id="nroOperacionAbono" value="{{ abono.nro_operacion }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Cliente</label>
+                            <select class="selectpicker form-control" data-live-search="true" name="clienteAbono" required id="clienteAbono" disabled>
+                                <option></option>
+                                {% for cliente in clientes_totales %}
+                                    {% if cliente.dni != '' %}
+                                        {% if cliente.id|stringformat:"i" == abono.datos_cliente.0 %}
+                                            <option value="{{ cliente.id }}" selected>{{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.dni }}</option>
+                                        {% else %}
+                                            <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.dni }}</option>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if cliente.ruc != '' %}
+                                        {% if cliente.id|stringformat:"i" == abono.datos_cliente.0 %}
+                                            <option value="{{ cliente.id }}" selected>{{ cliente.razon_social }} - {{ cliente.ruc }}</option>
+                                        {% else %}
+                                            <option value="{{ cliente.id }}">{{ cliente.razon_social }} - {{ cliente.ruc }}</option>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Comprobantes</label>
+                            <select class="selectpicker" required id="facturas_cliente" name="facturas_cliente" disabled>
+                                <option></option>
+                                <option value="{{ abono.codigo_comprobante }}" selected>{{ abono.codigo_comprobante }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Guia</label>
+                            <input class="form-control" id="guiaSeleccionada" name="guiaSeleccionada" value="{{ abono.codigo_guia }}" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Cotizacion</label>
+                            <input class="form-control" id="cotiSeleccionada" name="cotiSeleccionada" value="{{ abono.codigo_coti }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Vendedor</label>
+                            <input class="form-control" id="vendedorSeleccionado" name="vendedorSeleccionado" value="{{ abono.codigo_vendedor }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>        
+    </div>
+</div>
+{% endfor %}
+
 
 {% endblock %}
