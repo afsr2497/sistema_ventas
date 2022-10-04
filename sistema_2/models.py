@@ -143,6 +143,7 @@ class facturas(models.Model):
     fecha_emision = models.DateField(null=True)
     registroFactura = models.CharField(max_length=64,default='0')
     codigosCotis = ArrayField(models.CharField(max_length=128),default=list())
+    facturaPagada = models.CharField(max_length=64,default='0')
 
 class boletas(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
@@ -244,3 +245,4 @@ class abonosOperacion(models.Model):
     codigo_vendedor = models.CharField(max_length=64,default='')
     conectado = models.CharField(max_length=64,default='0')
     idRegistroOp = models.CharField(max_length=64,default='0')
+    comprobanteCancelado = models.CharField(max_length=64,default='PENDIENTE')

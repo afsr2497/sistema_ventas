@@ -36,6 +36,7 @@
                 <th>Moneda</th>
                 <th>Nro de operacion</th>
                 <th>Cliente</th>
+                <th>Estado OP</th>
                 <th>Factura</th>
                 <th>Guía</th>
                 <th>Cotizacion</th>
@@ -50,6 +51,7 @@
                     <td>{{ abono.datos_banco.2 }}</td>
                     <td>{{ abono.nro_operacion }}</td>
                     <td>{{ abono.datos_cliente.1 }}</td>
+                    <td>{{ abono.comprobanteCancelado }}</td>
                     <td>{{ abono.codigo_comprobante }}</td>
                     <td>{{ abono.codigo_guia }}</td>
                     <td>{{ abono.codigo_coti }}</td>
@@ -102,6 +104,12 @@
                                     {% endif %}
                                 {% endfor %}
                             </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input class="form-check-input" type="checkbox" name="facturaCancelada">
+                            <label class="form-check-label">CANCELADO</label>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -188,6 +196,16 @@
                                     {% endif %}
                                 {% endfor %}
                             </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {% if abono.comprobanteCancelado == 'CANCELADO' %}
+                                <input class="form-check-input" type="checkbox" name="facturaCancelada" disabled>
+                            {% else %}
+                                <input class="form-check-input" type="checkbox" name="facturaCancelada">
+                            {% endif %}
+                            <label class="form-check-label">CANCELADO</label>
                         </div>
                     </div>
                     <div class="row mb-3">

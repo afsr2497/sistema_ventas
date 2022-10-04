@@ -2,6 +2,7 @@ from distutils.log import info
 from itertools import product
 import math
 from datetime import datetime,timedelta
+from optparse import AmbiguousOptionError
 from tokenize import Number
 from dateutil.relativedelta import relativedelta
 from distutils.command.config import config
@@ -5781,7 +5782,7 @@ def ver_movimientos(request,ind):
     usr = userProfile.objects.all()
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
-    registros_mov = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
+    registros_mov = regOperacion.objects.filter(idCuentaBank=ind).order_by('-fechaOperacion')
     cuenta_info = regCuenta.objects.get(id=ind)
     nombreBanco = cuenta_info.bancoCuenta
     monedaBanco = cuenta_info.monedaCuenta
@@ -5795,7 +5796,7 @@ def ver_movimientos(request,ind):
         if fecha_inicial != '' and fecha_final != '':
             movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
             return render(request,'sistema_2/mov_bancarios.html',{
-                'operacionBanco':movimientos_filtrados.order_by('id'),
+                'operacionBanco':movimientos_filtrados.order_by('-fechaOperacion'),
                 'fecha_inicial':fecha_inicial,
                 'fecha_final':fecha_final,
                 'nombreBanco': nombreBanco,
@@ -5852,7 +5853,7 @@ def ver_movimientos(request,ind):
                 response['Content-Disposition'] = nombre
                 return response
             else:
-                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('-fechaOperacion')
                 info_movimientos=[]
                 for movi_info in mov_exportar:
                     if(len(movi_info.cotizacionOperacion)>0):
@@ -5932,7 +5933,7 @@ def ver_movimientos(request,ind):
                 response['Content-Disposition'] = nombre
                 return response
             else:
-                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('-fechaOperacion')
                 info_movimientos=[]
                 for movi_info in mov_exportar:
                     if(len(movi_info.cotizacionOperacion)>0):
@@ -6011,7 +6012,7 @@ def ver_movimientos(request,ind):
                 response['Content-Disposition'] = nombre
                 return response
             else:
-                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('id')
+                mov_exportar = regOperacion.objects.filter(idCuentaBank=ind).order_by('-fechaOperacion')
                 info_movimientos=[]
                 for movi_info in mov_exportar:
                     if(len(movi_info.cotizacionOperacion)>0):
@@ -6116,9 +6117,9 @@ def actualizar_mov(request,ind):
 
         print(mov_actualizar.comprobanteOperacion[0] == None)
         if (mov_actualizar.comprobanteOperacion[0] == None or mov_actualizar.comprobanteOperacion[0] == 'SinSeleccion'):
-            mov_actualizar.estadoOperacion = 'INCOMPLETA'
+            mov_actualizar.estadoOperacion = 'INCOMPLETO'
         else:
-            mov_actualizar.estadoOperacion = 'COMPLETA'
+            mov_actualizar.estadoOperacion = 'COMPLETO'
         ruta_nombre = '/sistema_2/ver_movimientos/' + str(mov_actualizar.idCuentaBank)
         mov_actualizar.save()
         return redirect(ruta_nombre)
@@ -6131,7 +6132,7 @@ def obtener_facturas_cotizaciones_cliente(request,ind):
         if request.method == 'GET':
             print(ind)
             cliente_info = clients.objects.get(id=ind)
-            facturas_info = facturas.objects.all()
+            facturas_info = facturas.objects.all().filter(facturaPagada='0')
             boletas_info = boletas.objects.all()
             cotis_info = cotizaciones.objects.all()
             facturas_seleccionadas = list()
@@ -6423,9 +6424,9 @@ def comisiones(request):
             codigoVendedor = '0'
             if id_vendedor != '0':
                 codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
-                registros_totales = regOperacion.objects.all()
+                registros_totales = regOperacion.objects.all().order_by('fechaOperacion')
                 registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
-                registros_totales = registros_totales.filter(estadoOperacion='COMPLETA')
+                registros_totales = registros_totales.filter(estadoOperacion='COMPLETO')
                 registros_totales = registros_totales.filter(fechaOperacion__month=month_filter,fechaOperacion__year=year_filter)
                 for registro in registros_totales:
                     if len(registro.vendedorOperacion) > 0:
@@ -6462,9 +6463,9 @@ def comisiones(request):
             year_filter = str(request.POST.get('yearInfo'))
             id_vendedor = request.POST.get('id_vendedor')
             if id_vendedor != '0':
-                registros_totales = regOperacion.objects.all()
+                registros_totales = regOperacion.objects.all().order_by('fechaOperacion')
                 registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
-                registros_totales = registros_totales.filter(estadoOperacion='COMPLETA')
+                registros_totales = registros_totales.filter(estadoOperacion='COMPLETO')
                 registros_totales = registros_totales.filter(fechaOperacion__month=month_filter,fechaOperacion__year=year_filter)
                 for registro in registros_totales:
                     if len(registro.vendedorOperacion) > 0:
@@ -6496,9 +6497,9 @@ def comisiones(request):
                     tipo_Cambio = str(1.00)
                 monto_convertido = str(monto_convertido)
                 monto_sinigv = str(round(float(monto_convertido)/1.18,2))
-                info_registro.append([registro.fechaOperacion.strftime('%d/%m/%Y'),registro.detalleOperacion,registro.nroOperacion,registro.vendedorOperacion[2],registro.monedaOperacion,registro.montoOperacion,tipo_Cambio,monto_convertido,monto_sinigv])            
+                info_registro.append([registro.fechaOperacion.strftime('%d/%m/%Y'),registro.detalleOperacion,registro.nroOperacion,registro.vendedorOperacion[2],str(regCuenta.objects.get(id=registro.idCuentaBank).bancoCuenta),registro.monedaOperacion,registro.montoOperacion,tipo_Cambio,monto_convertido,monto_sinigv])            
             info_registro.append(['','','','','','','','Monto total',str(monto_total)])
-            tabla_excel = pd.DataFrame(info_registro,columns=['Fecha','Descricion','Nro de operacion','Codigo del vendedor','Moneda','Monto','Tipo de Cambio','Monto (S./)','Monto final'])
+            tabla_excel = pd.DataFrame(info_registro,columns=['Fecha','Descricion','Nro de operacion','Codigo del vendedor','Banco','Moneda','Monto','Tipo de Cambio','Monto (S./)','Monto final'])
             tabla_excel.to_excel('info_excel.xlsx',index=False)
             doc_excel = openpyxl.load_workbook("info_excel.xlsx")
             doc_excel.active.column_dimensions['A'].width = 30
@@ -6509,6 +6510,7 @@ def comisiones(request):
             doc_excel.active.column_dimensions['F'].width = 30
             doc_excel.active.column_dimensions['G'].width = 30
             doc_excel.active.column_dimensions['H'].width = 30
+            doc_excel.active.column_dimensions['I'].width = 30
             doc_excel.active.column_dimensions['I'].width = 30
             doc_excel.save("info_excel.xlsx")
             response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -6922,6 +6924,7 @@ def registro_abonos(request):
         codigo_guia = request.POST.get('guiaSeleccionada')
         codigo_coti = request.POST.get('cotiSeleccionada')
         codigo_vendedor = request.POST.get('vendedorSeleccionado')
+        facturaCancelada = request.POST.get('facturaCancelada')
         datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
         datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
         print(id_banco)
@@ -6931,7 +6934,17 @@ def registro_abonos(request):
         print(codigo_guia)
         print(codigo_coti)
         print(codigo_vendedor)
-        abonosOperacion(datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
+        abonoEstado = 'PENDIENTE'
+        if facturaCancelada == 'on':
+            abonoEstado = 'CANCELADO'
+            comprobante_abono = facturas.objects.get(codigoFactura=codigo_comprobante)
+            comprobante_abono.facturaPagada = '1'
+            comprobante_abono.save()
+            abonos_totales = abonosOperacion.objects.all().filter(codigo_comprobante=codigo_comprobante)
+            for abono in abonos_totales:
+                abono.comprobanteCancelado = 'CANCELADO'
+                abono.save()
+        abonosOperacion(comprobanteCancelado=abonoEstado,datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
         return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
     return render(request,'sistema_2/registro_abonos.html',{
         'bancos_totales':regCuenta.objects.all().order_by('id'),
@@ -6952,7 +6965,7 @@ def comprobar_abonos(request):
                 reg.cotizacionOperacion = [registro.codigo_coti]
                 usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
                 reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
-                reg.estadoOperacion = 'COMPLETA'
+                reg.estadoOperacion = 'COMPLETO'
                 clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
                 reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
                 reg.save()
@@ -6970,9 +6983,17 @@ def eliminar_abono(request,ind):
         regBanc.cotizacionOperacion = []
         regBanc.vendedorOperacion = []
         regBanc.clienteOperacion = []
-        regBanc.estadoOperacion = 'INCOMPLETA'
+        regBanc.estadoOperacion = 'INCOMPLETO'
         regBanc.conectado_abono = '0'
         regBanc.save()
+    if abono_eliminar.comprobanteCancelado == 'CANCELADO':
+        abonos_asociados = abonosOperacion.objects.all().filter(codigo_comprobante=abono_eliminar.codigo_comprobante)
+        for abono in abonos_asociados:
+            abono.comprobanteCancelado = 'PENDIENTE'
+            abono.save()
+        factura_abono = facturas.objects.get(codigoFactura=abono_eliminar.codigo_comprobante)
+        factura_abono.facturaPagada = '0'
+        factura_abono.save()
     abono_eliminar.delete()
     return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
 
@@ -6981,6 +7002,7 @@ def actualizar_abono(request,ind):
         abonoActualizar = abonosOperacion.objects.get(id=ind)
         id_banco = request.POST.get('bancoAbono')
         nro_operacion = request.POST.get('nroOperacionAbono')
+        factura_cancelada = request.POST.get('facturaCancelada')
         datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
         abonoActualizar.datos_banco = datos_banco
         abonoActualizar.nro_operacion = nro_operacion
@@ -6992,9 +7014,17 @@ def actualizar_abono(request,ind):
             regBanc.cotizacionOperacion = []
             regBanc.vendedorOperacion = []
             regBanc.clienteOperacion = []
-            regBanc.estadoOperacion = 'INCOMPLETA'
+            regBanc.estadoOperacion = 'INCOMPLETO'
             regBanc.conectado_abono = '0'
             regBanc.save()
+        
+        if factura_cancelada == 'on':
+            abonoActualizar.comprobanteCancelado = 'CANCELADO'
+            abonos_relacionados = abonosOperacion.objects.all().filter(codigo_comprobante = abonoActualizar.codigo_comprobante)
+            for abono in abonos_relacionados:
+                abono.comprobanteCancelado = 'CANCELADO'
+                abono.save()
+            abonoActualizar.save()
         abonoActualizar.conectado = '0'
         abonoActualizar.idRegistroOp = '0'
         abonoActualizar.save()
