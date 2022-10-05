@@ -4685,8 +4685,11 @@ def gen_guia_cot(request,ind):
     cot_gen = cotizaciones.objects.get(id=ind)
     guia_cliente = cot_gen.cliente
     guia_productos = cot_gen.productos
+    print(guia_productos)
     for producto in guia_productos:
+        print(producto[0])
         prod_capturado = products.objects.get(id=producto[0])
+        print(prod_capturado.id)
         producto.append(str(prod_capturado.pesoProducto))
         prod_capturado.save()
     guia_servicios = cot_gen.servicios
