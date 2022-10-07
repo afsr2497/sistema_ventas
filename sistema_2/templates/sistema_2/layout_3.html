@@ -29,6 +29,7 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 {% if usr_rol.rolesUsuario.0 == '1' or usr_rol.rolesUsuario.1 == '1' or usr_rol.rolesUsuario.2 == '1' %}
                 <div class="navbar-nav" >
+                    <a class="nav-item nav-link" href="{% url 'sistema_2:dashboard' %}">Dashboard</a>
                     {% if usr_rol.rolesUsuario.0 == '1' %}
                     <a class="nav-item nav-link" href="{% url 'sistema_2:usuarios' %}">Usuarios</a>
                     {% endif %}

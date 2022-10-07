@@ -1,5 +1,4 @@
-from django import views
-from django.urls import URLPattern, path
+from django.urls import path
 from . import views
 
 app_name = 'sistema_2'
@@ -106,4 +105,7 @@ urlpatterns = [
     path('actualizar_abono/<str:ind>',views.actualizar_abono,name='actualizar_abono'),
     path('descargar_guia',views.descargar_guia,name='descargar_guia'),
     path('actualizar_roles/<str:ind>',views.actualizar_roles,name='actualizar_roles'),
+    path('get_clients_statistics/<str:ind>',views.get_clients_statistics,name='get_clients_statistics'),
+    path('get_products_statistics/<str:ind>',views.get_products_statistics,name='get_products_statistics'),
+    path('get_vendedor_statistics/<str:ind>',views.get_vendedor_statistics,name='get_vendedor_statistics')
 ]

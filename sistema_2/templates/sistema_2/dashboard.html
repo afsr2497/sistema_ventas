@@ -2,10 +2,184 @@
 {% load static %}
 
 
+{% block code %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded',()=>{
+        let grafClientes = document.getElementById('grafClientes')
+        let grafProductos = document.getElementById('grafProductos')
+        let grafVendedor = document.getElementById('grafVendedor')
+
+        let tablaClientes = new Chart(grafClientes,{
+            type:'bar',
+            data:{
+                labels:[],
+                datasets:[{
+                    label:'Clientes con mas ventas',
+                    backgroundColor:'rgb(255,0,0)',
+                    data:[],
+                }]
+            }
+        })
+
+        let tablaProductos = new Chart(grafProductos,{
+            type:'bar',
+            data:{
+                labels:[],
+                datasets:[{
+                    label:'Productos mas vendidos',
+                    backgroundColor:'rgb(0,255,0)',
+                    data:[],
+                }]
+            }
+        })
+
+        let tablaVendedor = new Chart(grafVendedor,{
+            type:'bar',
+            data:{
+                labels:[],
+                datasets:[{
+                    label:'Grafica de vendedores',
+                    backgroundColor:'rgb(0,0,255)',
+                    data:[],
+                }]
+            }
+        })
+
+        fetch('/sistema_2/get_clients_statistics/10')
+        .then(response => response.json())
+        .then(data => {
+            tablaClientes.data.labels = data.clientes_mas_ventas.slice(0,10)
+            tablaClientes.data.datasets[0].data = data.ventas_clientes.slice(0,10)
+            tablaClientes.update()
+        })
+
+        fetch('/sistema_2/get_products_statistics/10')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            tablaProductos.data.labels = data.productos_mas_ventas.slice(0,10)
+            tablaProductos.data.datasets[0].data = data.ventas_productos.slice(0,10)
+            tablaProductos.update()
+        })
+
+        fetch('/sistema_2/get_vendedor_statistics/10')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            tablaVendedor.data.labels = data.vendedor_mas_ventas.slice(0,10)
+            tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,10)
+            tablaVendedor.update()
+        })
+
+        
+
+        let btnFiltrarClientes = document.getElementById('filtrarClientes')
+        btnFiltrarClientes.addEventListener('click',modificarTablaClientes)
+
+        let btnFiltrarProductos = document.getElementById('filtrarProductos')
+        btnFiltrarProductos.addEventListener('click',modificarTablaProductos)
+
+        let btnFiltrarVendedor = document.getElementById('filtrarVendedor')
+        btnFiltrarVendedor.addEventListener('click',modificarTablaVendedor)
+
+        function modificarTablaClientes()
+        {
+            let filtroClientes = document.getElementById('filtroClientes')
+
+            fetch(`/sistema_2/get_clients_statistics/${filtroClientes.value}`)
+            .then(response => response.json())
+            .then(data => {
+                tablaClientes.data.labels = data.clientes_mas_ventas.slice(0,parseInt(filtroClientes.value))
+                tablaClientes.data.datasets[0].data = data.ventas_clientes.slice(0,parseInt(filtroClientes.value))
+                tablaClientes.update()
+            })
+        }
+
+        function modificarTablaProductos()
+        {
+            let filtroProductos = document.getElementById('filtroProductos')
+
+            fetch(`/sistema_2/get_products_statistics/${filtroProductos.value}`)
+            .then(response => response.json())
+            .then(data => {
+                tablaProductos.data.labels = data.productos_mas_ventas.slice(0,parseInt(filtroProductos.value))
+                tablaProductos.data.datasets[0].data = data.ventas_productos.slice(0,parseInt(filtroProductos.value))
+                tablaProductos.update()
+            })
+        }
+
+        function modificarTablaVendedor()
+        {
+            let filtroVendedor = document.getElementById('filtroVendedor')
+
+            fetch(`/sistema_2/get_vendedor_statistics/${filtroVendedor.value}`)
+            .then(response => response.json())
+            .then(data => {
+                tablaVendedor.data.labels = data.vendedor_mas_ventas.slice(0,parseInt(filtroVendedor.value))
+                tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,parseInt(filtroVendedor.value))
+                tablaVendedor.update()
+            })
+        }
+    })
+</script>
+{% endblock %}
+
 
 {% block content %}
 
-
+<div class="row mb-3" style="padding: 5px; text-align: center;">
+    <div class="col-md-6">
+        <div class="row mb-3">
+            <div class="col-md-2"></div>
+            <div class="col-md-3">
+                <select class="form-select" id="filtroClientes">
+                    <option value="10">Top 10</option>
+                    <option value="5">Top 5</option>
+                    <option value="3">Top 3</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-success" id="filtrarClientes">Filtrar</button>
+            </div>
+        </div>
+        <canvas width="200" height="100" id="grafClientes"></canvas>
+    </div>
+    <div class="col-md-6">
+        <div class="row mb-3">
+            <div class="col-md-2"></div>
+            <div class="col-md-3">
+                <select class="form-select" id="filtroProductos">
+                    <option value="10">Top 10</option>
+                    <option value="5">Top 5</option>
+                    <option value="3">Top 3</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-success" id="filtrarProductos">Filtrar</button>
+            </div>
+        </div>
+        <canvas width="200" height="100" id="grafProductos"></canvas>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="row mb-3">
+            <div class="col-md-2"></div>
+            <div class="col-md-3">
+                <select class="form-select" id="filtroVendedor">
+                    <option value="10">Top 10</option>
+                    <option value="5">Top 5</option>
+                    <option value="3">Top 3</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-success" id="filtrarVendedor">Filtrar</button>
+            </div>
+        </div>
+        <canvas width="200" height="100" id="grafVendedor"></canvas>
+    </div>
+</div>
 
 {% endblock %}
 

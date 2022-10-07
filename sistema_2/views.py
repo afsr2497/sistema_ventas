@@ -7062,3 +7062,68 @@ def actualizar_roles(request,ind):
         usuarioMod.rolesUsuario = rolesUsuario
         usuarioMod.save()
     return HttpResponseRedirect(reverse('sistema_2:usuarios'))
+
+def get_clients_statistics(request,ind):
+    clientes_mas_ventas = []
+    ventas_clientes = []
+    datos_clientes = []
+    facturas_info = facturas.objects.all()
+    for factura in facturas_info:
+        datos_clientes.append(factura.cliente[5])
+    estadistica_clientes = pd.Series(datos_clientes)
+
+    resultados_finales = estadistica_clientes.value_counts()
+    for i in range(len(resultados_finales)):
+        ventas_clientes.append(int(resultados_finales[i]))
+
+    clientes_mas_ventas = list(resultados_finales.index.tolist())
+    ventas_clientes = list(ventas_clientes)
+    return JsonResponse({
+        'clientes_mas_ventas':clientes_mas_ventas[:int(ind)],
+        'ventas_clientes':ventas_clientes[:int(ind)],
+    })
+
+def get_products_statistics(request,ind):
+    productos_mas_ventas = []
+    ventas_productos = []
+    datos_productos = []
+    facturas_info = facturas.objects.all()
+    for factura in facturas_info:
+        for producto in factura.productos:
+            datos_productos.append(producto[2])
+    
+    estadistica_productos = pd.Series(datos_productos)
+
+    resultados_finales = estadistica_productos.value_counts()
+    for i in range(len(resultados_finales)):
+        ventas_productos.append(int(resultados_finales[i]))
+
+    productos_mas_ventas = list(resultados_finales.index.tolist())
+    ventas_productos = list(ventas_productos)
+    print(productos_mas_ventas)
+    print(ventas_productos)
+    return JsonResponse({
+        'productos_mas_ventas':productos_mas_ventas[:int(ind)],
+        'ventas_productos':ventas_productos[:int(ind)],
+    })
+
+def get_vendedor_statistics(request,ind):
+    vendedor_mas_ventas = []
+    ventas_vendedor = []
+    datos_vendedor = []
+    facturas_info = facturas.objects.all()
+    for factura in facturas_info:
+        datos_vendedor.append(factura.vendedor[2])
+    
+    estadistica_vendedor = pd.Series(datos_vendedor)
+
+    resultados_finales = estadistica_vendedor.value_counts()
+    for i in range(len(resultados_finales)):
+        ventas_vendedor.append(int(resultados_finales[i]))
+
+    vendedor_mas_ventas = list(resultados_finales.index.tolist())
+    ventas_vendedor = list(ventas_vendedor)
+    return JsonResponse({
+        'vendedor_mas_ventas':vendedor_mas_ventas[:int(ind)],
+        'ventas_vendedor':ventas_vendedor[:int(ind)],
+    })
