@@ -5178,6 +5178,21 @@ def verificar_factura_teFacturo(request,ind):
                     almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
                     prod_mod.save()
             prod_mod.save()
+    if factura_verificar.estadoSunat == 'Anulado' and factura_verificar.stockAct == '1':
+        factura_verificar.stockAct == '0'
+        factura_verificar.save()
+        for producto in factura_verificar.productos:
+            prod_mod = products.objects.get(codigo=producto[2])
+            stknow = float(prod_mod.stockTotal)
+            stkact = stknow + float(producto[8])
+            stkact = str(round(stkact,2))
+            prod_mod.stockTotal = stkact
+            prod_mod.save()
+            for almacen in prod_mod.stock:
+                if almacen[0] == producto[4]:
+                    almacen[1] = str(round(float(almacen[1]) + float(producto[8]),2))
+                    prod_mod.save()
+            prod_mod.save()
     return HttpResponseRedirect(reverse('sistema_2:fact'))
 
 @login_required(login_url='/sistema_2')
