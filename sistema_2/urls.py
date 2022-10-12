@@ -107,5 +107,6 @@ urlpatterns = [
     path('actualizar_roles/<str:ind>',views.actualizar_roles,name='actualizar_roles'),
     path('get_clients_statistics/<str:ind>',views.get_clients_statistics,name='get_clients_statistics'),
     path('get_products_statistics/<str:ind>',views.get_products_statistics,name='get_products_statistics'),
-    path('get_vendedor_statistics/<str:ind>',views.get_vendedor_statistics,name='get_vendedor_statistics')
+    path('get_vendedor_statistics/<str:ind>',views.get_vendedor_statistics,name='get_vendedor_statistics'),
+    path('get_ventas_meses/<str:ind>',views.get_ventas_meses,name='get_ventas_meses')
 ]

@@ -5163,6 +5163,21 @@ def verificar_factura_teFacturo(request,ind):
     print(r.content)
     factura_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
     factura_verificar.save()
+    if factura_verificar.estadoSunat == 'Aceptado' and factura_verificar.stockAct == '0':
+        factura_verificar.stockAct = '1'
+        factura_verificar.save()
+        for producto in factura_verificar.productos:
+            prod_mod = products.objects.get(codigo=producto[2])
+            stknow = float(prod_mod.stockTotal)
+            stkact = stknow - float(producto[8])
+            stkact = str(round(stkact,2))
+            prod_mod.stockTotal = stkact
+            prod_mod.save()
+            for almacen in prod_mod.stock:
+                if almacen[0] == producto[4]:
+                    almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
+                    prod_mod.save()
+            prod_mod.save()
     return HttpResponseRedirect(reverse('sistema_2:fact'))
 
 @login_required(login_url='/sistema_2')
@@ -7126,4 +7141,36 @@ def get_vendedor_statistics(request,ind):
     return JsonResponse({
         'vendedor_mas_ventas':vendedor_mas_ventas[:int(ind)],
         'ventas_vendedor':ventas_vendedor[:int(ind)],
+    })
+
+def get_ventas_meses(request,ind):
+    meses_totales = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+    lista_meses = []
+    ventas_meses = []
+    mes_actual = datetime.now().month
+    i = 0
+    while(i < int(ind)):
+        if (mes_actual - i)<1:
+            indice_mes = 12 - (i-mes_actual)
+        else:
+            indice_mes = mes_actual - i
+        lista_meses.append(meses_totales[indice_mes-1])
+        facturas_filtradas = facturas.objects.filter(fecha_emision__month=indice_mes)
+        monto_total_mes = 0.00
+        for factura in facturas_filtradas:
+            total_precio_soles = 0.00
+            for producto in factura.productos:
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'SOLES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+            monto_total_mes = Decimal(monto_total_mes) + Decimal(total_precio_soles)
+        ventas_meses.append(round(monto_total_mes,2))
+        i = i + 1
+    return JsonResponse({
+        'lista_meses':lista_meses,
+        'ventas_meses':ventas_meses,
     })

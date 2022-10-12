@@ -43,7 +43,7 @@
     get_data()
   }
 
-  function eliminarInfo() 
+  function eliminarData() 
   {
     let tabla_stock = document.getElementById('stockProducto')
     tabla_stock.innerHTML = ``
@@ -352,12 +352,12 @@
 </div>
 
 <!--Ver stock del producto-->
-<div class="modal fade" tabindex="-1" role="dialog" id="stock0">
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="stock0">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Stock del producto</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="eliminarInfo()"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="eliminarData()"></button>
       </div>
       <div class="modal-body">
         <table class="table table-bordered table-hover">
@@ -372,7 +372,7 @@
         </table>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarInfo()">Cerrar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarData()">Cerrar</button>
       </div>
     </div>
   </div>

@@ -9,6 +9,7 @@
         let grafClientes = document.getElementById('grafClientes')
         let grafProductos = document.getElementById('grafProductos')
         let grafVendedor = document.getElementById('grafVendedor')
+        let grafVentas = document.getElementById('grafVentas')
 
         let tablaClientes = new Chart(grafClientes,{
             type:'bar',
@@ -16,7 +17,7 @@
                 labels:[],
                 datasets:[{
                     label:'Clientes con mas ventas',
-                    backgroundColor:'rgb(255,0,0)',
+                    backgroundColor:'#0275d8',
                     data:[],
                 }]
             }
@@ -28,7 +29,7 @@
                 labels:[],
                 datasets:[{
                     label:'Productos mas vendidos',
-                    backgroundColor:'rgb(0,255,0)',
+                    backgroundColor:'#0275d8',
                     data:[],
                 }]
             }
@@ -40,7 +41,19 @@
                 labels:[],
                 datasets:[{
                     label:'Grafica de vendedores',
-                    backgroundColor:'rgb(0,0,255)',
+                    backgroundColor:'#0275d8',
+                    data:[],
+                }]
+            }
+        })
+
+        let tablaVentas = new Chart(grafVentas,{
+            type:'bar',
+            data:{
+                labels:[],
+                datasets:[{
+                    label:'Grafica de ventas',
+                    backgroundColor:'#0275d8',
                     data:[],
                 }]
             }
@@ -72,6 +85,15 @@
             tablaVendedor.update()
         })
 
+        fetch('/sistema_2/get_ventas_meses/10')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            tablaVentas.data.labels = data.lista_meses.slice(0,10)
+            tablaVentas.data.datasets[0].data = data.ventas_meses.slice(0,10)
+            tablaVentas.update()
+        })
+
         
 
         let btnFiltrarClientes = document.getElementById('filtrarClientes')
@@ -82,6 +104,9 @@
 
         let btnFiltrarVendedor = document.getElementById('filtrarVendedor')
         btnFiltrarVendedor.addEventListener('click',modificarTablaVendedor)
+
+        let btnFiltrarVentas = document.getElementById('filtrarVentas')
+        btnFiltrarVentas.addEventListener('click',modificarTablaVentas)
 
         function modificarTablaClientes()
         {
@@ -121,6 +146,19 @@
                 tablaVendedor.update()
             })
         }
+
+        function modificarTablaVentas()
+        {
+            let filtroVentas = document.getElementById('filtroVentas')
+
+            fetch(`/sistema_2/get_ventas_meses/${filtroVentas.value}`)
+            .then(response => response.json())
+            .then(data => {
+                tablaVentas.data.labels = data.lista_meses.slice(0,parseInt(filtroVentas.value))
+                tablaVentas.data.datasets[0].data = data.ventas_meses.slice(0,parseInt(filtroVentas.value))
+                tablaVentas.update()
+            })
+        }
     })
 </script>
 {% endblock %}
@@ -128,7 +166,7 @@
 
 {% block content %}
 
-<div class="row mb-3" style="padding: 5px; text-align: center;">
+<div class="row mb-3">
     <div class="col-md-6">
         <div class="row mb-3">
             <div class="col-md-2"></div>
@@ -178,6 +216,22 @@
             </div>
         </div>
         <canvas width="200" height="100" id="grafVendedor"></canvas>
+    </div>
+    <div class="col-md-6">
+        <div class="row mb-3">
+            <div class="col-md-2"></div>
+            <div class="col-md-3">
+                <select class="form-select" id="filtroVentas">
+                    <option value="10">Top 10</option>
+                    <option value="5">Top 5</option>
+                    <option value="3">Top 3</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-success" id="filtrarVentas">Filtrar</button>
+            </div>
+        </div>
+        <canvas width="200" height="100" id="grafVentas"></canvas>
     </div>
 </div>
 

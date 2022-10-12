@@ -144,6 +144,7 @@ class facturas(models.Model):
     registroFactura = models.CharField(max_length=64,default='0')
     codigosCotis = ArrayField(models.CharField(max_length=128),default=list())
     facturaPagada = models.CharField(max_length=64,default='0')
+    stockAct = models.CharField(max_length=64,default='0')
 
 class boletas(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
