@@ -6987,7 +6987,7 @@ def registro_abonos(request):
     })
 
 def comprobar_abonos(request):
-    registros_bancos = regOperacion.objects.all().order_by('id')
+    registros_bancos = regOperacion.objects.filter(tipoOperacion='INGRESO').order_by('id')
     registros_abonos = abonosOperacion.objects.all().order_by('id')
     for registro in registros_abonos:
         for reg in registros_bancos:
