@@ -1,0 +1,91 @@
+{
+    "close2u":
+    {
+        "tipoIntegracion": "ERP",
+        "tipoPlantilla": "01",
+        "tipoRegistro": "PRECIOS_CON_IGV"
+    },
+    "comprobanteAjustado":
+    {
+        "fechaEmision": "2021-10-12",
+        "numero": 799,
+        "serie": "FFM1",
+        "tipoDocumento": "FACTURA"
+    },
+    "cuotas":
+    [
+        {
+            "fecha": "2021-10-19",
+            "moneda": "PEN",
+            "monto": 2000,
+            "numero": "001"
+        },
+        {
+            "fecha": "2021-10-27",
+            "moneda": "PEN",
+            "monto": "1599",
+            "numero": "002"
+        }
+    ],
+    "datosDocumento":
+    {
+        "almacen": "Almacén principal",
+        "codigoAlmacen": "ALM001",
+        "condicionPago": "CONTADO",
+        "fechaEmision": "2021-10-12",
+        "formaPago": "CREDITO",
+        "glosa": "Ajuste de segunda cuota",
+        "horaEmision": "09:38:37",
+        "medioPago": "EFECTIVO",
+        "moneda": "PEN",
+        "serie": "FFC1"
+    },
+    "detalleDocumento":
+    [
+        {
+            "cantidad": 1,
+            "codigoProducto": "10002",
+            "descripcion": "LAPTOP LENOVO G10",
+            "descripcionAdicional":
+            [],
+            "descuento":
+            {
+                "monto": "0.00"
+            },
+            "numeroOrden": 1,
+            "precioVentaUnitarioItem": 0,
+            "tipoAfectacion": "GRAVADO_OPERACION_ONEROSA",
+            "tipoProducto": "",
+            "unidadMedida": "UNIDAD_BIENES",
+            "unidadMedidaNombre": "UNIDAD_BIENES"
+        }
+    ],
+    "emisor":
+    {
+        "correo": "cachorro@close2u.pe",
+        "nombreComercial": "BRAVO DIAZ FERNANDO",
+        "nombreLegal": "BRAVO DIAZ FERNANDO",
+        "numeroDocumentoIdentidad": "10713951701",
+        "tipoDocumentoIdentidad": "RUC"
+    },
+    "informacionAdicional":
+    {
+        "coVendedor": "07010784",
+        "vendedor": "nom pterno mterno"
+    },
+    "motivo": "AJUSTES_MONTOS_FECHA_PAGO",
+    "receptor":
+    {
+        "correo": "milagros.ibanez@pucp.pe",
+        "correoCopia": "",
+        "domicilioFiscal":
+        {
+            "direccion": " JR. MIGUEL BASTIDAS PUMACAHUA LT. 20 MZ. N - LIMA LIMA  LOS OLIVOS",
+            "ubigeo": "150117"
+        },
+        "nombreComercial": "IBAÑEZ OCHOA MILAGROS DEL PILAR",
+        "nombreLegal": "IBAÑEZ OCHOA MILAGROS DEL PILAR",
+        "numeroDocumentoIdentidad": "10707462472",
+        "tipoDocumentoIdentidad": "RUC"
+    }
+}

@@ -1,0 +1,58 @@
+{
+    "close2u":
+    {
+        "tipoIntegracion": "ERP",
+        "tipoPlantilla": "01",
+        "tipoRegistro": "PRECIOS_SIN_IGV"
+    },
+    "datosDocumento":
+    {
+        "almacen": "El Alma",
+        "codigoAlmacen": "EEEEE",
+        "condicionPago": "CONTADO",
+        "fechaEmision": "2021-10-12",
+        "formaPago": "CONTADO",
+        "medioPago": "EFECTIVO",
+        "moneda": "PEN",
+        "serie": "FFA1"
+    },
+    "detalleDocumento":
+    [
+        {
+            "cantidad": 1,
+            "codigoProducto": "1",
+            "descripcion": "ciento de remache pop 1/8 x 1/2",
+            "numeroOrden": 0,
+            "tipoAfectacion": "GRAVADO_BONIFICACIONES",
+            "unidadMedida": "UNIDAD_BIENES",
+            "valorReferencialUnitarioItem": 2
+        }
+    ],
+    "emisor":
+    {
+        "correo": "demo@close2u.pe",
+        "nombreComercial": "OCHOA TAMARIZ ARMIDA VICTORIA",
+        "nombreLegal": "OCHOA TAMARIZ ARMIDA VICTORIA",
+        "numeroDocumentoIdentidad": "10324047366",
+        "tipoDocumentoIdentidad": "RUC"
+    },
+    "informacionAdicional":
+    {
+        "coVendedor": "23123468",
+        "tipoOperacion": "VENTA_INTERNA",
+        "vendedor": "OSCAR MERCADO MUJICA"
+    },
+    "receptor":
+    {
+        "correo": "fernando.bravo@close2u.pe",
+        "domicilioFiscal":
+        {
+            "direccion": " LT. 20 MZ. Ñ A.H. VILLAMOTO - CALLAO PROV. CONST. DEL CALLAO VENTANILLA",
+            "ubigeo": "070106"
+        },
+        "nombreComercial": "BRAVO DIAZ FERNANDO JESUS",
+        "nombreLegal": "BRAVO DIAZ FERNANDO JESUS",
+        "numeroDocumentoIdentidad": "10713951701",
+        "tipoDocumentoIdentidad": "RUC"
+    }
+}

@@ -3363,6 +3363,19 @@ def enviar_boleta(request,ind):
 
 
 def armar_json_boleta(boleta_info):
+    if len(boleta_info.codigosGuias) > 0:
+        guias_json = []
+        for guia in boleta_info.codigosGuias:
+            datos_guia = guia.split('-')
+            guia_info = {
+                "tipoDocumento":"GUIAEMISIONREMITENTE",
+                "numero":datos_guia[1],
+                "serie":datos_guia[0],
+            }
+            guias_json.append(guia_info)            
+    else:
+        guias_json = null
+    print(guias_json)
     productos = []
     if boleta_info.monedaBoleta == 'SOLES':
         moneda = "PEN"
@@ -3506,7 +3519,8 @@ def armar_json_boleta(boleta_info):
         "informacionAdicional":
         {
             "tipoOperacion":"VENTA_INTERNA",
-            "coVendedor":boleta_info.vendedor[1]
+            "coVendedor":null,
+            "vendedor":boleta_info.vendedor[1]
         },
         "receptor":
         {
@@ -3526,7 +3540,10 @@ def armar_json_boleta(boleta_info):
             "nombreLegal": str(boleta_info.cliente[1] + ' ' + boleta_info.cliente[2]),
             "numeroDocumentoIdentidad": boleta_info.cliente[4],
             "tipoDocumentoIdentidad": "DOC_NACIONAL_DE_IDENTIDAD"
-        }
+        },
+        'referencias':{
+            "documentoReferenciaList":guias_json,
+        },
     }
     return param_data
 
@@ -3939,7 +3956,8 @@ def armar_json_factura(factura_info):
         "informacionAdicional":
         {
             "tipoOperacion":"VENTA_INTERNA",
-            "coVendedor":null
+            "coVendedor":null,
+            "vendedor":factura_info.vendedor[1]
         },
         "receptor":
         {
@@ -5211,7 +5229,7 @@ def verificar_boleta_teFacturo(request,ind):
     print(r.content)
     boleta_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
     boleta_verificar.save()
-    return HttpResponseRedirect(reverse('sistema_2:bol'))
+    return HttpResponseRedirect(reverse('sistema_2:bole'))
 
 @login_required(login_url='/sistema_2')
 def verificar_guia_teFacturo(request,ind):

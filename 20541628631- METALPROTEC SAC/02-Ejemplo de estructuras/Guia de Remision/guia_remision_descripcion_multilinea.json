@@ -1,0 +1,82 @@
+{
+    "close2u":
+    {
+        "tipoIntegracion": "ERP",
+        "tipoPlantilla": "01",
+        "tipoRegistro": "PRECIOS_SIN_IGV"
+    },
+    "datosDocumento":
+    {
+        "codigoAlmacen": "ALM001",
+        "fechaEmision": "2021-10-12",
+        "serie": "T001"
+    },
+    "datosEnvio":
+    {
+        "fechaEntrega": "2021-10-12",
+        "fechaTraslado": "2021-10-12",
+        "modalidadTraslado": "PUBLICO",
+        "motivoTraslado": "VENTA",
+        "numeroPallet": 0,
+        "pesoBruto": 0.001,
+        "puntoLlegada":
+        {
+            "direccion": " AV. REPUBLICA DE CHILE NRO. 751 INT. C URB. SANTA BEATRIZ - LIMA LIMA  JESÚS MARÍA",
+            "ubigeo": "150113"
+        },
+        "puntoPartida":
+        {
+            "direccion": "Sucursal principal",
+            "ubigeo": "150101"
+        },
+        "transbordoProgramado": "False",
+        "unidadMedida": "UNIDAD_BIENES"
+    },
+    "destinatario":
+    {
+        "correo": "fernando.bravo@gmail.com",
+        "nombreLegal": "OCHOA TAMARIZ ARMIDA VICTORIA",
+        "numeroDocumentoIdentidad": "10324047366",
+        "tipoDocumentoIdentidad": "RUC"
+    },
+    "detalleGuia":
+    [
+        {
+            "cantidad": "10",
+            "codigoProducto": "10002",
+            "descripcion": "LAPTOP LENOVO G10",
+            "descripcionAdicional":
+            [
+                "Características:",
+                "- NVIDIA GTX",
+                "- Intel Core i7",
+                "- 15\" - 16.9\"",
+                "- 8 GB"
+            ],
+            "numeroOrden": 1,
+            "unidadMedida": "UNIDAD_BIENES",
+            "unidadNombre": "UNIDAD_BIENES"
+        }
+    ],
+    "proveedor":
+    {
+        "nombreLegal": "CLOSE2U S.A.C.",
+        "numeroDocumentoIdentidad": "20549776974",
+        "tipoDocumentoIdentidad": "RUC"
+    },
+    "remitente":
+    {
+        "correo": "cachorro@close2u.pe",
+        "nombreComercial": "BRAVO DIAZ FERNANDO",
+        "nombreLegal": "BRAVO DIAZ FERNANDO",
+        "numeroDocumentoIdentidad": "10713951701",
+        "tipoDocumentoIdentidad": "RUC"
+    },
+    "transportista":
+    {
+        "correo": "milagros.ibanez@pucp.pe",
+        "nombreLegal": "IBAÑEZ OCHOA MILAGROS DEL PILAR",
+        "numeroDocumentoIdentidad": "10707462472",
+        "tipoDocumentoIdentidad": "RUC"
+    }
+}

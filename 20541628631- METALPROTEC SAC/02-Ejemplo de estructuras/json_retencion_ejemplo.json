@@ -1,0 +1,75 @@
+{
+    "close2u":
+    {
+        "tipoIntegracion": "ERP",
+        "tipoRegistro": "PRECIOS_SIN_IGV"
+    },
+    "comprobantesRelacionados":
+    [
+        {
+            "close2u":
+            {
+                "tipoIntegracion": "ERP",
+                "tipoRegistro": "PRECIOS_SIN_IGV"
+            },
+            "datosDocumento":
+            {
+                "fechaEmision": "2021-10-14",
+                "moneda": "PEN",
+                "numero": 2,
+                "serie": "FFA1"
+            },
+            "detalleDocumento":
+            [],
+            "emisor":
+            {
+                "correo": "fernando.bravo@gmail.com",
+                "nombreComercial": "OCHOA TAMARIZ ARMIDA VICTORIA",
+                "nombreLegal": "OCHOA TAMARIZ ARMIDA VICTORIA",
+                "numeroDocumentoIdentidad": "10324047366",
+                "tipoDocumentoIdentidad": "RUC"
+            },
+            "factorCambio": 4.002,
+            "fechaPago": "Oct 14, 2021 12:00:00 AM",
+            "montoTotalComprobante": 1500.0,
+            "montoTotalPago": 1500.0,
+            "numeroPago": 2,
+            "receptor":
+            {
+                "correo": "servicioalcliente@close2u.pe",
+                "nombreComercial": "CLOSE2U S.A.C.",
+                "nombreLegal": "CLOSE2U S.A.C.",
+                "numeroDocumentoIdentidad": "20549776974",
+                "tipoDocumentoIdentidad": "RUC"
+            },
+            "tipoComprobante": "01"
+        }
+    ],
+    "datosDocumento":
+    {
+        "fechaEmision": "2021-10-14",
+        "glosa": "",
+        "moneda": "PEN",
+        "serie": "R001"
+    },
+    "detalleDocumento":
+    [],
+    "emisor":
+    {
+        "correo": "servicioalcliente@close2u.pe",
+        "nombreComercial": "CLOSE2U S.A.C.",
+        "nombreLegal": "CLOSE2U S.A.C.",
+        "numeroDocumentoIdentidad": "20549776974",
+        "tipoDocumentoIdentidad": "RUC"
+    },
+    "receptor":
+    {
+        "correo": "fernando.bravo@gmail.com",
+        "nombreComercial": "OCHOA TAMARIZ ARMIDA VICTORIA",
+        "nombreLegal": "OCHOA TAMARIZ ARMIDA VICTORIA",
+        "numeroDocumentoIdentidad": "10324047366",
+        "tipoDocumentoIdentidad": "RUC"
+    },
+    "regimenRetencion": "01",
+    "tasaRetencion": 3
+}

@@ -1,0 +1,58 @@
+{
+    "close2u":
+    {
+        "tipoIntegracion": "ERP",
+        "tipoPlantilla": "01",
+        "tipoRegistro": "PRECIOS_SIN_IGV"
+    },
+    "datosDocumento":
+    {
+        "almacen": "El Alma",
+        "codigoAlmacen": "EEEEE",
+        "condicionPago": "CONTADO",
+        "fechaEmision": "2021-10-12",
+        "formaPago": "CONTADO",
+        "medioPago": "EFECTIVO",
+        "moneda": "PEN",
+        "serie": "FFA1"
+    },
+    "detalleDocumento":
+    [
+        {
+            "cantidad": 1,
+            "codigoProducto": "1",
+            "descripcion": "ciento de remache pop 1/8 x 1/2",
+            "numeroOrden": 0,
+            "tipoAfectacion": "GRAVADO_RETIRO_POR_DONACION",
+            "unidadMedida": "UNIDAD_BIENES",
+            "valorReferencialUnitarioItem": 2
+        }
+    ],
+    "emisor":
+    {
+        "correo": "demo@close2u.pe",
+        "nombreComercial": "OCHOA TAMARIZ ARMIDA VICTORIA",
+        "nombreLegal": "OCHOA TAMARIZ ARMIDA VICTORIA",
+        "numeroDocumentoIdentidad": "10324047366",
+        "tipoDocumentoIdentidad": "RUC"
+    },
+    "informacionAdicional":
+    {
+        "coVendedor": "23123468",
+        "tipoOperacion": "VENTA_INTERNA",
+        "vendedor": "OSCAR MERCADO MUJICA"
+    },
+    "receptor":
+    {
+        "correo": "milagros.ibanez@pucp.pe",
+        "domicilioFiscal":
+        {
+            "direccion": " JR. MIGUEL BASTIDAS PUMACAHUA LT. 20 MZ. N - LIMA LIMA  LOS OLIVOS",
+            "ubigeo": "150117"
+        },
+        "nombreComercial": "IBAÑEZ OCHOA MILAGROS DEL PILAR",
+        "nombreLegal": "IBAÑEZ OCHOA MILAGROS DEL PILAR",
+        "numeroDocumentoIdentidad": "10707462472",
+        "tipoDocumentoIdentidad": "RUC"
+    }
+}
