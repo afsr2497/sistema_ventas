@@ -6,42 +6,36 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded',()=>{
-        let grafClientes = document.getElementById('grafClientes')
-        let grafProductos = document.getElementById('grafProductos')
         let grafVendedor = document.getElementById('grafVendedor')
         let grafVentas = document.getElementById('grafVentas')
 
-        let tablaClientes = new Chart(grafClientes,{
-            type:'bar',
-            data:{
-                labels:[],
-                datasets:[{
-                    label:'Clientes con mas ventas',
-                    backgroundColor:'#0275d8',
-                    data:[],
-                }]
-            }
-        })
-
-        let tablaProductos = new Chart(grafProductos,{
-            type:'bar',
-            data:{
-                labels:[],
-                datasets:[{
-                    label:'Productos mas vendidos',
-                    backgroundColor:'#0275d8',
-                    data:[],
-                }]
-            }
-        })
 
         let tablaVendedor = new Chart(grafVendedor,{
             type:'bar',
+            options:{
+                scales:{
+                    x:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                    y:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                },
+            },
             data:{
                 labels:[],
                 datasets:[{
-                    label:'Grafica de vendedores',
+                    label:'Soles',
                     backgroundColor:'#0275d8',
+                    data:[],
+                },
+                {
+                    label:'Dolares',
+                    backgroundColor:'red',
                     data:[],
                 }]
             }
@@ -49,6 +43,20 @@
 
         let tablaVentas = new Chart(grafVentas,{
             type:'bar',
+            options:{
+                scales:{
+                    x:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                    y:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                },
+            },
             data:{
                 labels:[],
                 datasets:[{
@@ -59,24 +67,44 @@
             }
         })
 
-        fetch('/sistema_2/get_clients_statistics/10')
+        fetch('/sistema_2/get_clients_statistics?cantidad=10&tiempo=0')
         .then(response => response.json())
         .then(data => {
-            tablaClientes.data.labels = data.clientes_mas_ventas.slice(0,10)
-            tablaClientes.data.datasets[0].data = data.ventas_clientes.slice(0,10)
-            tablaClientes.update()
+            console.log(data.clientes_mas_ventas)
+            console.log(data.ventas_clientes)
+            tablaClientes = document.getElementById('tablaClientes')
+            tablaClientes.innerHTML = ''
+            for(var i = 0; i < data.clientes_mas_ventas.length; i++)
+            {
+                let nuevaFila = `
+                        <tr>
+                            <td>${data.clientes_mas_ventas[i]}</td>
+                            <td>${data.razon_clientes[i]}</td>
+                            <td>${data.ventas_clientes[i]}</td>
+                        </tr>`;
+                tablaClientes.innerHTML += nuevaFila
+            }
         })
 
-        fetch('/sistema_2/get_products_statistics/10')
+        fetch('/sistema_2/get_products_statistics?cantidad=10&tiempo=0')
         .then(response => response.json())
         .then(data => {
             console.log(data)
-            tablaProductos.data.labels = data.productos_mas_ventas.slice(0,10)
-            tablaProductos.data.datasets[0].data = data.ventas_productos.slice(0,10)
-            tablaProductos.update()
+            tablaProductos = document.getElementById('tablaProductos')
+            tablaProductos.innerHTML=''
+            for(var i = 0; i < data.productos_mas_ventas.length; i++)
+            {
+                let nuevaFila = `
+                        <tr>
+                            <td>${data.productos_mas_ventas[i]}</td>
+                            <td>${data.nombres_productos[i]}</td>
+                            <td>${data.ventas_productos[i]}</td>
+                        </tr>`;
+                tablaProductos.innerHTML += nuevaFila
+            }
         })
 
-        fetch('/sistema_2/get_vendedor_statistics/10')
+        fetch('/sistema_2/get_vendedor_statistics?cantidad=10&tiempo=0&soles=1&dolares=0')
         .then(response => response.json())
         .then(data => {
             console.log(data)
@@ -111,38 +139,107 @@
         function modificarTablaClientes()
         {
             let filtroClientes = document.getElementById('filtroClientes')
+            let mesesClientes = document.getElementById('mesesClientes')
+            let tablaClientes = document.getElementById('tablaClientes')
 
-            fetch(`/sistema_2/get_clients_statistics/${filtroClientes.value}`)
+            fetch(`/sistema_2/get_clients_statistics?cantidad=${filtroClientes.value}&tiempo=${mesesClientes.value}`)
             .then(response => response.json())
             .then(data => {
-                tablaClientes.data.labels = data.clientes_mas_ventas.slice(0,parseInt(filtroClientes.value))
-                tablaClientes.data.datasets[0].data = data.ventas_clientes.slice(0,parseInt(filtroClientes.value))
-                tablaClientes.update()
+                tablaClientes.innerHTML = ''
+                for(var i = 0; i < data.clientes_mas_ventas.length; i++)
+                {
+                    let nuevaFila = `
+                            <tr>
+                                <td>${data.clientes_mas_ventas[i]}</td>
+                                <td>${data.razon_clientes[i]}</td>
+                                <td>${data.ventas_clientes[i]}</td>
+                            </tr>`;
+                    tablaClientes.innerHTML += nuevaFila
+                }
             })
         }
 
         function modificarTablaProductos()
         {
             let filtroProductos = document.getElementById('filtroProductos')
+            let mesesProductos = document.getElementById('mesesProductos')
+            let tablaProductos = document.getElementById('tablaProductos')
 
-            fetch(`/sistema_2/get_products_statistics/${filtroProductos.value}`)
+            fetch(`/sistema_2/get_products_statistics?cantidad=${filtroProductos.value}&tiempo=${mesesProductos.value}`)
             .then(response => response.json())
             .then(data => {
-                tablaProductos.data.labels = data.productos_mas_ventas.slice(0,parseInt(filtroProductos.value))
-                tablaProductos.data.datasets[0].data = data.ventas_productos.slice(0,parseInt(filtroProductos.value))
-                tablaProductos.update()
+                tablaProductos.innerHTML = ''
+                for(var i = 0; i < data.productos_mas_ventas.length; i++)
+                {
+                    let nuevaFila = `
+                            <tr>
+                                <td>${data.productos_mas_ventas[i]}</td>
+                                <td>${data.nombres_productos[i]}</td>
+                                <td>${data.ventas_productos[i]}</td>
+                            </tr>`;
+                    tablaProductos.innerHTML += nuevaFila
+                }
             })
         }
 
         function modificarTablaVendedor()
         {
             let filtroVendedor = document.getElementById('filtroVendedor')
+            let mesesVendedor = document.getElementById('mesesVendedor')
+            let vendedorSoles = document.getElementById('vendedorSoles')
+            let vendedorDolares= document.getElementById('vendedorDolares')
+            let datoSoles = '0'
+            let datoDolares = '0'
 
-            fetch(`/sistema_2/get_vendedor_statistics/${filtroVendedor.value}`)
+            console.log(vendedorSoles.checked)
+            console.log(vendedorDolares.checked)
+
+            if(vendedorSoles.checked)
+            {
+                datoSoles = '1'
+            }
+            else
+            {
+                datoSoles = '0'
+            }
+
+            if(vendedorDolares.checked)
+            {
+                datoDolares = '1'
+            }
+            else
+            {
+                datoDolares = '0'
+            }
+
+            console.log(datoDolares)
+            console.log(datoSoles)
+
+            fetch(`/sistema_2/get_vendedor_statistics?cantidad=${filtroVendedor.value}&tiempo=${mesesVendedor.value}&soles=${datoSoles}&dolares=${datoDolares}`)
             .then(response => response.json())
             .then(data => {
                 tablaVendedor.data.labels = data.vendedor_mas_ventas.slice(0,parseInt(filtroVendedor.value))
-                tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,parseInt(filtroVendedor.value))
+                if(datoSoles === '1' && datoDolares === '1')
+                {
+                    console.log(data)
+                    tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,parseInt(filtroVendedor.value))
+                    tablaVendedor.data.datasets[1].data = data.ventas_vendedor_dolares.slice(0,parseInt(filtroVendedor.value))
+                }
+                else if(datoSoles === '1' &&  datoDolares === '0')
+                {
+                    tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,parseInt(filtroVendedor.value))
+                    tablaVendedor.data.datasets[1].data = []
+                }
+                else if(datoSoles === '0' &&  datoDolares === '1')
+                {
+                    tablaVendedor.data.datasets[0].data = []
+                    tablaVendedor.data.datasets[1].data = data.ventas_vendedor_dolares.slice(0,parseInt(filtroVendedor.value))
+                }
+                else{
+                    tablaVendedor.data.datasets[0].data = []
+                    tablaVendedor.data.datasets[1].data = []
+                }
+                
                 tablaVendedor.update()
             })
         }
@@ -169,7 +266,8 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <div class="row mb-3">
-            <div class="col-md-2"></div>
+            <div class="col-md-2">
+            </div>
             <div class="col-md-3">
                 <select class="form-select" id="filtroClientes">
                     <option value="10">Top 10</option>
@@ -178,10 +276,30 @@
                 </select>
             </div>
             <div class="col-md-3">
+                <select class="form-select" id="mesesClientes">
+                    <option value="0">Presente mes</option>
+                    <option value="1">Ultimo mes</option>
+                    <option value="3">Ultimos 3 meses</option>
+                    <option value="6">Ultimos 6 meses</option>
+                    <option value="12">Ultimo año</option>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <button class="btn btn-success" id="filtrarClientes">Filtrar</button>
             </div>
         </div>
-        <canvas width="200" height="100" id="grafClientes"></canvas>
+        <div class="container" style="font-size: 10px;">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <th>Ruc</th>
+                    <th>Razon social</th>
+                    <th>Valor vendido</th>
+                </thead>
+                <tbody id="tablaClientes">
+
+                </tbody>
+            </table>
+        </div>
     </div>
     <div class="col-md-6">
         <div class="row mb-3">
@@ -194,21 +312,59 @@
                 </select>
             </div>
             <div class="col-md-3">
+                <select class="form-select" id="mesesProductos">
+                    <option value="0">Presente mes</option>
+                    <option value="1">Ultimo mes</option>
+                    <option value="3">Ultimos 3 meses</option>
+                    <option value="6">Ultimos 6 meses</option>
+                    <option value="12">Ultimo año</option>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <button class="btn btn-success" id="filtrarProductos">Filtrar</button>
             </div>
         </div>
-        <canvas width="200" height="100" id="grafProductos"></canvas>
+        <div class="container" style="font-size: 10px;">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <th>Codigo</th>
+                    <th>Pr</th>
+                    <th>Valor vendido</th>
+                </thead>
+                <tbody id="tablaProductos">
+
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 <div class="row mb-3">
     <div class="col-md-6">
         <div class="row mb-3">
-            <div class="col-md-2"></div>
+            <div class="col-md-3 px-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="vendedorSoles" checked>
+                    <label class="form-check-label" style="font-size: 15px;">Soles</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="vendedorDolares">
+                    <label class="form-check-label" style="font-size: 15px;">Dolares</label>
+                </div>
+            </div>
             <div class="col-md-3">
                 <select class="form-select" id="filtroVendedor">
                     <option value="10">Top 10</option>
                     <option value="5">Top 5</option>
                     <option value="3">Top 3</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="mesesVendedor">
+                    <option value="0">Presente mes</option>
+                    <option value="1">Ultimo mes</option>
+                    <option value="3">Ultimos 3 meses</option>
+                    <option value="6">Ultimos 6 meses</option>
+                    <option value="12">Ultimo año</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -222,9 +378,9 @@
             <div class="col-md-2"></div>
             <div class="col-md-3">
                 <select class="form-select" id="filtroVentas">
-                    <option value="10">Top 10</option>
-                    <option value="5">Top 5</option>
-                    <option value="3">Top 3</option>
+                    <option value="10">Ultimos 10 meses</option>
+                    <option value="5">Ultimos 5 meses</option>
+                    <option value="3">Ultimos 3 meses</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -236,11 +392,3 @@
 </div>
 
 {% endblock %}
-
-
-<!--
-    Dashboard METALPROTEC
-    Venta mensuales, Ventas por categoria, Ranking por clientes
-    Ranking de productos
-    Filtros - Año,Mes
--->

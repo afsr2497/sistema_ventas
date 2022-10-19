@@ -1,5 +1,3 @@
-from distutils.log import info
-from itertools import product
 import math
 from datetime import datetime,timedelta
 from optparse import AmbiguousOptionError
@@ -36,6 +34,7 @@ import traceback
 import sys
 from apis_net_pe import ApisNetPe
 import openpyxl
+from dateutil.relativedelta import relativedelta
 
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
@@ -7111,69 +7110,159 @@ def actualizar_roles(request,ind):
         usuarioMod.save()
     return HttpResponseRedirect(reverse('sistema_2:usuarios'))
 
-def get_clients_statistics(request,ind):
+def get_clients_statistics(request):
+    info_clientes = request.GET.get('cantidad')
+    tiempo_clientes = request.GET.get('tiempo')
+    print(info_clientes)
+    print(tiempo_clientes)
+    year_actual = datetime.now().year
+    month_actual = datetime.now().month
+    nueva_fecha = datetime(year_actual,month_actual,1,0,0,0,0) - relativedelta(months=int(tiempo_clientes))
     clientes_mas_ventas = []
     ventas_clientes = []
     datos_clientes = []
-    facturas_info = facturas.objects.all()
+    consumo_clientes = []
+    razon_clientes = []
+    facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
+    print(len(facturas_info))
     for factura in facturas_info:
         datos_clientes.append(factura.cliente[5])
-    estadistica_clientes = pd.Series(datos_clientes)
-
-    resultados_finales = estadistica_clientes.value_counts()
-    for i in range(len(resultados_finales)):
-        ventas_clientes.append(int(resultados_finales[i]))
-
-    clientes_mas_ventas = list(resultados_finales.index.tolist())
-    ventas_clientes = list(ventas_clientes)
+        total_precio_soles = 0.00
+        for producto in factura.productos:
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'SOLES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+        consumo_clientes.append(round(total_precio_soles,2))
+    
+    info_ventas = pd.DataFrame(data={'Clientes':datos_clientes,'Ventas':consumo_clientes})
+    info_ventas = info_ventas.groupby(by='Clientes',as_index=False).sum()
+    info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
+    info_ventas = info_ventas.head(n=int(info_clientes))
+    print(info_ventas)
+    print(len(info_ventas))
+    counter = 0
+    consumo_clientes = []
+    while counter < len(info_ventas):
+        clientes_mas_ventas.append(str(info_ventas['Clientes'].iloc[counter]))
+        consumo_clientes.append(info_ventas['Ventas'].iloc[counter])
+        print(info_ventas['Clientes'].iloc[counter])
+        print(info_ventas['Ventas'].iloc[counter])
+        counter = counter + 1
+        
+    
+    for cliente in clientes_mas_ventas:
+        cliente_info = clients.objects.get(ruc=cliente)
+        razon_clientes.append(cliente_info.razon_social)
     return JsonResponse({
-        'clientes_mas_ventas':clientes_mas_ventas[:int(ind)],
-        'ventas_clientes':ventas_clientes[:int(ind)],
+        'clientes_mas_ventas':clientes_mas_ventas[:int(info_clientes)],
+        'ventas_clientes':consumo_clientes[:int(info_clientes)],
+        'razon_clientes':razon_clientes[:int(info_clientes)],
     })
 
-def get_products_statistics(request,ind):
+def get_products_statistics(request):
+    info_productos = request.GET.get('cantidad')
+    tiempo_productos = request.GET.get('tiempo')
+    year_actual = datetime.now().year
+    month_actual = datetime.now().month
+    nueva_fecha = datetime(year_actual,month_actual,1,0,0,0,0) - relativedelta(months=int(tiempo_productos))
     productos_mas_ventas = []
     ventas_productos = []
     datos_productos = []
-    facturas_info = facturas.objects.all()
+    consumo_productos = []
+    nombres_productos = []
+    facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
+
     for factura in facturas_info:
         for producto in factura.productos:
             datos_productos.append(producto[2])
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'SOLES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            consumo_productos.append(round(v_producto,2))
+
     
-    estadistica_productos = pd.Series(datos_productos)
+    info_ventas = pd.DataFrame(data={'Productos':datos_productos,'Ventas':consumo_productos})
+    info_ventas = info_ventas.groupby(by='Productos',as_index=False).sum()
+    info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
+    info_ventas = info_ventas.head(n=int(info_productos))
+    print(info_ventas)
+    print(len(info_ventas))
+    counter = 0
+    consumo_productos = []
+    while counter < len(info_ventas):
+        productos_mas_ventas.append(str(info_ventas['Productos'].iloc[counter]))
+        consumo_productos.append(info_ventas['Ventas'].iloc[counter])
+        counter = counter + 1
+    
+    for producto in productos_mas_ventas:
+        try:
+            producto_info = products.objects.get(codigo=producto)
+            nombres_productos.append(producto_info.nombre)
+        except:
+            nombres_productos.append('ProductoNoEncontrado')
 
-    resultados_finales = estadistica_productos.value_counts()
-    for i in range(len(resultados_finales)):
-        ventas_productos.append(int(resultados_finales[i]))
-
-    productos_mas_ventas = list(resultados_finales.index.tolist())
-    ventas_productos = list(ventas_productos)
-    print(productos_mas_ventas)
-    print(ventas_productos)
     return JsonResponse({
-        'productos_mas_ventas':productos_mas_ventas[:int(ind)],
-        'ventas_productos':ventas_productos[:int(ind)],
+        'productos_mas_ventas':productos_mas_ventas[:int(info_productos)],
+        'ventas_productos':consumo_productos[:int(info_productos)],
+        'nombres_productos':nombres_productos[:int(info_productos)],
     })
 
-def get_vendedor_statistics(request,ind):
+def get_vendedor_statistics(request):
+    info_vendedor = request.GET.get('cantidad')
+    tiempo_vendedor = request.GET.get('tiempo')
+    year_actual = datetime.now().year
+    month_actual = datetime.now().month
+    nueva_fecha = datetime(year_actual,month_actual,1,0,0,0,0) - relativedelta(months=int(tiempo_vendedor))
     vendedor_mas_ventas = []
     ventas_vendedor = []
     datos_vendedor = []
-    facturas_info = facturas.objects.all()
+    consumo_vendedor = []
+    nombres_vendedor = []
+    facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
+
     for factura in facturas_info:
         datos_vendedor.append(factura.vendedor[2])
+        total_precio_soles = 0.00
+        for producto in factura.productos:
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'SOLES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+        consumo_vendedor.append(round(total_precio_soles,2))
     
-    estadistica_vendedor = pd.Series(datos_vendedor)
 
-    resultados_finales = estadistica_vendedor.value_counts()
-    for i in range(len(resultados_finales)):
-        ventas_vendedor.append(int(resultados_finales[i]))
+    info_ventas = pd.DataFrame(data={'Vendedor':datos_vendedor,'Ventas':consumo_vendedor})
+    info_ventas = info_ventas.groupby(by='Vendedor',as_index=False).sum()
+    info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
+    info_ventas = info_ventas.head(n=int(info_vendedor))
+    print(info_ventas)
+    print(len(info_ventas))
 
-    vendedor_mas_ventas = list(resultados_finales.index.tolist())
-    ventas_vendedor = list(ventas_vendedor)
+    counter = 0
+    consumo_vendedor = []
+    while counter < len(info_ventas):
+        vendedor_mas_ventas.append(str(info_ventas['Vendedor'].iloc[counter]))
+        consumo_vendedor.append(info_ventas['Ventas'].iloc[counter])
+        counter = counter + 1
+    consumo_vendedor_dolares = []
+    for consumo in consumo_vendedor:
+        consumo_vendedor_dolares.append(Decimal('%.2f' % round(float(consumo)/3.98,2)))
+    
+
     return JsonResponse({
-        'vendedor_mas_ventas':vendedor_mas_ventas[:int(ind)],
-        'ventas_vendedor':ventas_vendedor[:int(ind)],
+        'vendedor_mas_ventas':vendedor_mas_ventas[:int(info_vendedor)],
+        'ventas_vendedor':consumo_vendedor[:int(info_vendedor)],
+        'ventas_vendedor_dolares':consumo_vendedor_dolares[:int(info_vendedor)]
     })
 
 def get_ventas_meses(request,ind):
