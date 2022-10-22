@@ -8,7 +8,116 @@
     document.addEventListener('DOMContentLoaded',()=>{
         let grafVendedor = document.getElementById('grafVendedor')
         let grafVentas = document.getElementById('grafVentas')
+        let grafVendedoresTiempo = document.getElementById('grafVendedoresTiempo')
+        let pieClientes = document.getElementById('pieClientes')
+        let pieProductos = document.getElementById('pieProductos')
 
+        let tablaVendedoresTiempo = new Chart(grafVendedoresTiempo,{
+            type:'bar',
+            options:{
+                scales:{
+                    x:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                    y:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                },
+            },
+            data:{
+                labels:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+                datasets:[{
+                    label:'V1',
+                    backgroundColor:'#0275d8',
+                    data:[],
+                },
+                {
+                    label:'V2',
+                    backgroundColor:'#FF0000',
+                    data:[],
+                },
+                {
+                    label:'V3',
+                    backgroundColor:'#00FF00',
+                    data:[],
+                },
+                {
+                    label:'V4',
+                    backgroundColor:'#FF00FF',
+                    data:[],
+                },
+                {
+                    label:'V5',
+                    backgroundColor:'#00FFFF',
+                    data:[],
+                },
+                {
+                    label:'V6',
+                    backgroundColor:'#FFFF00',
+                    data:[],
+                }]
+            }
+        })
+
+        fetch('/sistema_2/get_ventas_tiempo_vendedor?tiempo=2022&moneda=SOLES')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            for(var i = 0; i < data.vendedor.length; i++)
+            {
+                tablaVendedoresTiempo.data.datasets[i].label = data.vendedor[i]
+                tablaVendedoresTiempo.data.datasets[i].data = data.ventas_vendedor[i]
+            }
+            tablaVendedoresTiempo.update()
+        })
+
+        let pieGrafClientes = new Chart(pieClientes, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                    backgroundColor: ["#FF0000", "#00FF00","#0000FF","#FF00FF","#00FFFF",'#FFFF00','#70db93','#5c3317','#9f5f9f','#b5a642','#a62a2a','#7093db','#871f78','#238e23','#dbdb70'],
+                    data: []
+                    }
+                ]
+            },
+        })
+
+        fetch('/sistema_2/get_clientes_15')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            pieGrafClientes.data.labels = data.nombre_clientes_15.slice(0,15)
+            pieGrafClientes.data.datasets[0].data = data.ventas_clientes_15.slice(0,15)
+            pieGrafClientes.update()
+        })
+
+        let pieGrafProductos = new Chart(pieProductos, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                    backgroundColor: ["#FF0000", "#00FF00","#0000FF","#FF00FF","#00FFFF",'#FFFF00','#70db93','#5c3317','#9f5f9f','#b5a642','#a62a2a','#7093db','#871f78','#238e23','#dbdb70'],
+                    data: []
+                    }
+                ]
+            },
+        })
+
+        fetch('/sistema_2/get_productos_15')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            pieGrafProductos.data.labels = data.codigo_productos.slice(0,15)
+            pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,15)
+            pieGrafProductos.update()
+        })
 
         let tablaVendedor = new Chart(grafVendedor,{
             type:'bar',
@@ -60,8 +169,13 @@
             data:{
                 labels:[],
                 datasets:[{
-                    label:'Grafica de ventas',
+                    label:'Soles',
                     backgroundColor:'#0275d8',
+                    data:[],
+                },
+                {
+                    label:'Dolares',
+                    backgroundColor:'red',
                     data:[],
                 }]
             }
@@ -110,6 +224,7 @@
             console.log(data)
             tablaVendedor.data.labels = data.vendedor_mas_ventas.slice(0,10)
             tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,10)
+            tablaVendedor.data.datasets[1].data = data.ventas_vendedor_dolares.slice(0,10)
             tablaVendedor.update()
         })
 
@@ -118,7 +233,8 @@
         .then(data => {
             console.log(data)
             tablaVentas.data.labels = data.lista_meses.slice(0,10)
-            tablaVentas.data.datasets[0].data = data.ventas_meses.slice(0,10)
+            tablaVentas.data.datasets[0].data = data.ventas_meses_soles.slice(0,10)
+            tablaVentas.data.datasets[1].data = data.ventas_meses_dolares.slice(0,10)
             tablaVentas.update()
         })
 
@@ -135,6 +251,31 @@
 
         let btnFiltrarVentas = document.getElementById('filtrarVentas')
         btnFiltrarVentas.addEventListener('click',modificarTablaVentas)
+
+        let btnFiltrarVendedoresTiempo = document.getElementById('filtrarVendedoresTiempo')
+        btnFiltrarVendedoresTiempo.addEventListener('click',modificarTablaVendedoresTiempo)
+
+        function modificarTablaVendedoresTiempo()
+        {
+            let filtroVendedoresMoneda = document.getElementById('filtroVendedoresMoneda')
+            let filtroVendedoresTiempo = document.getElementById('filtroVendedoresTiempo')
+            fetch(`/sistema_2/get_ventas_tiempo_vendedor?tiempo=${filtroVendedoresTiempo.value}&moneda=${filtroVendedoresMoneda.value}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                for(var i = 0; i < 6; i++)
+                {
+                    tablaVendedoresTiempo.data.datasets[i].label = ''
+                    tablaVendedoresTiempo.data.datasets[i].data = []
+                }
+                for(var i = 0; i < data.vendedor.length; i++)
+                {
+                    tablaVendedoresTiempo.data.datasets[i].label = data.vendedor[i]
+                    tablaVendedoresTiempo.data.datasets[i].data = data.ventas_vendedor[i]
+                }
+                tablaVendedoresTiempo.update()
+            })
+        }
 
         function modificarTablaClientes()
         {
@@ -191,55 +332,13 @@
             let datoSoles = '0'
             let datoDolares = '0'
 
-            console.log(vendedorSoles.checked)
-            console.log(vendedorDolares.checked)
-
-            if(vendedorSoles.checked)
-            {
-                datoSoles = '1'
-            }
-            else
-            {
-                datoSoles = '0'
-            }
-
-            if(vendedorDolares.checked)
-            {
-                datoDolares = '1'
-            }
-            else
-            {
-                datoDolares = '0'
-            }
-
-            console.log(datoDolares)
-            console.log(datoSoles)
-
             fetch(`/sistema_2/get_vendedor_statistics?cantidad=${filtroVendedor.value}&tiempo=${mesesVendedor.value}&soles=${datoSoles}&dolares=${datoDolares}`)
             .then(response => response.json())
             .then(data => {
                 tablaVendedor.data.labels = data.vendedor_mas_ventas.slice(0,parseInt(filtroVendedor.value))
-                if(datoSoles === '1' && datoDolares === '1')
-                {
-                    console.log(data)
-                    tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,parseInt(filtroVendedor.value))
-                    tablaVendedor.data.datasets[1].data = data.ventas_vendedor_dolares.slice(0,parseInt(filtroVendedor.value))
-                }
-                else if(datoSoles === '1' &&  datoDolares === '0')
-                {
-                    tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,parseInt(filtroVendedor.value))
-                    tablaVendedor.data.datasets[1].data = []
-                }
-                else if(datoSoles === '0' &&  datoDolares === '1')
-                {
-                    tablaVendedor.data.datasets[0].data = []
-                    tablaVendedor.data.datasets[1].data = data.ventas_vendedor_dolares.slice(0,parseInt(filtroVendedor.value))
-                }
-                else{
-                    tablaVendedor.data.datasets[0].data = []
-                    tablaVendedor.data.datasets[1].data = []
-                }
-                
+                console.log(data)
+                tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,parseInt(filtroVendedor.value))
+                tablaVendedor.data.datasets[1].data = data.ventas_vendedor_dolares.slice(0,parseInt(filtroVendedor.value))
                 tablaVendedor.update()
             })
         }
@@ -252,143 +351,213 @@
             .then(response => response.json())
             .then(data => {
                 tablaVentas.data.labels = data.lista_meses.slice(0,parseInt(filtroVentas.value))
-                tablaVentas.data.datasets[0].data = data.ventas_meses.slice(0,parseInt(filtroVentas.value))
+                tablaVentas.data.datasets[0].data = data.ventas_meses_soles.slice(0,parseInt(filtroVentas.value))
+                tablaVentas.data.datasets[1].data = data.ventas_meses_dolares.slice(0,parseInt(filtroVentas.value))
                 tablaVentas.update()
             })
         }
+
+        
     })
 </script>
 {% endblock %}
 
 
 {% block content %}
-
-<div class="row mb-3">
-    <div class="col-md-6">
-        <div class="row mb-3">
-            <div class="col-md-2">
+<div class="container">
+    <div class="row" style="border-bottom: solid 1px black">
+        <div class="col-6">
+            <div class="row text-center">
+                <h5>Clientes con mas ventas</h5>
             </div>
-            <div class="col-md-3">
-                <select class="form-select" id="filtroClientes">
-                    <option value="10">Top 10</option>
-                    <option value="5">Top 5</option>
-                    <option value="3">Top 3</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select class="form-select" id="mesesClientes">
-                    <option value="0">Presente mes</option>
-                    <option value="1">Ultimo mes</option>
-                    <option value="3">Ultimos 3 meses</option>
-                    <option value="6">Ultimos 6 meses</option>
-                    <option value="12">Ultimo año</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <button class="btn btn-success" id="filtrarClientes">Filtrar</button>
-            </div>
-        </div>
-        <div class="container" style="font-size: 10px;">
-            <table class="table table-bordered table-hover">
-                <thead class="table-dark">
-                    <th>Ruc</th>
-                    <th>Razon social</th>
-                    <th>Valor vendido</th>
-                </thead>
-                <tbody id="tablaClientes">
-
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="row mb-3">
-            <div class="col-md-2"></div>
-            <div class="col-md-3">
-                <select class="form-select" id="filtroProductos">
-                    <option value="10">Top 10</option>
-                    <option value="5">Top 5</option>
-                    <option value="3">Top 3</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select class="form-select" id="mesesProductos">
-                    <option value="0">Presente mes</option>
-                    <option value="1">Ultimo mes</option>
-                    <option value="3">Ultimos 3 meses</option>
-                    <option value="6">Ultimos 6 meses</option>
-                    <option value="12">Ultimo año</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <button class="btn btn-success" id="filtrarProductos">Filtrar</button>
-            </div>
-        </div>
-        <div class="container" style="font-size: 10px;">
-            <table class="table table-bordered table-hover">
-                <thead class="table-dark">
-                    <th>Codigo</th>
-                    <th>Pr</th>
-                    <th>Valor vendido</th>
-                </thead>
-                <tbody id="tablaProductos">
-
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <div class="row mb-3">
-            <div class="col-md-3 px-4">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="vendedorSoles" checked>
-                    <label class="form-check-label" style="font-size: 15px;">Soles</label>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroClientes" style="font-size: 12px;">
+                        <option value="10">Top 10</option>
+                        <option value="5">Top 5</option>
+                        <option value="3">Top 3</option>
+                    </select>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="vendedorDolares">
-                    <label class="form-check-label" style="font-size: 15px;">Dolares</label>
+                <div class="col-3">
+                    <select class="form-select" id="mesesClientes" style="font-size: 12px;">
+                        <option value="0">Presente mes</option>
+                        <option value="1">Ultimo mes</option>
+                        <option value="3">Ultimos 3 meses</option>
+                        <option value="6">Ultimos 6 meses</option>
+                        <option value="12">Ultimo año</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarClientes" style="font-size: 12px;">Filtrar</button>
                 </div>
             </div>
-            <div class="col-md-3">
-                <select class="form-select" id="filtroVendedor">
-                    <option value="10">Top 10</option>
-                    <option value="5">Top 5</option>
-                    <option value="3">Top 3</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select class="form-select" id="mesesVendedor">
-                    <option value="0">Presente mes</option>
-                    <option value="1">Ultimo mes</option>
-                    <option value="3">Ultimos 3 meses</option>
-                    <option value="6">Ultimos 6 meses</option>
-                    <option value="12">Ultimo año</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <button class="btn btn-success" id="filtrarVendedor">Filtrar</button>
+            <br>
+            <div class="row" style="font-size: 10px;">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <th>Ruc</th>
+                        <th>Razon social</th>
+                        <th>Valor vendido</th>
+                    </thead>
+                    <tbody id="tablaClientes">
+    
+                    </tbody>
+                </table>
             </div>
         </div>
-        <canvas width="200" height="100" id="grafVendedor"></canvas>
-    </div>
-    <div class="col-md-6">
-        <div class="row mb-3">
-            <div class="col-md-2"></div>
-            <div class="col-md-3">
-                <select class="form-select" id="filtroVentas">
-                    <option value="10">Ultimos 10 meses</option>
-                    <option value="5">Ultimos 5 meses</option>
-                    <option value="3">Ultimos 3 meses</option>
-                </select>
+        <div class="col-6">
+            <div class="row text-center">
+                <h5>Productos con mas ventas</h5>
             </div>
-            <div class="col-md-3">
-                <button class="btn btn-success" id="filtrarVentas">Filtrar</button>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroProductos" style="font-size: 12px;">
+                        <option value="10">Top 10</option>
+                        <option value="5">Top 5</option>
+                        <option value="3">Top 3</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-select" id="mesesProductos" style="font-size: 12px;">
+                        <option value="0">Presente mes</option>
+                        <option value="1">Ultimo mes</option>
+                        <option value="3">Ultimos 3 meses</option>
+                        <option value="6">Ultimos 6 meses</option>
+                        <option value="12">Ultimo año</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarProductos" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div class="container row" style="font-size: 10px;">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <th>Codigo</th>
+                        <th>Producto</th>
+                        <th>Valor vendido</th>
+                    </thead>
+                    <tbody id="tablaProductos">
+    
+                    </tbody>
+                </table>
             </div>
         </div>
-        <canvas width="200" height="100" id="grafVentas"></canvas>
+        <br>
     </div>
+    <br>
+    <div class="row" style="border-bottom: solid 1px black;">
+        <div class="col-6">
+            <div class="row text-center">
+                <h5>Grafico de clientes</h5>
+            </div>
+            <div class="row">
+                <canvas width="200" height="100" id="pieClientes"></canvas>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="row text-center">
+                <h5>Gráfico de productos</h5>
+            </div>
+            <div class="row">
+                <canvas width="200" height="100" id="pieProductos"></canvas>
+            </div>
+        </div>
+        <br>
+    </div>
+    <br>
+    <div class="row" style="border-bottom: solid 1px black;">
+        <div class="col-6">
+            <div class="row text-center">
+                <h5>Vendedores con mas ventas</h5>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroVendedor" style="font-size: 12px;">
+                        <option value="10">Top 10</option>
+                        <option value="5">Top 5</option>
+                        <option value="3">Top 3</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-select" id="mesesVendedor" style="font-size: 12px;">
+                        <option value="0">Presente mes</option>
+                        <option value="1">Ultimo mes</option>
+                        <option value="3">Ultimos 3 meses</option>
+                        <option value="6">Ultimos 6 meses</option>
+                        <option value="12">Ultimo año</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarVendedor" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <canvas width="200" height="100" id="grafVendedor"></canvas>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="row text-center">
+                <h5>Ventas mensuales</h5>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroVentas" style="font-size: 12px;">
+                        <option value="10">Ultimos 10 meses</option>
+                        <option value="5">Ultimos 5 meses</option>
+                        <option value="3">Ultimos 3 meses</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarVentas" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div>
+                <canvas width="200" height="100" id="grafVentas"></canvas>
+            </div>
+        </div>
+        <br>
+    </div>
+    <br>
+    <div class="row justify-content-center" style="border-bottom: solid 1px black;">
+        <div class="col-10">
+            <div class="row text-center">
+                <h5>Vendedores a lo largo del tiempo</h5>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroVendedoresMoneda" style="font-size: 12px;">
+                        <option value="SOLES">Soles</option>
+                        <option value="DOLARES">Dolares</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-select" id="filtroVendedoresTiempo" style="font-size: 12px;">
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarVendedoresTiempo" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <canvas width="200" height="100" id="grafVendedoresTiempo"></canvas>
+            </div>
+        </div>
+    </div>
+    <br>
 </div>
+
 
 {% endblock %}

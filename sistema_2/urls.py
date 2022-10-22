@@ -108,5 +108,8 @@ urlpatterns = [
     path('get_clients_statistics',views.get_clients_statistics,name='get_clients_statistics'),
     path('get_products_statistics',views.get_products_statistics,name='get_products_statistics'),
     path('get_vendedor_statistics',views.get_vendedor_statistics,name='get_vendedor_statistics'),
-    path('get_ventas_meses/<str:ind>',views.get_ventas_meses,name='get_ventas_meses')
+    path('get_ventas_meses/<str:ind>',views.get_ventas_meses,name='get_ventas_meses'),
+    path('get_clientes_15',views.get_clientes_15,name='get_clientes_15'),
+    path('get_productos_15',views.get_productos_15,name='get_productos_15'),
+    path('get_ventas_tiempo_vendedor',views.get_ventas_tiempo_vendedor,name='get_ventas_tiempo_vendedor')
 ]

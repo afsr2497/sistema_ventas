@@ -24,7 +24,7 @@ from django.views.decorators.csrf import csrf_exempt
 import time
 from base64 import b64decode
 from django.contrib.auth.decorators import login_required
-from decimal import Decimal,getcontext
+from decimal import Decimal, DecimalException,getcontext
 from dateutil.parser import parse
 import random
 import requests
@@ -7143,8 +7143,6 @@ def actualizar_roles(request,ind):
 def get_clients_statistics(request):
     info_clientes = request.GET.get('cantidad')
     tiempo_clientes = request.GET.get('tiempo')
-    print(info_clientes)
-    print(tiempo_clientes)
     year_actual = datetime.now().year
     month_actual = datetime.now().month
     nueva_fecha = datetime(year_actual,month_actual,1,0,0,0,0) - relativedelta(months=int(tiempo_clientes))
@@ -7154,7 +7152,6 @@ def get_clients_statistics(request):
     consumo_clientes = []
     razon_clientes = []
     facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
-    print(len(facturas_info))
     for factura in facturas_info:
         datos_clientes.append(factura.cliente[5])
         total_precio_soles = 0.00
@@ -7172,15 +7169,11 @@ def get_clients_statistics(request):
     info_ventas = info_ventas.groupby(by='Clientes',as_index=False).sum()
     info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
     info_ventas = info_ventas.head(n=int(info_clientes))
-    print(info_ventas)
-    print(len(info_ventas))
     counter = 0
     consumo_clientes = []
     while counter < len(info_ventas):
         clientes_mas_ventas.append(str(info_ventas['Clientes'].iloc[counter]))
         consumo_clientes.append(info_ventas['Ventas'].iloc[counter])
-        print(info_ventas['Clientes'].iloc[counter])
-        print(info_ventas['Ventas'].iloc[counter])
         counter = counter + 1
         
     
@@ -7222,8 +7215,6 @@ def get_products_statistics(request):
     info_ventas = info_ventas.groupby(by='Productos',as_index=False).sum()
     info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
     info_ventas = info_ventas.head(n=int(info_productos))
-    print(info_ventas)
-    print(len(info_ventas))
     counter = 0
     consumo_productos = []
     while counter < len(info_ventas):
@@ -7275,54 +7266,314 @@ def get_vendedor_statistics(request):
     info_ventas = info_ventas.groupby(by='Vendedor',as_index=False).sum()
     info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
     info_ventas = info_ventas.head(n=int(info_vendedor))
-    print(info_ventas)
-    print(len(info_ventas))
+
+    counter_consumos = 0
+    consumo_soles = []
+    consumo_dolares = []
+    while counter_consumos < len(info_ventas):
+        consumo_soles.append(Decimal(0.00))
+        consumo_dolares.append(Decimal(0.00))
+        counter_consumos = counter_consumos + 1
 
     counter = 0
-    consumo_vendedor = []
     while counter < len(info_ventas):
         vendedor_mas_ventas.append(str(info_ventas['Vendedor'].iloc[counter]))
-        consumo_vendedor.append(info_ventas['Ventas'].iloc[counter])
         counter = counter + 1
-    consumo_vendedor_dolares = []
-    for consumo in consumo_vendedor:
-        consumo_vendedor_dolares.append(Decimal('%.2f' % round(float(consumo)/3.98,2)))
+
+    for factura in facturas_info:
+        if factura.vendedor[2] in vendedor_mas_ventas:
+            indice_vendedor = vendedor_mas_ventas.index(factura.vendedor[2])
+            if factura.monedaFactura == 'SOLES':
+                total_precio_soles = 0.00
+                for producto in factura.productos:
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'SOLES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                consumo_soles[indice_vendedor] = consumo_soles[indice_vendedor] + total_precio_soles
+            if factura.monedaFactura == 'DOLARES':
+                total_precio_dolares = 0.00
+                for producto in factura.productos:
+                    if producto[5] == 'SOLES':
+                        v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                consumo_dolares[indice_vendedor] = consumo_dolares[indice_vendedor] + total_precio_dolares
+
+    datos_contador = 0
+    while datos_contador < len(consumo_soles):
+        consumo_soles[datos_contador] = consumo_soles[datos_contador]*Decimal(1.18)
+        datos_contador = datos_contador + 1
     
+    datos_contador = 0
+    while datos_contador < len(consumo_dolares):
+        consumo_dolares[datos_contador] = consumo_dolares[datos_contador]*Decimal(1.18)
+        datos_contador = datos_contador + 1
 
     return JsonResponse({
         'vendedor_mas_ventas':vendedor_mas_ventas[:int(info_vendedor)],
-        'ventas_vendedor':consumo_vendedor[:int(info_vendedor)],
-        'ventas_vendedor_dolares':consumo_vendedor_dolares[:int(info_vendedor)]
+        'ventas_vendedor':consumo_soles[:int(info_vendedor)],
+        'ventas_vendedor_dolares':consumo_dolares[:int(info_vendedor)],
     })
 
 def get_ventas_meses(request,ind):
     meses_totales = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
     lista_meses = []
-    ventas_meses = []
+    ventas_meses_soles = []
+    ventas_meses_dolares = []
     mes_actual = datetime.now().month
     i = 0
     while(i < int(ind)):
         if (mes_actual - i)<1:
             indice_mes = 12 - (i-mes_actual)
+            year_info = datetime.now().year - 1
         else:
             indice_mes = mes_actual - i
+            year_info = datetime.now().year
         lista_meses.append(meses_totales[indice_mes-1])
-        facturas_filtradas = facturas.objects.filter(fecha_emision__month=indice_mes)
-        monto_total_mes = 0.00
+        facturas_filtradas = facturas.objects.filter(fecha_emision__month=indice_mes,fecha_emision__year=year_info)
+        monto_total_mes_soles = Decimal(0.00)
+        monto_total_mes_dolares = Decimal(0.00)
         for factura in facturas_filtradas:
-            total_precio_soles = 0.00
-            for producto in factura.productos:
-                if producto[5] == 'DOLARES':
-                    v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
-                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
-                if producto[5] == 'SOLES':
-                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
-                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
-                total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-            monto_total_mes = Decimal(monto_total_mes) + Decimal(total_precio_soles)
-        ventas_meses.append(round(monto_total_mes,2))
+            if factura.monedaFactura == 'SOLES':
+                total_precio_soles = Decimal(0.00)
+                for producto in factura.productos:
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'SOLES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                monto_total_mes_soles = Decimal(monto_total_mes_soles) + Decimal(total_precio_soles)
+            if factura.monedaFactura == 'DOLARES':
+                total_precio_dolares = Decimal(0.00)
+                for producto in factura.productos:
+                    if producto[5] == 'SOLES':
+                        v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                monto_total_mes_dolares = Decimal(monto_total_mes_dolares) + Decimal(total_precio_dolares)
+        ventas_meses_soles.append(monto_total_mes_soles)
+        ventas_meses_dolares.append(monto_total_mes_dolares)
         i = i + 1
+    lista_meses.reverse()
+    ventas_meses_soles.reverse()
+    ventas_meses_dolares.reverse()
     return JsonResponse({
         'lista_meses':lista_meses,
-        'ventas_meses':ventas_meses,
+        'ventas_meses_soles':ventas_meses_soles,
+        'ventas_meses_dolares':ventas_meses_dolares,
+    })
+
+def get_clientes_15(request):
+    ruc_clientes = []
+    consumo_x_cliente = []
+    clientes_mas_ventas = []
+    razon_clientes = []
+    valor_total_ventas = Decimal(0.000)
+    facturas_info = facturas.objects.all()
+    for factura in facturas_info:
+        ruc_clientes.append(factura.cliente[5])
+        total_precio_soles = 0.00
+        for producto in factura.productos:
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'SOLES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+        valor_total_ventas = Decimal(valor_total_ventas) + Decimal(total_precio_soles)
+        consumo_x_cliente.append(round(total_precio_soles,2))
+    
+    info_ventas = pd.DataFrame(data={'Clientes':ruc_clientes,'Ventas':consumo_x_cliente})
+    info_ventas = info_ventas.groupby(by='Clientes',as_index=False).sum()
+    info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
+    info_ventas = info_ventas.head(n=int(14))
+    counter = 0
+    consumo_x_cliente = []
+    while counter < len(info_ventas):
+        clientes_mas_ventas.append(str(info_ventas['Clientes'].iloc[counter]))
+        consumo_x_cliente.append(info_ventas['Ventas'].iloc[counter])
+        counter = counter + 1
+        
+    
+    for cliente in clientes_mas_ventas:
+        cliente_info = clients.objects.get(ruc=cliente)
+        razon_clientes.append(cliente_info.razon_social)
+    
+    razon_clientes.append('Otros')
+    ventas_clientes = sum(consumo_x_cliente)
+    venta_otros = valor_total_ventas - Decimal(ventas_clientes)
+    consumo_x_cliente.append(venta_otros)
+    return JsonResponse({
+        'nombre_clientes_15':razon_clientes,
+        'ventas_clientes_15':consumo_x_cliente,
+    })
+
+def get_productos_15(request):
+    codigo_producto = []
+    consumo_x_producto = []
+    facturas_info = facturas.objects.all()
+
+    for factura in facturas_info:
+        for producto in factura.productos:
+            codigo_producto.append(producto[2])
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'SOLES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            consumo_x_producto.append(round(v_producto,2))
+    
+    info_ventas = pd.DataFrame(data={'Productos':codigo_producto,'Ventas':consumo_x_producto})
+    consumo_total = info_ventas['Ventas'].sum()
+    info_ventas = info_ventas.groupby(by='Productos',as_index=False).sum()
+    info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
+    info_ventas = info_ventas.head(n=int(14))
+
+    consumo_otros = consumo_total - info_ventas['Ventas'].sum()
+
+    counter = 0
+    consumo_x_producto = []
+    codigo_producto = []
+    while counter < len(info_ventas):
+        codigo_producto.append(str(info_ventas['Productos'].iloc[counter]))
+        consumo_x_producto.append(info_ventas['Ventas'].iloc[counter])
+        counter = counter + 1
+    
+    nombres_productos = []
+    for producto in codigo_producto:
+        try:
+            producto_info = products.objects.get(codigo=producto)
+            nombres_productos.append(producto_info.nombre)
+        except:
+            nombres_productos.append('ProductoNoEncontrado')
+    
+    codigo_producto.append('Otros')
+    consumo_x_producto.append(round(consumo_otros,2))
+    return JsonResponse({
+        'codigo_productos': codigo_producto,
+        'ventas_productos': consumo_x_producto
+    })
+
+def get_ventas_tiempo_vendedor(request):
+    tiempo = request.GET.get('tiempo')
+    moneda = request.GET.get('moneda')
+    print(moneda)
+
+    facturas_filtradas = facturas.objects.filter(fecha_emision__year = tiempo)
+    codigos_vendedor = []
+    consumo_total_soles = []
+    for factura in facturas_filtradas:
+        codigos_vendedor.append(factura.vendedor[2])
+        total_precio_soles = Decimal(0.00)
+        for producto in factura.productos:
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'SOLES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+        consumo_total_soles.append(round(total_precio_soles,2))
+    
+
+    info_ventas = pd.DataFrame(data={'Vendedor':codigos_vendedor,'Ventas':consumo_total_soles})
+    info_ventas = info_ventas.groupby(by='Vendedor',as_index=False).sum()
+    info_ventas = info_ventas.sort_values(by=['Ventas'],ascending=False)
+    info_ventas = info_ventas.head(n=int(5))
+
+    counter = 0
+    codigos_vendedor = []
+    while counter < len(info_ventas):
+        codigos_vendedor.append(str(info_ventas['Vendedor'].iloc[counter]))
+        counter = counter + 1
+
+    if len(codigos_vendedor) > 0:
+        codigos_vendedor.append('otros')
+    
+    print(codigos_vendedor)
+
+    consumo_x_mes_vendedor = []
+    counter_meses = 0
+    while counter_meses < len(codigos_vendedor):
+        consumo_x_mes_vendedor.append([Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00),Decimal(0.00)])
+        counter_meses = counter_meses + 1
+    
+    counter_meses = 0
+    while counter_meses < 12:
+        facturas_filtradas = facturas.objects.filter(fecha_emision__year=tiempo,fecha_emision__month=(counter_meses+1))
+        for factura in facturas_filtradas:
+            if factura.vendedor[2] in codigos_vendedor:
+                indice_vendedor = codigos_vendedor.index(factura.vendedor[2])
+                monto_total = Decimal(0.00)
+                if moneda == 'SOLES':
+                    if factura.monedaFactura == 'SOLES':
+                        for producto in factura.productos:
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            monto_total = Decimal(monto_total) + Decimal(v_producto)
+                        consumo_x_mes_vendedor[indice_vendedor][counter_meses] = Decimal(consumo_x_mes_vendedor[indice_vendedor][counter_meses]) + Decimal(monto_total)
+                if moneda == 'DOLARES':
+                    if factura.monedaFactura == 'DOLARES':
+                        for producto in factura.productos:
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            monto_total = Decimal(monto_total) + Decimal(v_producto)
+                        consumo_x_mes_vendedor[indice_vendedor][counter_meses] = Decimal(consumo_x_mes_vendedor[indice_vendedor][counter_meses]) + Decimal(monto_total)
+            else:
+                monto_total = Decimal(0.00)
+                if moneda == 'SOLES':
+                    if factura.monedaFactura == 'SOLES':
+                        for producto in factura.productos:
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            monto_total = Decimal(monto_total) + Decimal(v_producto)
+                        consumo_x_mes_vendedor[-1][counter_meses] = Decimal(consumo_x_mes_vendedor[-1][counter_meses]) + Decimal(monto_total)
+                if moneda == 'DOLARES':
+                    if factura.monedaFactura == 'DOLARES':
+                        for producto in factura.productos:
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            monto_total = Decimal(monto_total) + Decimal(v_producto)
+                        consumo_x_mes_vendedor[-1][counter_meses] = Decimal(consumo_x_mes_vendedor[-1][counter_meses]) + Decimal(monto_total)
+        counter_meses = counter_meses + 1
+    counter_vendedor = 0
+    while counter_vendedor < len(consumo_x_mes_vendedor):
+        counter_meses = 0
+        while counter_meses < 12:
+            consumo_x_mes_vendedor[counter_vendedor][counter_meses] = consumo_x_mes_vendedor[counter_vendedor][counter_meses]*Decimal(1.18)
+            counter_meses = counter_meses + 1
+        counter_vendedor = counter_vendedor + 1
+    return JsonResponse({
+        'vendedor':codigos_vendedor,
+        'ventas_vendedor':consumo_x_mes_vendedor,
     })
