@@ -23,6 +23,9 @@
         <th scope="col">Nombre</th>
         <th scope="col">Almacen</th>
         <th scope="col">Cantidad</th>
+        <th scope="col">Stock anterior</th>
+        <th scope="col">Nuevo stock</th>
+        <th scope="col">Operacion</th>
         <th scope="col">Usuario</th>
       </tr>
     </thead>
@@ -34,6 +37,9 @@
         <td>{{ ingreso.producto_nombre }}</td>
         <td>{{ ingreso.almacen }}</td>
         <td>{{ ingreso.cantidad }}</td>
+        <td>{{ ingreso.stock_anterior }}</td>
+        <td>{{ ingreso.nuevo_stock }}</td>
+        <td>{{ ingreso.operacionIngreso }}</td>
         <td>{{ ingreso.vendedorStock.1 }}</td>
       </tr>
     {% endfor %}

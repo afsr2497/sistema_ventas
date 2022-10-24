@@ -14,7 +14,7 @@ class userProfile(models.Model):
     codigo = models.CharField(max_length=20)
     tipo = models.CharField(max_length=20)
     celular = models.CharField(max_length=20)
-    rolesUsuario = ArrayField(models.CharField(max_length=64),default=['1','1','1'])
+    rolesUsuario = ArrayField(models.CharField(max_length=64),default=['1','1','1','1'])
 
 class clients(models.Model):
     id = models.AutoField(primary_key=True)
@@ -62,13 +62,16 @@ class ingresos_stock(models.Model):
     producto_nombre = models.CharField(max_length=256,default='')
     almacen =  models.CharField(max_length=32,null=True)
     cantidad = models.CharField(max_length=32,null=True)
+    stock_anterior = models.CharField(max_length=32,default='0')
+    nuevo_stock = models.CharField(max_length=32,default='0')
     fechaIngreso = models.CharField(max_length=32,null=True)
     vendedorStock = ArrayField(models.CharField(max_length=128),null=True)
+    operacionIngreso = models.CharField(max_length=64,default='Ingreso productos')
 
 class cotizaciones(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
-    productos = ArrayField(ArrayField(models.CharField(max_length=64)),null=True)
-    servicios = ArrayField(ArrayField(models.CharField(max_length=64)),null=True)
+    productos = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
+    servicios = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
     vendedor = ArrayField(models.CharField(max_length=30),null=True)
     pagoProforma = models.CharField(max_length=30,null=True)
     monedaProforma = models.CharField(max_length=30,null=True)
@@ -91,8 +94,8 @@ class cotizaciones(models.Model):
 
 class guias(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
-    productos = ArrayField(ArrayField(models.CharField(max_length=64)),null=True)
-    servicios = ArrayField(ArrayField(models.CharField(max_length=64)),null=True)
+    productos = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
+    servicios = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
     vendedor = ArrayField(models.CharField(max_length=30),null=True)
     pagoGuia = models.CharField(max_length=30,null=True)
     monedaGuia = models.CharField(max_length=30,null=True)
@@ -120,8 +123,8 @@ class guias(models.Model):
 
 class facturas(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
-    productos = ArrayField(ArrayField(models.CharField(max_length=64)),null=True)
-    servicios = ArrayField(ArrayField(models.CharField(max_length=64)),null=True)
+    productos = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
+    servicios = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
     vendedor = ArrayField(models.CharField(max_length=30),null=True)
     pagoFactura = models.CharField(max_length=30,null=True)
     monedaFactura = models.CharField(max_length=30,null=True)
@@ -148,8 +151,8 @@ class facturas(models.Model):
 
 class boletas(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
-    productos = ArrayField(ArrayField(models.CharField(max_length=64)),null=True)
-    servicios = ArrayField(ArrayField(models.CharField(max_length=64)),null=True)
+    productos = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
+    servicios = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
     vendedor = ArrayField(models.CharField(max_length=30),null=True)
     pagoBoleta = models.CharField(max_length=30,null=True)
     monedaBoleta = models.CharField(max_length=30,null=True)

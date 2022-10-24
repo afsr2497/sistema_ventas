@@ -111,5 +111,6 @@ urlpatterns = [
     path('get_ventas_meses/<str:ind>',views.get_ventas_meses,name='get_ventas_meses'),
     path('get_clientes_15',views.get_clientes_15,name='get_clientes_15'),
     path('get_productos_15',views.get_productos_15,name='get_productos_15'),
-    path('get_ventas_tiempo_vendedor',views.get_ventas_tiempo_vendedor,name='get_ventas_tiempo_vendedor')
+    path('get_ventas_tiempo_vendedor',views.get_ventas_tiempo_vendedor,name='get_ventas_tiempo_vendedor'),
+    path('actualizar_precios_productos',views.actualizar_precios_productos,name='actualizar_precios_productos')
 ]

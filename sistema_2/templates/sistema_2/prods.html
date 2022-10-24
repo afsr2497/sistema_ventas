@@ -127,7 +127,9 @@
         </div>
       </div>
     </form>
-    <div class="col-md-2"></div>
+    <div class="col-md-2">
+      <a class="btn btn-success" style="font-size: 11px;" data-bs-toggle="modal" data-bs-target="#actualizarPreciosPro">Actualizar precios</a>
+    </div>
     <div class="col-md-3">
       <a class="btn btn-danger float-end" style="color: white; font-size: 11px;" data-bs-toggle="modal" data-bs-target="#eliminarTodo">Eliminar todo <i class="fa fa-trash"></i></a>
     </div>
@@ -447,6 +449,30 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn btn-primary">Agregar</button>
           </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Actualizar datos de productos-->
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="actualizarPreciosPro">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Actualizar precios de productos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'sistema_2:actualizar_precios_productos' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+          <div class="form-group">
+            <input class="form-control" type="file" id="formFile" name="MyFile">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

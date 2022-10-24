@@ -338,6 +338,7 @@
         <div class="modal-body">
             <label>Nombre de servicio</label>
             <select class="selectpicker form-control" id="serviceSelect" data-live-search="true">
+                <option></option>
                 {% for servicio in ser %}
                 <option value="{{ servicio.id }}">{{ servicio.nombre }}</option>>
                 {% endfor %}
