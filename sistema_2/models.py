@@ -67,6 +67,7 @@ class ingresos_stock(models.Model):
     fechaIngreso = models.CharField(max_length=32,null=True)
     vendedorStock = ArrayField(models.CharField(max_length=128),null=True)
     operacionIngreso = models.CharField(max_length=64,default='Ingreso productos')
+    referencia = models.CharField(max_length=64,default='Ingreso')
 
 class cotizaciones(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)

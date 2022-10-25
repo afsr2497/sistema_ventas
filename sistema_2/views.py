@@ -5620,7 +5620,8 @@ def verificar_factura_teFacturo(request,ind):
             datos_fecha = producto_fecha.split('-')
             producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
             operacion = 'Egreso Factura'
-            ingresos_stock(operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+            refFactura = factura_verificar.codigoFactura
+            ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
     if factura_verificar.estadoSunat == 'Anulado' and factura_verificar.stockAct == '1':
         factura_verificar.stockAct == '0'
         factura_verificar.save()
@@ -5652,8 +5653,9 @@ def verificar_factura_teFacturo(request,ind):
             producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
             datos_fecha = producto_fecha.split('-')
             producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
-            operacion = 'Ingreso Anulacion'
-            ingresos_stock(operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+            operacion = 'Anulacion Factura'
+            refFactura = factura_verificar.codigoFactura
+            ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
     return HttpResponseRedirect(reverse('sistema_2:fact'))
 
 @login_required(login_url='/sistema_2')
