@@ -8,6 +8,7 @@ urlpatterns = [
     path('log_out',views.log_out,name='log_out'),
     path('dashboard',views.dashboard,name='dashboard'),
     path('ingresos',views.ingresos,name='ingresos'),
+    path('egresos',views.egresos,name='egresos'),
     path('usuarios',views.usuarios,name='usuarios'),
     path('eliminar_usuario/<str:ind>',views.eliminar_usuario,name='eliminar_usuario'),
     path('actualizar_usuario/<str:ind>',views.actualizar_usuario,name='actualizar_usuario'),

@@ -69,6 +69,20 @@ class ingresos_stock(models.Model):
     operacionIngreso = models.CharField(max_length=64,default='Ingreso productos')
     referencia = models.CharField(max_length=64,default='Ingreso')
 
+class egreso_stock(models.Model):
+    id = models.AutoField(primary_key=True)
+    producto_id = models.CharField(max_length=32,null=True)
+    producto_codigo = models.CharField(max_length=32,null=True)
+    producto_nombre = models.CharField(max_length=256,default='')
+    almacen =  models.CharField(max_length=32,null=True)
+    cantidad = models.CharField(max_length=32,null=True)
+    stock_anterior = models.CharField(max_length=32,default='0')
+    nuevo_stock = models.CharField(max_length=32,default='0')
+    fechaIngreso = models.CharField(max_length=32,null=True)
+    vendedorStock = ArrayField(models.CharField(max_length=128),null=True)
+    operacionIngreso = models.CharField(max_length=64,default='Egreso productos')
+    referencia = models.CharField(max_length=64,default='Egreso')
+
 class cotizaciones(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
     productos = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
@@ -149,6 +163,7 @@ class facturas(models.Model):
     codigosCotis = ArrayField(models.CharField(max_length=128),default=list())
     facturaPagada = models.CharField(max_length=64,default='0')
     stockAct = models.CharField(max_length=64,default='0')
+    observacionFactura = models.CharField(max_length=512,default='Sin Observacion')
 
 class boletas(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)

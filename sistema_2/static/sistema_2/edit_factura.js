@@ -57,6 +57,8 @@ addEventListener('DOMContentLoaded',()=>{
     let btnAgregar = document.getElementById('agregarProducto')
     let btnAgregarSer = document.getElementById('agregarServicio')
 
+    let observacionesFactura = document.getElementById('obsFactura')
+
     let fechasFactura = document.querySelectorAll('.fechCuotas')
     console.log(fechasFactura)
 
@@ -275,6 +277,7 @@ addEventListener('DOMContentLoaded',()=>{
             },
             'productos':arregloProductos,
             'servicios':arregloServicios,
+            'observacionesFactura':observacionesFactura.value,
         }
         fetch(url,{
             method:"POST",

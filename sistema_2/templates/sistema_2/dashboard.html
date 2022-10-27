@@ -88,14 +88,14 @@
             },
         })
 
-        fetch('/sistema_2/get_clientes_15')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            pieGrafClientes.data.labels = data.nombre_clientes_15.slice(0,15)
-            pieGrafClientes.data.datasets[0].data = data.ventas_clientes_15.slice(0,15)
-            pieGrafClientes.update()
-        })
+        //fetch('/sistema_2/get_clientes_15')
+        //.then(response => response.json())
+        //.then(data => {
+        //    console.log(data)
+        //    pieGrafClientes.data.labels = data.nombre_clientes_15.slice(0,15)
+        //    pieGrafClientes.data.datasets[0].data = data.ventas_clientes_15.slice(0,15)
+        //    pieGrafClientes.update()
+        //})
 
         let pieGrafProductos = new Chart(pieProductos, {
             type: 'doughnut',
@@ -110,14 +110,14 @@
             },
         })
 
-        fetch('/sistema_2/get_productos_15')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            pieGrafProductos.data.labels = data.codigo_productos.slice(0,15)
-            pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,15)
-            pieGrafProductos.update()
-        })
+        //fetch('/sistema_2/get_productos_15')
+        //.then(response => response.json())
+        //.then(data => {
+        //    console.log(data)
+        //    pieGrafProductos.data.labels = data.codigo_productos.slice(0,15)
+        //    pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,15)
+        //    pieGrafProductos.update()
+        //})
 
         let tablaVendedor = new Chart(grafVendedor,{
             type:'bar',
@@ -181,7 +181,7 @@
             }
         })
 
-        fetch('/sistema_2/get_clients_statistics?cantidad=10&tiempo=0')
+        fetch('/sistema_2/get_clients_statistics?cantidad=15&tiempo=0')
         .then(response => response.json())
         .then(data => {
             console.log(data.clientes_mas_ventas)
@@ -198,9 +198,12 @@
                         </tr>`;
                 tablaClientes.innerHTML += nuevaFila
             }
+            pieGrafClientes.data.labels = data.razon_clientes.slice(0,15)
+            pieGrafClientes.data.datasets[0].data = data.ventas_clientes.slice(0,15)
+            pieGrafClientes.update()
         })
 
-        fetch('/sistema_2/get_products_statistics?cantidad=10&tiempo=0')
+        fetch('/sistema_2/get_products_statistics?cantidad=15&tiempo=0')
         .then(response => response.json())
         .then(data => {
             console.log(data)
@@ -216,6 +219,9 @@
                         </tr>`;
                 tablaProductos.innerHTML += nuevaFila
             }
+            pieGrafProductos.data.labels = data.nombres_productos.slice(0,15)
+            pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,15)
+            pieGrafProductos.update()
         })
 
         fetch('/sistema_2/get_vendedor_statistics?cantidad=10&tiempo=0&soles=1&dolares=0')
@@ -297,6 +303,9 @@
                             </tr>`;
                     tablaClientes.innerHTML += nuevaFila
                 }
+                pieGrafClientes.data.labels = data.razon_clientes.slice(0,Number(`${filtroClientes.value}`))
+                pieGrafClientes.data.datasets[0].data = data.ventas_clientes.slice(0,Number(`${filtroClientes.value}`))
+                pieGrafClientes.update()
             })
         }
 
@@ -320,6 +329,9 @@
                             </tr>`;
                     tablaProductos.innerHTML += nuevaFila
                 }
+                pieGrafProductos.data.labels = data.nombres_productos.slice(0,Number(`${filtroProductos.value}`))
+                pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,Number(`${filtroProductos.value}`))
+                pieGrafProductos.update()
             })
         }
 
@@ -374,9 +386,9 @@
             <div class="row justify-content-center">
                 <div class="col-3">
                     <select class="form-select" id="filtroClientes" style="font-size: 12px;">
+                        <option value="15">Top 15</option>
                         <option value="10">Top 10</option>
                         <option value="5">Top 5</option>
-                        <option value="3">Top 3</option>
                     </select>
                 </div>
                 <div class="col-3">
@@ -414,9 +426,9 @@
             <div class="row justify-content-center">
                 <div class="col-3">
                     <select class="form-select" id="filtroProductos" style="font-size: 12px;">
+                        <option value="15">Top 15</option>
                         <option value="10">Top 10</option>
                         <option value="5">Top 5</option>
-                        <option value="3">Top 3</option>
                     </select>
                 </div>
                 <div class="col-3">
