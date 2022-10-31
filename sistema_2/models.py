@@ -1,8 +1,8 @@
-from email.policy import default
 from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 import datetime
+from django.utils import timezone
 
 # Create your models here.
 
@@ -266,3 +266,12 @@ class abonosOperacion(models.Model):
     conectado = models.CharField(max_length=64,default='0')
     idRegistroOp = models.CharField(max_length=64,default='0')
     comprobanteCancelado = models.CharField(max_length=64,default='PENDIENTE')
+
+class inventariosProductos(models.Model):
+    fechaInventario = models.DateField(default=timezone.now)
+    usuarioInventario = ArrayField(models.CharField(max_length=64),default=list())
+    estadoInventario = models.CharField(max_length=128,default='Revision')
+    ubicacionArchivo = models.FileField(upload_to='media/')
+    codigoInventario = models.CharField(max_length=64,default='INV-0000')
+    almacenInventario = models.CharField(max_length=64,default='Chimbote')
+

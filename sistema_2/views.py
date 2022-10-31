@@ -10,7 +10,7 @@ from django import forms
 from reportlab.pdfgen import canvas
 from django.shortcuts import render, redirect
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock
+from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from django.db.models import Q
@@ -33,9 +33,10 @@ import sys
 from apis_net_pe import ApisNetPe
 import openpyxl
 from dateutil.relativedelta import relativedelta
+from django.core.files.base import ContentFile,File
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -8174,8 +8175,13 @@ def get_products_statistics(request):
             producto_info = products.objects.get(codigo=producto)
             nombres_productos.append(producto_info.nombre)
         except:
-            nombres_productos.append('ProductoNoEncontrado')
-    
+            indicador = 0
+            for factura in facturas_info:
+                if len(factura.productos) > 0:
+                    for productoFactura in factura.productos:
+                        if productoFactura[2] == producto and indicador == 0:
+                            indicador = 1
+                            nombres_productos.append(str(productoFactura[1]))
     total_consumido = Decimal(0.00)
     for consumo in consumo_productos:
         total_consumido = Decimal(total_consumido) + Decimal(consumo)
@@ -8620,3 +8626,168 @@ def actualizar_precios_productos(request):
                 info_pro = info_pro + 1
 
     return HttpResponseRedirect(reverse('sistema_2:productos'))
+
+def inventarios(request):
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    if request.method == 'POST':
+        infoInventario = request.POST.get('invAlmacen')
+        print(infoInventario)
+        productos_totales = products.objects.all()
+        productos_pdf = []
+        productos_stock = []
+        for producto in productos_totales:
+            if float(producto.stockTotal) != 0.00:
+                for almacen in producto.stock:
+                    if almacen[0] == str(infoInventario):
+                        if float(almacen[1]) != 0.00:
+                            productos_pdf.append([str(producto.id),str(producto.nombre),str(producto.codigo),str(infoInventario)])
+                            productos_stock.append(str(almacen[1]))
+        print(productos_pdf)
+        print(productos_stock)
+        if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+            mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+        else:
+            mes = str((datetime.now()-timedelta(hours=5)).month)
+        
+        if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+            dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+        else:
+            dia = str((datetime.now()-timedelta(hours=5)).day)
+        inventario_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+        fecha_nueva = parse(inventario_fecha)
+        usrInventario = [str(user_logued.id),str(user_logued.usuario.username),str(user_logued.codigo),str(user_logued.celular)]
+        try:
+            ultimoInventario = inventariosProductos.objects.latest('id')
+            nuevoInventarioCode = str(int(ultimoInventario.id)+1)
+            while(len(nuevoInventarioCode)<4):
+                nuevoInventarioCode = '0'+nuevoInventarioCode
+            codNuevo = 'INV-'+nuevoInventarioCode
+            pdf_name = codNuevo + '.pdf'
+            can = canvas.Canvas(pdf_name,pagesize=A4)
+
+            grupos_productos = [productos_pdf[x:x+40] for x in range(0,len(productos_pdf),40)]
+            cant_grupos = len(grupos_productos)
+            contador_grupos = 0
+            while contador_grupos < cant_grupos:
+                can.setFont('Helvetica',24)
+                can.drawString(25,800,'Stock de productos')
+                can.drawString(25,770,'Almacen : ')
+                can.drawString(150,770,infoInventario)
+                can.setFont('Helvetica',12)
+                lista_x = [25,50,100,310,360,410,460,530]
+                lista_y = [730,745]
+                #Ingreso de campo cantidad
+                can.setFillColorRGB(0,0,0)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[0] + 5, lista_y[0] + 3,'Producto')
+                can.drawString(lista_x[4] + 5, lista_y[0] + 3,'Stock')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                counter_stock = 0
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawString(lista_x[0] + 5,lista_y[0] + 3,str(producto[1]))
+                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,str(productos_stock[counter_stock]))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                    counter_stock = counter_stock + 1
+                contador_grupos = contador_grupos + 1
+                if cant_grupos > contador_grupos:
+                    can.showPage()
+            if cant_grupos == 0:
+                can.setFont('Helvetica',24)
+                can.drawString(25,800,'Stock de productos')
+                can.drawString(25,770,'Almacen : ')
+                can.drawString(150,770,infoInventario)
+                can.setFont('Helvetica',12)
+                lista_x = [25,50,100,310,360,410,460,530]
+                lista_y = [730,745]
+                can.showPage()
+            can.save()
+            inventariosProductos(fechaInventario=fecha_nueva,usuarioInventario=usrInventario,codigoInventario=codNuevo,almacenInventario=infoInventario).save()
+            invActual = inventariosProductos.objects.latest('id')
+            with open(pdf_name,'rb') as f:
+                invActual.ubicacionArchivo.save(pdf_name,File(f))
+            invActual.save()
+        except:
+            pdf_name = 'INV-0000.pdf'
+            can = canvas.Canvas(pdf_name,pagesize=A4)
+            grupos_productos = [productos_pdf[x:x+40] for x in range(0,len(productos_pdf),40)]
+            cant_grupos = len(grupos_productos)
+            contador_grupos = 0
+            while contador_grupos < cant_grupos:
+                can.setFont('Helvetica',24)
+                can.drawString(25,800,'Stock de productos')
+                can.drawString(25,770,'Almacen : ')
+                can.drawString(150,770,infoInventario)
+                can.setFont('Helvetica',12)
+                lista_x = [25,50,100,310,360,410,460,530]
+                lista_y = [730,745]
+                #Ingreso de campo cantidad
+                can.setFillColorRGB(0,0,0)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[0] + 5, lista_y[0] + 3,'Producto')
+                can.drawString(lista_x[4] + 5, lista_y[0] + 3,'Stock')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                counter_stock = 0
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawString(lista_x[0] + 5,lista_y[0] + 3,str(producto[1]))
+                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,str(productos_stock[counter_stock]))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                    counter_stock = counter_stock + 1
+                contador_grupos = contador_grupos + 1
+                if cant_grupos > contador_grupos:
+                    can.showPage()
+            if cant_grupos == 0:
+                can.setFont('Helvetica',24)
+                can.drawString(25,800,'Stock de productos')
+                can.drawString(25,770,'Almacen : ')
+                can.drawString(150,770,infoInventario)
+                can.setFont('Helvetica',12)
+                lista_x = [25,50,100,310,360,410,460,530]
+                lista_y = [730,745]
+                can.showPage()
+            can.save()
+            inventariosProductos(fechaInventario=fecha_nueva,usuarioInventario=usrInventario,almacenInventario=infoInventario).save()
+            invActual = inventariosProductos.objects.latest('id')
+            codInv = str(invActual.id)
+            while(len(codInv)<4):
+                codInv = '0' + codInv
+            codInv = 'INV-'+codInv
+            invActual.codigoInventario = codInv
+            invActual.save()
+            with open(pdf_name,'rb') as f:
+                invActual.ubicacionArchivo.save(pdf_name,File(f))
+            invActual.save()
+        return HttpResponseRedirect(reverse('sistema_2:inventarios'))
+    return render(request,'sistema_2/inventarios.html',{
+        'usr_rol': user_logued,
+        'inventariosTotales':inventariosProductos.objects.all().order_by('-id')
+    })
+
+def descargarInventario(request,ind):
+    inventario_info = inventariosProductos.objects.get(id=ind)
+    nombre_doc = inventario_info.codigoInventario + '.pdf'
+    archivo_ubicacion = 'media/' + nombre_doc
+    response = HttpResponse(open(archivo_ubicacion,'rb'),content_type='application/pdf')
+    nombre = 'attachment; ' + 'filename=' + nombre_doc
+    response['Content-Disposition'] = nombre
+    return response
+
+def aprobarInventario(request,ind):
+    inv_aprobar = inventariosProductos.objects.get(id=ind)
+    inv_aprobar.estadoInventario = 'Aprobado'
+    inv_aprobar.save()
+    return HttpResponseRedirect(reverse('sistema_2:inventarios'))
+
+def observarInventario(request,ind):
+    inv_observar = inventariosProductos.objects.get(id=ind)
+    inv_observar.estadoInventario = 'Observado'
+    inv_observar.save()
+    return HttpResponseRedirect(reverse('sistema_2:inventarios'))
+
+def eliminarInventario(request,ind):
+    inventariosProductos.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:inventarios'))
