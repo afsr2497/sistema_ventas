@@ -56,7 +56,9 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{% url 'sistema_2:registros_bancarios' %}">Registros bancarios</a></li>
+                            {% if usr_rol.rolesUsuario.3 == '1' %}
                             <li><a class="dropdown-item" href="{% url 'sistema_2:comisiones' %}">Comisiones</a></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="{% url 'sistema_2:registro_abonos' %}">Registro de abonos</a></li>
                         </ul>
                     </li>

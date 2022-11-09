@@ -1602,7 +1602,6 @@ def eliminar_factura(request,ind):
     print(r)
     print(r.content)
     if((r.status_code == 200) or (r.status_code == 409)):
-        factura_info.estadoFactura = 'Anulada'
         nota_cliente = factura_info.cliente
         nota_productos = factura_info.productos
         nota_servicios = factura_info.servicios
@@ -1612,7 +1611,10 @@ def eliminar_factura(request,ind):
         nota_tipo = 'FACTURA'
         nota_fechaBoleta = factura_info.fechaFactura
         nota_codigoBoleta = factura_info.codigoFactura
-        nota_codigo = 'NOT-' + str(datetime.now().year) + str(datetime.now().month) + str(datetime.now().day) + str(datetime.now().hour) + str(datetime.now().minute) + str(datetime.now().second)
+        nro_str = str(nota_nro)
+        while len(nro_str) < 4:
+            nro_str = '0' + nro_str
+        nota_codigo = 'FNC1-' + nro_str
         nota_estado = 'Enviada'
         nota_tipoCambio = factura_info.tipoCambio
         nota_moneda = factura_info.monedaFactura
@@ -1623,203 +1625,6 @@ def eliminar_factura(request,ind):
         factura_info.estadoFactura = 'Emitida'
     factura_info.save()
     return HttpResponseRedirect(reverse('sistema_2:fact'))
-
-def armar_json_nota_factura(factura_info,nota_fecha,nota_serie,nota_nro):
-    productos = []
-    valor_total = 0
-    if factura_info.monedaFactura == 'SOLES':
-        moneda = "PEN"
-        if factura_info.tipoFactura == 'Productos':
-            i=1
-            for producto in factura_info.productos:
-                if producto[5] == 'SOLES':
-                    precio_pro = round(float(producto[6]),2)
-                if producto[5] == 'DOLARES':
-                    precio_pro = round(float(producto[6])*float(factura_info.tipoCambio[1]),2)
-                print(precio_pro)
-                valor_total = valor_total + precio_pro*int(producto[8])
-                info_pro = {
-                    "codigoProducto":producto[2],
-                    "codigoProductoSunat":"",
-                    "descripcion":producto[1],
-                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
-                    "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":producto[8],
-                    "valorVentaUnitarioItem":precio_pro,
-                    "descuento":{
-                        "monto":producto[7],
-                    },
-                    "numeroOrden":i,
-                    "esPorcentaje":True
-                }
-                productos.append(info_pro)
-                i=i+1
-        if factura_info.tipoFactura == 'Servicios':
-            i = 1
-            for servicio in factura_info.servicios:
-                if servicio[3] == 'SOLES':
-                    precio_pro = round(float(servicio[4]),2)
-                if servicio[3] == 'DOLARES':
-                    precio_pro = round(float(servicio[4])*float(factura_info.tipoCambio[1]),2)
-                print(precio_pro)
-                valor_total = valor_total + precio_pro
-                info_pro = {
-                    "codigoProducto":servicio[0],
-                    "codigoProductoSunat":"",
-                    "descripcion":servicio[1],
-                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
-                    "unidadMedida":"UNIDAD_SERVICIOS",
-                    "cantidad":1,
-                    "valorVentaUnitarioItem":precio_pro,
-                    "descuento":{
-                        "monto":servicio[5]
-                    },
-                    "numeroOrden":i,
-                    "esPorcentaje":True
-                }
-                productos.append(info_pro)
-                i=i+1
-    if factura_info.monedaFactura == 'DOLARES':
-        moneda = "USD"
-        if factura_info.tipoFactura == 'Productos':
-            i = 1
-            for producto in factura_info.productos:
-                if producto[5] == 'DOLARES':
-                    precio_pro = round(float(producto[6]),2)
-                if producto[5] == 'SOLES':
-                    precio_pro = round(float(producto[6])/float(factura_info.tipoCambio[1]),2)
-                valor_total = valor_total + precio_pro*int(producto[8])
-                print(precio_pro)
-                info_pro = {
-                    "codigoProducto":producto[2],
-                    "codigoProductoSunat":"",
-                    "descripcion":producto[1],
-                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
-                    "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":producto[8],
-                    "valorVentaUnitarioItem":precio_pro,
-                    "descuento":{
-                        "monto":producto[7],
-                    },
-                    "numeroOrden":i,
-                    "esPorcentaje":True
-                }
-                productos.append(info_pro)
-                i=i+1
-        if factura_info.tipoFactura == 'Servicios':
-            i = 1
-            for servicio in factura_info.servicios:
-                if servicio[3] == 'DOLARES':
-                    precio_pro = round(float(servicio[4]),2)
-                if servicio[3] == 'SOLES':
-                    precio_pro = round(float(servicio[4])/float(factura_info.tipoCambio[1]),2)
-                print(precio_pro)
-                valor_total = valor_total + precio_pro
-                info_pro = {
-                    "codigoProducto":servicio[0],
-                    "codigoProductoSunat":"",
-                    "descripcion":servicio[1],
-                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
-                    "unidadMedida":"UNIDAD_SERVICIOS",
-                    "cantidad":1,
-                    "valorVentaUnitarioItem":precio_pro,
-                    "descuento":{
-                        "monto":servicio[5]
-                    },
-                    "numeroOrden":i,
-                    "esPorcentaje":True
-                }
-                productos.append(info_pro)
-                i=i+1
-    if factura_info.pagoFactura == 'CONTADO':
-        cuotas_info = null
-    if factura_info.pagoFactura == 'CREDITO':
-        cuotas_info = []
-        i = 0
-        tiempo_actual = datetime.today()
-        tiempo_cuota = tiempo_actual
-        monto = round((valor_total/int(factura_info.cuotasFactura)),2)
-        while i < int(factura_info.cuotasFactura):
-            cuota = {
-                "numero":str(i + 1),
-                "fecha":factura_info.fechasCuotas[i],
-                "monto":str(monto),
-                "moneda":moneda
-            }
-            tiempo_cuota = tiempo_cuota + relativedelta(months=1)
-            i = i + 1
-            cuotas_info.append(cuota)
-    print(cuotas_info)
-    print(productos)
-    param_data = {
-        "close2u":
-        {
-            "tipoIntegracion":"OFFLINE",
-            "tipoPlantilla":"01",
-            "tipoRegistro":"PRECIOS_SIN_IGV"
-        }, 
-        "comprobanteAjustado":{
-            "serie":factura_info.serieFactura,
-            "numero":int(factura_info.nroFactura),
-            "tipoDocumento":"FACTURA",
-            "fechaEmision":str(factura_info.fechaFactura),
-        },
-        "datosDocumento":
-        {
-            "serie":nota_serie,
-            "numero":int(nota_nro),
-            "moneda":moneda,
-            "fechaEmision":factura_info.fechaFactura,
-            "horaEmision":null,
-            "fechaVencimiento":factura_info.fechaVencFactura,
-            "formaPago":factura_info.pagoFactura,
-            "medioPago": "DEPOSITO_CUENTA",
-            "condicionPago": null,
-            "ordencompra":null,
-            "puntoEmisor":null,
-            "glosa":"Anulacion"
-        },
-        "detalleDocumento":productos,
-        "emisor":
-        {
-            "correo":"info@metalprotec.com",
-            "nombreComercial": null,
-            "nombreLegal": "METALPROTEC",
-            "numeroDocumentoIdentidad": "20541628631",
-            "tipoDocumentoIdentidad": "RUC",
-            "domicilioFiscal":
-            {
-                "pais":"PERU",
-                "departamento":"ANCASH",
-                "provincia":"SANTA",
-                "distrito":"NUEVO CHIMBOTE",
-                "direccon":"Mza. J4 Lote. 39",
-                "ubigeo":"02712"
-            }
-        },
-        "informacionAdicional":
-        {
-            "tipoOperacion":"VENTA_INTERNA",
-            "coVendedor":null
-        },
-        "motivo":"ANULACION_OPERACION",
-        "receptor":
-        {
-            "correo":factura_info.cliente[6],
-            "correoCopia":null,
-            "domicilioFiscal":
-            {
-                "direccion":factura_info.cliente[9],
-                "pais":"PERU",
-            },
-            "nombreComercial":null,
-            "nombreLegal":factura_info.cliente[3],
-            "numeroDocumentoIdentidad":factura_info.cliente[5],
-            "tipoDocumentoIdentidad":"RUC"
-        },
-        'cuotas':cuotas_info
-    }
-    return param_data
 
 
 @login_required(login_url='/sistema_2')
@@ -4387,13 +4192,20 @@ def armar_json_factura(factura_info):
             cuotas_info.append(cuota)
     print(cuotas_info)
     print(productos)
-    param_data = {
-        "close2u":
-        {
+    if factura_info.tipoFactura == 'Servicios':
+        refSuperior = {
+            "tipoIntegracion":"OFFLINE",
+            "tipoPlantilla":"02",
+            "tipoRegistro":"PRECIOS_SIN_IGV"
+        }
+    if factura_info.tipoFactura == 'Productos':
+        refSuperior = {
             "tipoIntegracion":"OFFLINE",
             "tipoPlantilla":"01",
             "tipoRegistro":"PRECIOS_SIN_IGV"
-        }, 
+        }
+    param_data = {
+        "close2u":refSuperior, 
         "datosDocumento":
         {
             "serie":factura_info.serieFactura,
@@ -4798,7 +4610,7 @@ def notas_credito(request):
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     return render(request,'sistema_2/notas_credito.html',{
-        'nota':notaCredito.objects.all().order_by('id'),
+        'nota':notaCredito.objects.all().order_by('-id'),
         'usr_rol': user_logued,
     })
 
@@ -5138,9 +4950,6 @@ def descargar_nota_credito(request,ind):
     response['Content-Disposition'] = nombre
     return response
 
-
-def enviar_nota_credito(request,ind):
-    return HttpResponseRedirect(reverse('sistema_2:dashboard'))
 
 def eliminar_nota_credito(request,ind):
     return HttpResponseRedirect(reverse('sistema_2:dashboard'))
@@ -7954,7 +7763,7 @@ def registro_abonos(request):
     return render(request,'sistema_2/registro_abonos.html',{
         'bancos_totales':regCuenta.objects.all().order_by('id'),
         'clientes_totales':clients.objects.all().order_by('id'),
-        'abonos_info':abonosOperacion.objects.all().order_by('id'),
+        'abonos_info':abonosOperacion.objects.all().order_by('-id'),
         'usr_rol': user_logued,
     })
 
@@ -8667,6 +8476,7 @@ def inventarios(request):
             can = canvas.Canvas(pdf_name,pagesize=A4)
 
             grupos_productos = [productos_pdf[x:x+40] for x in range(0,len(productos_pdf),40)]
+            grupos_stock = [productos_stock[x:x+40] for x in range(0,len(productos_stock),40)]
             cant_grupos = len(grupos_productos)
             contador_grupos = 0
             while contador_grupos < cant_grupos:
@@ -8688,7 +8498,7 @@ def inventarios(request):
                 counter_stock = 0
                 for producto in grupos_productos[contador_grupos]:
                     can.drawString(lista_x[0] + 5,lista_y[0] + 3,str(producto[1]))
-                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,str(productos_stock[counter_stock]))
+                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,str(grupos_stock[contador_grupos][counter_stock]))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
                     counter_stock = counter_stock + 1
                 contador_grupos = contador_grupos + 1
@@ -8713,6 +8523,7 @@ def inventarios(request):
             pdf_name = 'INV-0000.pdf'
             can = canvas.Canvas(pdf_name,pagesize=A4)
             grupos_productos = [productos_pdf[x:x+40] for x in range(0,len(productos_pdf),40)]
+            grupos_stock = [productos_stock[x:x+40] for x in range(0,len(productos_stock),40)]
             cant_grupos = len(grupos_productos)
             contador_grupos = 0
             while contador_grupos < cant_grupos:
@@ -8734,7 +8545,7 @@ def inventarios(request):
                 counter_stock = 0
                 for producto in grupos_productos[contador_grupos]:
                     can.drawString(lista_x[0] + 5,lista_y[0] + 3,str(producto[1]))
-                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,str(productos_stock[counter_stock]))
+                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,str(grupos_stock[contador_grupos][counter_stock]))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
                     counter_stock = counter_stock + 1
                 contador_grupos = contador_grupos + 1
@@ -8791,3 +8602,257 @@ def observarInventario(request,ind):
 def eliminarInventario(request,ind):
     inventariosProductos.objects.get(id=ind).delete()
     return HttpResponseRedirect(reverse('sistema_2:inventarios'))
+
+def emitir_nota_credito_factura(request,ind):
+    factura_obtener = facturas.objects.get(id=ind)
+    factura_cliente = factura_obtener.cliente
+    factura_productos = factura_obtener.productos
+    factura_servicios = factura_obtener.servicios
+    factura_vendedor = factura_obtener.vendedor
+    factura_pago = factura_obtener.pagoFactura
+    factura_codigoFact = factura_obtener.codigoFactura
+    factura_nroDocumento = factura_obtener.nroDocumento
+    factura_moneda = factura_obtener.monedaFactura
+    if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+        mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+    else:
+        mes = str((datetime.now()-timedelta(hours=5)).month)
+    
+    if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+        dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+    else:
+        dia = str((datetime.now()-timedelta(hours=5)).day)
+    factura_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+    factura_venc = factura_fecha
+    print(factura_fecha)
+    fecha_nueva = parse(factura_fecha)
+    factura_tipo = factura_obtener.tipoFactura
+    factura_cambio = factura_obtener.tipoCambio
+    if entorno_sistema == '1':
+        factura_estado = 'Generada'
+    if entorno_sistema == '0':
+        factura_estado = 'Enviada'
+    factura_dscto = '1'
+    counter = 0
+    datos_doc = config_docs.objects.get(id=1)
+    factura_serie = datos_doc.notaFactSerie
+    factura_nro = datos_doc.notaFactNro
+    datos_doc.notaFactNro = str(int(datos_doc.notaFactNro) + 1)
+    datos_doc.save()
+    factura_obtener.save()
+    nro_imprimir = str(factura_nro)
+    while len(nro_imprimir) < 4:
+        nro_imprimir = '0' + nro_imprimir
+    factura_codigo = str(factura_serie) + '-' + str(nro_imprimir)
+    print(factura_serie)
+    print(factura_nro)
+    print(factura_codigo)
+    try:
+        id_last = notaCredito.objects.latest('id').id
+        id_last = int(id_last)
+    except:
+        id_last = 0
+    id_nuevo = id_last + 1
+    notaCredito(id=id_nuevo,fechaEmision=fecha_nueva,cliente=factura_cliente,servicios=factura_servicios,productos=factura_productos,vendedor=factura_vendedor,tipoComprobante=factura_tipo,nroNota=factura_nro,serieNota=factura_serie,codigoComprobante=factura_codigoFact,codigoNotaCredito=factura_codigo,estadoNotaCredito=factura_estado,tipoCambio=factura_cambio,monedaNota=factura_moneda).save()
+    time.sleep(0.5)
+    return HttpResponseRedirect(reverse('sistema_2:notas_credito'))
+
+def enviar_nota_credito(request,ind):
+    nota_info = notaCredito.objects.get(id=ind)
+    token_info = config_docs.objects.get(id=1)
+    print(nota_info.cliente)
+    print(nota_info.productos)
+    info_data = armar_json_nota_factura(nota_info)
+
+    headers_info={"X-Auth-Token":token_info.tokenDoc,"Content-Type":"application/json"}
+    url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/nota-credito'
+    r = requests.put(url_pedido,headers=headers_info,json=info_data)
+    print(info_data)
+    print(r)
+    print(r.content)
+    if((r.status_code == 200) or (r.status_code == 409)):
+        nota_info.estadoNotaCredito = 'Enviada'
+    if(r.status_code == 401):
+        nota_info.estadoNotaCredito = 'Generada'
+    if(r.status_code == 403):
+        nota_info.estadoNotaCredito = 'Generada'
+    nota_info.save()
+    return HttpResponseRedirect(reverse('sistema_2:notas_credito'))
+
+def armar_json_nota_factura(factura_info):
+    productos = []
+    valor_total = 0
+    if factura_info.monedaNota == 'SOLES':
+        moneda = "PEN"
+        if factura_info.tipoComprobante == 'Productos':
+            i=1
+            for producto in factura_info.productos:
+                if producto[5] == 'SOLES':
+                    precio_pro = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    precio_pro = float('%.2f' % precio_pro)
+                if producto[5] == 'DOLARES':
+                    precio_pro = Decimal(producto[6])*Decimal(factura_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    precio_pro = float('%.2f' % precio_pro)
+                valor_total = valor_total + precio_pro*int(producto[8])
+                info_pro = {
+                    "codigoProducto":producto[2],
+                    "codigoProductoSunat":"",
+                    "descripcion":producto[1],
+                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
+                    "unidadMedida":"UNIDAD_BIENES",
+                    "cantidad":producto[8],
+                    "valorVentaUnitarioItem":precio_pro,
+                    "descuento":{
+                        "monto":'0',
+                    },
+                    "numeroOrden":i,
+                    "esPorcentaje":True
+                }
+                productos.append(info_pro)
+                i=i+1
+        if factura_info.tipoComprobante == 'Servicios':
+            i = 1
+            for servicio in factura_info.servicios:
+                if servicio[3] == 'SOLES':
+                    precio_pro = round(float(servicio[4]),2)
+                if servicio[3] == 'DOLARES':
+                    precio_pro = round(float(servicio[4])*float(factura_info.tipoCambio[1]),2)
+                valor_total = valor_total + precio_pro
+                info_pro = {
+                    "codigoProducto":servicio[0],
+                    "codigoProductoSunat":"",
+                    "descripcion":servicio[1],
+                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
+                    "unidadMedida":"UNIDAD_SERVICIOS",
+                    "cantidad":1,
+                    "valorVentaUnitarioItem":precio_pro,
+                    "descuento":{
+                        "monto":servicio[5]
+                    },
+                    "numeroOrden":i,
+                    "esPorcentaje":True
+                }
+                productos.append(info_pro)
+                i=i+1
+    if factura_info.monedaNota == 'DOLARES':
+        moneda = "USD"
+        if factura_info.tipoComprobante == 'Productos':
+            i = 1
+            for producto in factura_info.productos:
+                if producto[5] == 'DOLARES':
+                    precio_pro = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    precio_pro = float('%.2f' % precio_pro)
+                if producto[5] == 'SOLES':
+                    precio_pro = (Decimal(producto[6])/Decimal(factura_info.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    precio_pro = float('%.2f' % precio_pro)
+                valor_total = valor_total + precio_pro*int(producto[8])
+                info_pro = {
+                    "codigoProducto":producto[2],
+                    "codigoProductoSunat":"",
+                    "descripcion":producto[1],
+                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
+                    "unidadMedida":"UNIDAD_BIENES",
+                    "cantidad":producto[8],
+                    "valorVentaUnitarioItem":precio_pro,
+                    "descuento":{
+                        "monto":'0',
+                    },
+                    "numeroOrden":i,
+                    "esPorcentaje":True
+                }
+                productos.append(info_pro)
+                i=i+1
+        if factura_info.tipoComprobante == 'Servicios':
+            i = 1
+            for servicio in factura_info.servicios:
+                if servicio[3] == 'DOLARES':
+                    precio_pro = round(float(servicio[4]),2)
+                if servicio[3] == 'SOLES':
+                    precio_pro = round(float(servicio[4])/float(factura_info.tipoCambio[1]),2)
+                valor_total = valor_total + precio_pro
+                info_pro = {
+                    "codigoProducto":servicio[0],
+                    "codigoProductoSunat":"",
+                    "descripcion":servicio[1],
+                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
+                    "unidadMedida":"UNIDAD_SERVICIOS",
+                    "cantidad":1,
+                    "valorVentaUnitarioItem":precio_pro,
+                    "descuento":{
+                        "monto":servicio[5]
+                    },
+                    "numeroOrden":i,
+                    "esPorcentaje":True
+                }
+                productos.append(info_pro)
+                i=i+1
+    param_data = {
+        "close2u":
+        {
+            "tipoIntegracion":"OFFLINE",
+            "tipoPlantilla":"01",
+            "tipoRegistro":"PRECIOS_SIN_IGV"
+        }, 
+        "comprobanteAjustado":{
+            "serie":'F001',
+            "numero":177,
+            "tipoDocumento":"FACTURA",
+            "fechaEmision":"24-10-2022",
+        },
+        "datosDocumento":
+        {
+            "serie":factura_info.serieNota,
+            "numero":int(factura_info.nroNota),
+            "moneda":moneda,
+            "fechaEmision":"07-11-2022",
+            "horaEmision":null,
+            "fechaVencimiento":null,
+            "formaPago":"CONTADO",
+            "medioPago": "DEPOSITO_CUENTA",
+            "condicionPago": null,
+            "ordencompra":null,
+            "puntoEmisor":null,
+            "glosa":"Anulacion"
+        },
+        "detalleDocumento":productos,
+        "emisor":
+        {
+            "correo":"info@metalprotec.com",
+            "nombreComercial": null,
+            "nombreLegal": "METALPROTEC",
+            "numeroDocumentoIdentidad": "20541628631",
+            "tipoDocumentoIdentidad": "RUC",
+            "domicilioFiscal":
+            {
+                "pais":"PERU",
+                "departamento":"ANCASH",
+                "provincia":"SANTA",
+                "distrito":"NUEVO CHIMBOTE",
+                "direccon":"Mza. J4 Lote. 39",
+                "ubigeo":"02712"
+            }
+        },
+        "informacionAdicional":
+        {
+            "tipoOperacion":"VENTA_INTERNA",
+            "coVendedor":null
+        },
+        "motivo":"ANULACION_OPERACION",
+        "receptor":
+        {
+            "correo":factura_info.cliente[6],
+            "correoCopia":null,
+            "domicilioFiscal":
+            {
+                "direccion":factura_info.cliente[9],
+                "pais":"PERU",
+            },
+            "nombreComercial":null,
+            "nombreLegal":factura_info.cliente[3],
+            "numeroDocumentoIdentidad":factura_info.cliente[5],
+            "tipoDocumentoIdentidad":"RUC"
+        },
+        'cuotas':null
+    }
+    return param_data
+

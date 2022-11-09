@@ -25,6 +25,7 @@
               <th scope="col">Codigo del documento</th>
               <th scope="col">Estado del documento</th>
               <th scope="col">Descargar nota de credito</th>
+              <th scope="col">Enviar nota de credito</th>
           </tr>
       </thead>
       <tbody>
@@ -36,6 +37,7 @@
               <td>{{ notaCred.codigoNotaCredito }}</td>
               <td><div class="bg-success rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ notaCred.estadoNotaCredito }}</div></td>
               <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:descargar_nota_credito' notaCred.id %}"><i class="fas fa-download"></i></a></td>
+              <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:enviar_nota_credito' notaCred.id %}"><i class="fas fa-arrow-right"></i></a></td>
           </tr>
         {% endfor %}
       </tbody>

@@ -105,7 +105,7 @@
               <td>{{ factura.estadoSunat }}</td>
               <td style="text-align: center;">
                 {% if factura.estadoFactura == 'Enviada' %}
-                <a class="btn btn-danger" href="{% url 'sistema_2:eliminar_factura' factura.id %}"><i class="fa fa-trash"></i></a>
+                <a class="btn btn-danger" href="{% url 'sistema_2:emitir_nota_credito_factura' factura.id %}"><i class="fa fa-trash"></i></a>
                 {% endif %}
               </td>
           </tr>

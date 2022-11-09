@@ -1,0 +1,100 @@
+{
+    "close2u": 
+    {
+    "tipoIntegracion": "OFFLINE", 
+    "tipoPlantilla": "01", 
+    "tipoRegistro": "PRECIOS_SIN_IGV"
+    }, 
+    "comprobanteAjustado": 
+    {
+        "serie": "F001", 
+        "numero": 177, 
+        "tipoDocumento": "FACTURA", 
+        "fechaEmision": "2022-10-24"
+    }, 
+    "datosDocumento": 
+    {
+        "serie": "FNC1", 
+        "numero": 4, 
+        "moneda": "USD", 
+        "fechaEmision": "2022-11-08", 
+        "horaEmision": null, 
+        "fechaVencimiento": null, 
+        "formaPago": "CONTADO", 
+        "medioPago": "DEPOSITO_CUENTA", 
+        "condicionPago": null, 
+        "ordencompra": null, 
+        "puntoEmisor": null, 
+        "glosa": "Devolucion por item"
+    },
+    "detalleDocumento": 
+        [
+            {
+                "codigoProducto": "1922890001",
+                "codigoProductoSunat": "",
+                "descripcion": "JET BITUFLEX 70 PF NEGRO 1 GL",
+                "tipoAfectacion": "GRAVADO_OPERACION_ONEROSA",
+                "unidadMedida": "UNIDAD_BIENES",
+                "cantidad": "4",
+                "valorVentaUnitarioItem": 27.89, 
+                "descuento": 
+                {
+                    "monto": "0"
+                },
+                "numeroOrden": 1,
+                "esPorcentaje": true
+            },
+            {
+                "codigoProducto": "1923999901",
+                "codigoProductoSunat": "",
+                "descripcion": "JET BITUFLEX 70 PF CATALIZADOR . 1 GL",
+                "tipoAfectacion": "GRAVADO_OPERACION_ONEROSA",
+                "unidadMedida": "UNIDAD_BIENES",
+                "cantidad": "4",
+                "valorVentaUnitarioItem": 47.5,
+                "descuento": 
+                {
+                    "monto": "0"
+                },
+                "numeroOrden": 2,
+                "esPorcentaje": true
+            }
+        ],
+    "emisor": 
+    {
+        "correo": "info@metalprotec.com",
+        "nombreComercial": null,
+        "nombreLegal": "METALPROTEC",
+        "numeroDocumentoIdentidad": "20541628631",
+        "tipoDocumentoIdentidad": "RUC",
+        "domicilioFiscal": 
+        {
+            "pais": "PERU",
+            "departamento": "ANCASH",
+            "provincia": "SANTA",
+            "distrito": "NUEVO CHIMBOTE",
+            "direccion": "Mza. J4 Lote. 39",
+            "ubigeo": "02712"
+        }
+    },
+    "informacionAdicional": 
+    {
+        "tipoOperacion": "VENTA_INTERNA",
+        "coVendedor": null
+    },
+    "motivo": "DEVOLUCION_POR_ITEM", 
+    "receptor":
+    {
+        "correo": "almacenchimbote@metalprotec.pe",
+        "correoCopia": null,
+        "domicilioFiscal": 
+        {
+            "direccion": "CAL.33 MZA. N LOTE. 30 URB. SN.AGUSTIN II SC (AV.UNIVERSITARIA ALT.DEL PQUE SINCHIROCA) LIMA - LIMA - COMAS",
+            "pais": "PERU"
+        },
+        "nombreComercial": null,
+        "nombreLegal": "EMPRESA PESQUERA ANOR SAC",
+        "numeroDocumentoIdentidad": "20518943759",
+        "tipoDocumentoIdentidad": "RUC"
+    }
+}

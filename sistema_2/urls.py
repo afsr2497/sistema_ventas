@@ -119,4 +119,5 @@ urlpatterns = [
     path('aprobarInventario/<str:ind>',views.aprobarInventario,name='aprobarInventario'),
     path('observarInventario/<str:ind>',views.observarInventario,name='observarInventario'),
     path('eliminarInventario/<str:ind>',views.eliminarInventario,name='eliminarInventario'),
+    path('emitir_nota_credito_factura/<str:ind>',views.emitir_nota_credito_factura,name='emitir_nota_credito_factura')
 ]
