@@ -202,6 +202,7 @@ class config_docs(models.Model):
     cotiSerie = models.CharField(max_length=128,null=True)
     cotiNro = models.CharField(max_length=128,null=True)    
     tokenDoc = models.CharField(max_length=128,default='')
+    almacenesSistema = ArrayField(models.CharField(max_length=256),default=list())
 
 class notaCredito(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)

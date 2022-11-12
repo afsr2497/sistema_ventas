@@ -340,10 +340,9 @@
                     <div class="col-md-6">
                         <label>Almacen</label>
                         <select id="seleccionAlmacen" class="form-select">
-                            <option value="Chimbote" selected>Chimbote</option>
-                            <option value="Chiclayo">Chiclayo</option>
-                            <option value="Trujillo">Trujillo/option>
-                            <option value="Lima">Lima</option>
+                            {% for almacen in almacenes %}
+                            <option value="{{ almacen }}">{{ almacen }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>

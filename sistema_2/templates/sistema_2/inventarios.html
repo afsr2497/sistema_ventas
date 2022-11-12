@@ -20,10 +20,9 @@
     {% csrf_token %}
         <div class="col-2">
             <select class="form-select selectpicker" style="font-size: 12px;" name="invAlmacen">
-                <option selected value="Lima">Lima</option>
-                <option value="Trujillo">Trujillo</option>
-                <option value="Chiclayo">Chiclayo</option>
-                <option value="Chimbote">Chimbote</option>
+                {% for almacen in almacenes %}
+                <option value="{{ almacen }}">{{ almacen }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="col-2">

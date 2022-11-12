@@ -77,16 +77,69 @@
         <div class="row mb-3">
             <div class="col-md-4">
                 <label>Token</label>
-                <input type="text" class="form-control" placeholder="Token" id="tokenSis" name="tokenSistema" value="{{ info.tokenDoc }}">
+                <input type="text" class="form-control" placeholder="Token" id="tokenSis" name="tokenSistema" value="{{ info.tokenDoc }}" readonly>
             </div>
         </div>
+
     </div>
     <div>
         <button type="submit" class="btn btn-primary" id="crearProforma">Guardar</button>
         <a class="btn btn-secondary" href="{% url 'sistema_2:dashboard' %}" style="text-decoration: none; color: white;">Cancelar</a>
     </div>
     </form>
+    <br>
+    <form method="post" action="{% url 'sistema_2:nuevoAlmacen' %}">
+    {% csrf_token %}
+        <h4>Gestion de almacenes</h4>
+        <div class="row">
+            <div class="col-4">
+                <label>Ingrese un nuevo almacen</label>
+                <input type="text" class="form-control" name="nuevoAlmacen" required>
+            </div>
+            <div class="col-2">
+                <br>
+                <button type="submit" class="btn btn-primary">Agregar</button>
+            </div>
+        </div>
+    </form>
+    <br>
+    <div class="col-5">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <th>Almacenes</th>
+                <th>Eliminar</th>
+            </thead>
+            <tbody>
+                {% for almacen in info.almacenesSistema %}
+                <tr>
+                    <td>{{ almacen }}</td>
+                    <td class="text-center"><a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#alm{{ almacen }}">Eliminar</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br>
 </div>
 
+{% for almacen in info.almacenesSistema %}
+<div class="modal fade" tabindex="-1" role="dialog" id="alm{{ almacen }}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar almacen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Esta seguro que desea eliminar este almacen?</p>
+            </div>
+            <div class="modal-footer">
+                <a class="btn btn-danger" href="{% url 'sistema_2:eliminarAlmacen' almacen %}">Eliminar</a>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 
 {% endblock %}

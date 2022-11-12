@@ -242,10 +242,10 @@
           <div class="form-group">
             <label>Seleccionar almacen</label>
             <select class="selectpicker form-control" id="almacenSelect" name="almacenStock">
-              <option value="Trujillo">Trujillo</option>
-              <option value="Lima" selected>Lima</option>
-              <option value="Chiclayo">Chiclayo</option>
-              <option value="Chimbote">Chimbote</option>
+              <option value="" selected></option>
+              {% for almacen in almacenes %}
+              <option value="{{ almacen }}">{{ almacen }}</option>
+              {% endfor %}
             </select>
             <br>
             <br>

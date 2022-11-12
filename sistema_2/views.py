@@ -36,7 +36,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.files.base import ContentFile,File
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '1'
+entorno_sistema = '0'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -480,6 +480,8 @@ def productos(request):
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     productos_totales = products.objects.all().order_by('id')
+    datosInfo = config_docs.objects.get(id=1)
+    almacenesInfo = datosInfo.almacenesSistema
     if request.method == 'POST':
         if 'Crear' in request.POST:
             producto_nombre = request.POST.get('nombre')
@@ -510,6 +512,7 @@ def productos(request):
         'pro_tabla':productos_totales,
         'user_logued':user_logued,
         'usr_rol': user_logued,
+        'almacenes':almacenesInfo
     })
 
 def eliminar_producto(request,ind):
@@ -854,6 +857,8 @@ def proformas(request):
 
 @login_required(login_url='/sistema_2')
 def crear_proforma(request):
+    docsInfo = config_docs.objects.get(id=1)
+    almacenesInfo = docsInfo.almacenesSistema
     usr = userProfile.objects.all()
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
@@ -880,6 +885,7 @@ def crear_proforma(request):
         'tc_venta': tc_venta,
         'tc_compra': tc_compra,
         'usr_rol': user_logued,
+        'almacenes':almacenesInfo,
     })
 
 @login_required(login_url='/sistema_2')
@@ -1191,6 +1197,8 @@ def crear_boleta(request,ind):
 
 @login_required(login_url='/sistema_2')
 def editar_proforma(request,ind):
+    infoDocs = config_docs.objects.get(id=1)
+    almacenesInfo = infoDocs.almacenesSistema
     usr = userProfile.objects.all()
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
@@ -1247,6 +1255,7 @@ def editar_proforma(request,ind):
         'pro':prod,
         'ser':ser,
         'usr_rol': user_logued,
+        'almacenes':almacenesInfo,
     })
 
 @login_required(login_url='/sistema_2')
@@ -8439,6 +8448,8 @@ def actualizar_precios_productos(request):
 def inventarios(request):
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
+    infoDocs = config_docs.objects.get(id=1)
+    almacenesInfo = infoDocs.almacenesSistema
     if request.method == 'POST':
         infoInventario = request.POST.get('invAlmacen')
         print(infoInventario)
@@ -8575,7 +8586,8 @@ def inventarios(request):
         return HttpResponseRedirect(reverse('sistema_2:inventarios'))
     return render(request,'sistema_2/inventarios.html',{
         'usr_rol': user_logued,
-        'inventariosTotales':inventariosProductos.objects.all().order_by('-id')
+        'inventariosTotales':inventariosProductos.objects.all().order_by('-id'),
+        'almacenes':almacenesInfo
     })
 
 def descargarInventario(request,ind):
@@ -8856,3 +8868,30 @@ def armar_json_nota_factura(factura_info):
     }
     return param_data
 
+def nuevoAlmacen(request):
+    if request.method == 'POST':
+        almacenAgregar = request.POST.get('nuevoAlmacen')
+        infoDocs = config_docs.objects.get(id=1)
+        infoDocs.almacenesSistema.append(str(almacenAgregar))
+        infoDocs.save()
+        productosTotales = products.objects.all()
+        for producto in productosTotales:
+            producto.stock.append([str(almacenAgregar),'0.00'])
+            producto.save()
+        return HttpResponseRedirect(reverse('sistema_2:configurar_documentos'))
+
+def eliminarAlmancen(request,alm):
+    print(str(alm))
+    productos_totales = products.objects.all()
+    for producto in productos_totales:
+        for almacen in producto.stock:
+            if almacen[0] == str(alm):
+                producto.stockTotal = str(round(float(producto.stockTotal) - float(almacen[1]),2))
+                producto.save()
+                producto.stock.remove(almacen)
+        print(producto.id)
+        producto.save()
+    infoDocs = config_docs.objects.get(id=1)
+    infoDocs.almacenesSistema.remove(str(alm))
+    infoDocs.save()
+    return HttpResponseRedirect(reverse('sistema_2:configurar_documentos'))
