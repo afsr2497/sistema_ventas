@@ -33,11 +33,22 @@
           <tr>
               <td>{{ notaCred.codigoComprobante }}</td>
               <td>{{ notaCred.tipoComprobante }}</td>
-              <td>{{ notaCred.fechaEmision }}</td>
+              <td>{{ notaCred.fechaEmision|date:'d-m-Y' }}</td>
               <td>{{ notaCred.codigoNotaCredito }}</td>
-              <td><div class="bg-success rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ notaCred.estadoNotaCredito }}</div></td>
+              <td>
+                {% if notaCred.estadoNotaCredito == 'Generada' %}
+                    <div class="bg-success rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ notaCred.estadoNotaCredito }}</div>
+                {% endif %}
+                {% if notaCred.estadoNotaCredito == 'Enviada' %}
+                    <div class="bg-primary rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ notaCred.estadoNotaCredito }}</div>
+                {% endif %}
+              </td>
               <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:descargar_nota_credito' notaCred.id %}"><i class="fas fa-download"></i></a></td>
-              <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:enviar_nota_credito' notaCred.id %}"><i class="fas fa-arrow-right"></i></a></td>
+              {% if notaCred.estadoNotaCredito == 'Generada' %}
+                <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:enviar_nota_credito' notaCred.id %}"><i class="fas fa-arrow-right"></i></a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
           </tr>
         {% endfor %}
       </tbody>

@@ -122,4 +122,6 @@ urlpatterns = [
     path('emitir_nota_credito_factura/<str:ind>',views.emitir_nota_credito_factura,name='emitir_nota_credito_factura'),
     path('nuevoAlmacen',views.nuevoAlmacen,name='nuevoAlmacen'),
     path('eliminarAlmacen/<str:alm>',views.eliminarAlmancen,name='eliminarAlmacen'),
+    path('get_productos_factura',views.get_productos_factura,name='get_productos_factura'),
+    path('crear_nota_credito',views.crear_nota_credito,name='crear_nota_credito'),
 ]

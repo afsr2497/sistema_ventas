@@ -213,7 +213,7 @@ class notaCredito(models.Model):
     serieComprobante = models.CharField(max_length=64,null=True)
     nroComprobante = models.CharField(max_length=64,null=True)
     fechaComprobante = models.CharField(max_length=64,null=True)
-    fechaEmision = models.CharField(max_length=64,null=True)
+    fechaEmision = models.DateField(default=datetime.date.today)
     codigoComprobante = models.CharField(max_length=64,null=True)
     codigoNotaCredito = models.CharField(max_length=64,null=True)
     estadoNotaCredito = models.CharField(max_length=64,null=True)
@@ -223,6 +223,7 @@ class notaCredito(models.Model):
     monedaNota = models.CharField(max_length=30,null=True)
     imprimirDescuento = models.CharField(max_length=20,null=True)
     tipoItemsNota = models.CharField(max_length=32,null=True)
+    modoNota = models.CharField(max_length=64,default='DEVOLUCION_TOTAL')
 
 class regCuenta(models.Model):
     bancoCuenta = models.CharField(max_length=256,default='')

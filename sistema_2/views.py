@@ -36,7 +36,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.files.base import ContentFile,File
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '1'
+entorno_sistema = '0'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -5571,38 +5571,40 @@ def verificar_factura_teFacturo(request,ind):
     if entorno_sistema == '0':
         factura_verificar = facturas.objects.get(id=ind)
         factura_verificar.stockAct = '1'
+        factura_verificar.estadoSunat = 'Aceptada'
         factura_verificar.save()
-        for producto in factura_verificar.productos:
-            prod_mod = products.objects.get(codigo=producto[2])
-            stock_pasado = prod_mod.stockTotal
-            stknow = float(prod_mod.stockTotal)
-            stkact = stknow - float(producto[8])
-            stkact = str(round(stkact,2))
-            prod_mod.stockTotal = stkact
-            prod_mod.save()
-            for almacen in prod_mod.stock:
-                if almacen[0] == producto[4]:
-                    almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
-                    prod_mod.save()
-            prod_mod.save()
-            stock_nuevo = prod_mod.stockTotal
-            usuario_logued = User.objects.get(username=request.user.username)
-            user_logued = userProfile.objects.get(usuario=usuario_logued)
-            usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
-            if(int((datetime.now()-timedelta(hours=5)).month) < 10):
-                mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
-            else:
-                mes = str((datetime.now()-timedelta(hours=5)).month)
-            if(int((datetime.now()-timedelta(hours=5)).day) < 10):
-                dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
-            else:
-                dia = str((datetime.now()-timedelta(hours=5)).day)
-            producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
-            datos_fecha = producto_fecha.split('-')
-            producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
-            operacion = 'Egreso Factura'
-            refFactura = factura_verificar.codigoFactura
-            egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+        if factura_verificar.stockAct == '0':
+            for producto in factura_verificar.productos:
+                prod_mod = products.objects.get(codigo=producto[2])
+                stock_pasado = prod_mod.stockTotal
+                stknow = float(prod_mod.stockTotal)
+                stkact = stknow - float(producto[8])
+                stkact = str(round(stkact,2))
+                prod_mod.stockTotal = stkact
+                prod_mod.save()
+                for almacen in prod_mod.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
+                        prod_mod.save()
+                prod_mod.save()
+                stock_nuevo = prod_mod.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Egreso Factura'
+                refFactura = factura_verificar.codigoFactura
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
     return HttpResponseRedirect(reverse('sistema_2:fact'))
 
 @login_required(login_url='/sistema_2')
@@ -8897,3 +8899,176 @@ def eliminarAlmancen(request,alm):
     infoDocs.almacenesSistema.remove(str(alm))
     infoDocs.save()
     return HttpResponseRedirect(reverse('sistema_2:configurar_documentos'))
+
+def get_productos_factura(request):
+    factura_nota = request.GET.get('factura')
+    factura_info = facturas.objects.get(id=factura_nota)
+    productos_info = []
+    for producto in factura_info.productos:
+        prod_arreglo = [producto[1],producto[2],producto[8]]
+        productos_info.append(prod_arreglo)
+    return JsonResponse({
+        'respuesta':productos_info,
+    })
+
+def crear_nota_credito(request):
+    data = json.load(request)
+    print(data)
+    infoNota = data.get('infoNota')
+    tipoNota = data.get('tipoNota')
+    arregloProductos = data.get('arregloProductos')
+    if tipoNota == 'Total':
+        factura_info = facturas.objects.get(id=infoNota)
+        nota_cliente = factura_info.cliente
+        nota_servicios = factura_info.servicios
+        nota_vendedor = factura_info.vendedor
+        nota_productos = factura_info.productos
+        nota_codigoFact = factura_info.codigoFactura
+        nota_moneda = factura_info.monedaFactura
+        if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+            mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+        else:
+            mes = str((datetime.now()-timedelta(hours=5)).month)
+        
+        if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+            dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+        else:
+            dia = str((datetime.now()-timedelta(hours=5)).day)
+        nota_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+        nota_fecha = parse(nota_fecha)
+        nota_tipo = 'Factura'
+        nota_tipo_items = factura_info.tipoFactura
+        nota_cambio = factura_info.tipoCambio
+        if entorno_sistema == '1':
+            nota_estado = 'Generada'
+        if entorno_sistema == '0':
+            nota_estado = 'Enviada'
+        datos_doc = config_docs.objects.get(id=1)
+        nota_serie = datos_doc.notaFactSerie
+        nota_nro = datos_doc.notaFactNro
+        datos_doc.notaFactNro = str(int(datos_doc.notaFactNro) + 1)
+        datos_doc.save()
+        nroNota = str(nota_nro)
+        while len(nroNota) < 4:
+            nroNota = '0' + nroNota
+        nota_codigo = nota_serie + '-' + nroNota
+        serie_comprobante = factura_info.codigoFactura.split('-')[0]
+        nro_comprobante = factura_info.codigoFactura.split('-')[1]
+        fecha_comprobante = factura_info.fecha_emision
+        modo_nota = 'DEVOLUCION_TOTAL'
+        try:
+            id_last = notaCredito.objects.latest('id').id
+            id_last = int(id_last)
+        except:
+            id_last = 0
+        id_nuevo = id_last + 1
+        factura_info.estadoSunat = 'NotaEmitida'
+        factura_info.save()
+        notaCredito(id=id_nuevo,modoNota=modo_nota,cliente=nota_cliente,productos=nota_productos,servicios=nota_servicios,vendedor=nota_vendedor,tipoComprobante=nota_tipo,serieComprobante=serie_comprobante,nroComprobante=nro_comprobante,fechaComprobante=fecha_comprobante,fechaEmision=nota_fecha,codigoComprobante=nota_codigoFact,codigoNotaCredito=nota_codigo,estadoNotaCredito=nota_estado,serieNota=nota_serie,nroNota=nota_nro,tipoCambio=nota_cambio,monedaNota=nota_moneda,tipoItemsNota=nota_tipo_items).save()
+    if tipoNota == 'Parcial':
+        factura_info = facturas.objects.get(id=infoNota)
+        nota_productos = []
+        productos_factura = factura_info.productos
+        for producto in productos_factura:
+            for pro in arregloProductos:
+                if pro[1] == producto[2]:
+                    pro_info = producto
+                    pro_info[8] = pro[2]
+                    nota_productos.append(pro_info)
+        nota_cliente = factura_info.cliente
+        nota_servicios = factura_info.servicios
+        nota_vendedor = factura_info.vendedor
+        nota_codigoFact = factura_info.codigoFactura
+        nota_moneda = factura_info.monedaFactura
+        if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+            mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+        else:
+            mes = str((datetime.now()-timedelta(hours=5)).month)
+        
+        if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+            dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+        else:
+            dia = str((datetime.now()-timedelta(hours=5)).day)
+        nota_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+        nota_fecha = parse(nota_fecha)
+        nota_tipo = 'Factura'
+        nota_tipo_items = factura_info.tipoFactura
+        nota_cambio = factura_info.tipoCambio
+        if entorno_sistema == '1':
+            nota_estado = 'Generada'
+        if entorno_sistema == '0':
+            nota_estado = 'Enviada'
+        datos_doc = config_docs.objects.get(id=1)
+        nota_serie = datos_doc.notaFactSerie
+        nota_nro = datos_doc.notaFactNro
+        datos_doc.notaFactNro = str(int(datos_doc.notaFactNro) + 1)
+        datos_doc.save()
+        nroNota = str(nota_nro)
+        while len(nroNota) < 4:
+            nroNota = '0' + nroNota
+        nota_codigo = nota_serie + '-' + nroNota
+        serie_comprobante = factura_info.codigoFactura.split('-')[0]
+        nro_comprobante = factura_info.codigoFactura.split('-')[1]
+        fecha_comprobante = factura_info.fecha_emision
+        modo_nota = 'DEVOLUCION_POR_ITEM'
+        try:
+            id_last = notaCredito.objects.latest('id').id
+            id_last = int(id_last)
+        except:
+            id_last = 0
+        id_nuevo = id_last + 1
+        factura_info.estadoSunat = 'NotaEmitida'
+        factura_info.save()
+        notaCredito(id=id_nuevo,modoNota=modo_nota,cliente=nota_cliente,productos=nota_productos,servicios=nota_servicios,vendedor=nota_vendedor,tipoComprobante=nota_tipo,serieComprobante=serie_comprobante,nroComprobante=nro_comprobante,fechaComprobante=fecha_comprobante,fechaEmision=nota_fecha,codigoComprobante=nota_codigoFact,codigoNotaCredito=nota_codigo,estadoNotaCredito=nota_estado,serieNota=nota_serie,nroNota=nota_nro,tipoCambio=nota_cambio,monedaNota=nota_moneda,tipoItemsNota=nota_tipo_items).save()
+    return JsonResponse({
+        'respuesta':'200'
+    })
+
+"""
+factura_obtener = facturas.objects.get(id=ind)
+    factura_codigoFact = factura_obtener.codigoFactura
+    factura_nroDocumento = factura_obtener.nroDocumento
+    factura_moneda = factura_obtener.monedaFactura
+    if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+        mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+    else:
+        mes = str((datetime.now()-timedelta(hours=5)).month)
+    
+    if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+        dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+    else:
+        dia = str((datetime.now()-timedelta(hours=5)).day)
+    factura_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+    factura_venc = factura_fecha
+    print(factura_fecha)
+    fecha_nueva = parse(factura_fecha)
+    factura_tipo = factura_obtener.tipoFactura
+    factura_cambio = factura_obtener.tipoCambio
+    if entorno_sistema == '1':
+        factura_estado = 'Generada'
+    if entorno_sistema == '0':
+        factura_estado = 'Enviada'
+    factura_dscto = '1'
+    counter = 0
+    datos_doc = config_docs.objects.get(id=1)
+    factura_serie = datos_doc.notaFactSerie
+    factura_nro = datos_doc.notaFactNro
+    datos_doc.notaFactNro = str(int(datos_doc.notaFactNro) + 1)
+    datos_doc.save()
+    factura_obtener.save()
+    nro_imprimir = str(factura_nro)
+    while len(nro_imprimir) < 4:
+        nro_imprimir = '0' + nro_imprimir
+    factura_codigo = str(factura_serie) + '-' + str(nro_imprimir)
+    print(factura_serie)
+    print(factura_nro)
+    print(factura_codigo)
+    try:
+        id_last = notaCredito.objects.latest('id').id
+        id_last = int(id_last)
+    except:
+        id_last = 0
+    id_nuevo = id_last + 1
+    notaCredito(id=id_nuevo,fechaEmision=fecha_nueva,cliente=factura_cliente,servicios=factura_servicios,productos=factura_productos,vendedor=factura_vendedor,tipoComprobante=factura_tipo,nroNota=factura_nro,serieNota=factura_serie,codigoComprobante=factura_codigoFact,codigoNotaCredito=factura_codigo,estadoNotaCredito=factura_estado,tipoCambio=factura_cambio,monedaNota=factura_moneda).save()
+    time.sleep(0.5)
+"""

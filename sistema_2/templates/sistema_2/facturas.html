@@ -104,8 +104,9 @@
               {% endif %}
               <td>{{ factura.estadoSunat }}</td>
               <td style="text-align: center;">
-                {% if factura.estadoFactura == 'Enviada' %}
-                <a class="btn btn-danger" href="{% url 'sistema_2:emitir_nota_credito_factura' factura.id %}"><i class="fa fa-trash"></i></a>
+                {% if factura.estadoSunat == 'Aceptada' %}
+                <a class="btn btn-danger" id="{{ factura.id }}" style="font-size: 11px;" data-bs-toggle="modal" data-bs-target="#notaCredito" onclick="generarNota(this.id)">NC</a>
+                <!--<a class="btn btn-danger" href="{% url 'sistema_2:emitir_nota_credito_factura' factura.id %}">NC</a>-->
                 {% endif %}
               </td>
           </tr>
@@ -144,6 +145,49 @@
   </div>
 </div>
 {% endfor %}
+
+<!--Crear nota de credito-->
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="notaCredito">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Generar nota de credito</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h4 style="display:none;" id="facturaId"></h4>
+        <div class="row">
+          <div class="col-4">
+            <label>Tipo de nota :</label>
+          </div>
+          <div class="col-6">
+            <select id="tipoNota" class="form-select">
+              <option value="Total">Total</option>
+              <option value="Parcial">Parcial</option>
+            </select>
+          </div>
+        </div>
+        <br>
+        <div class="row">
+          <table class="table table-bordered" id="tablaNota">
+            <thead class="table-dark">
+              <th>Producto</th>
+              <th>Código</th>
+              <th>Cantidad</th>
+              <th>Eliminar</th>
+            </thead>
+            <tbody id="productosNota">
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" onclick="emitirNota()">Emitir</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarInfo()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 
