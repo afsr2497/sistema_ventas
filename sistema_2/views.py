@@ -36,7 +36,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.files.base import ContentFile,File
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -5500,7 +5500,7 @@ def verificar_factura_teFacturo(request,ind):
         print(r.content)
         factura_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
         factura_verificar.save()
-        if factura_verificar.estadoSunat == 'Aceptado' and factura_verificar.stockAct == '0':
+        if ((factura_verificar.estadoSunat == 'Aceptado') or (factura_verificar.estadoSunat == 'Aceptado con Obs.')) and factura_verificar.stockAct == '0':
             factura_verificar.stockAct = '1'
             factura_verificar.save()
             for producto in factura_verificar.productos:
@@ -7931,10 +7931,11 @@ def get_clients_statistics(request):
         clientes_mas_ventas.append(str(info_ventas['Clientes'].iloc[counter]))
         consumo_clientes.append(info_ventas['Ventas'].iloc[counter])
         counter = counter + 1
-        
-    
+
+
+
     for cliente in clientes_mas_ventas:
-        cliente_info = clients.objects.get(ruc=cliente)
+        cliente_info = clients.objects.filter(ruc=cliente).first()
         razon_clientes.append(cliente_info.razon_social)
     
     total_consumido = Decimal(0.00)
@@ -9024,51 +9025,44 @@ def crear_nota_credito(request):
         'respuesta':'200'
     })
 
-"""
-factura_obtener = facturas.objects.get(id=ind)
-    factura_codigoFact = factura_obtener.codigoFactura
-    factura_nroDocumento = factura_obtener.nroDocumento
-    factura_moneda = factura_obtener.monedaFactura
-    if(int((datetime.now()-timedelta(hours=5)).month) < 10):
-        mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
-    else:
-        mes = str((datetime.now()-timedelta(hours=5)).month)
-    
-    if(int((datetime.now()-timedelta(hours=5)).day) < 10):
-        dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
-    else:
-        dia = str((datetime.now()-timedelta(hours=5)).day)
-    factura_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
-    factura_venc = factura_fecha
-    print(factura_fecha)
-    fecha_nueva = parse(factura_fecha)
-    factura_tipo = factura_obtener.tipoFactura
-    factura_cambio = factura_obtener.tipoCambio
+@login_required(login_url='/sistema_2')
+def download_nota(request,ind):
     if entorno_sistema == '1':
-        factura_estado = 'Generada'
+        nota_descargar = notaCredito.objects.get(id=ind)
+        headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
+        url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarPdf'
+        info_data = {
+            "emisor":"20541628631",
+            "numero":int(nota_descargar.nroNota),
+            "serie":nota_descargar.serieNota,
+            "tipoComprobante":"07"
+        }
+        r = requests.put(url_pedido,headers=headers_info,json=info_data)
+        print(r)
+        convert_b64 = r.content
+        info_decoded = b64decode(convert_b64,validate=True)
+
+        if info_decoded[0:4] != b'%PDF':
+            raise ValueError('Missing the PDF file signature')
+        
+        nombre_nota = 'nota_generada.pdf'
+        f = open(nombre_nota, 'wb')
+        f.write(info_decoded)
+        f.close()
+        nota_descargar.save()
+        response = HttpResponse(open(nombre_nota,'rb'),content_type='application/pdf')
+        nombre_descarga = str(nota_descargar.serieNota) + '-' + str(nota_descargar.nroNota) + '.pdf'
+        nombre = 'attachment; ' + 'filename=' + nombre_descarga
+        response['Content-Disposition'] = nombre
+        return response
     if entorno_sistema == '0':
-        factura_estado = 'Enviada'
-    factura_dscto = '1'
-    counter = 0
-    datos_doc = config_docs.objects.get(id=1)
-    factura_serie = datos_doc.notaFactSerie
-    factura_nro = datos_doc.notaFactNro
-    datos_doc.notaFactNro = str(int(datos_doc.notaFactNro) + 1)
-    datos_doc.save()
-    factura_obtener.save()
-    nro_imprimir = str(factura_nro)
-    while len(nro_imprimir) < 4:
-        nro_imprimir = '0' + nro_imprimir
-    factura_codigo = str(factura_serie) + '-' + str(nro_imprimir)
-    print(factura_serie)
-    print(factura_nro)
-    print(factura_codigo)
-    try:
-        id_last = notaCredito.objects.latest('id').id
-        id_last = int(id_last)
-    except:
-        id_last = 0
-    id_nuevo = id_last + 1
-    notaCredito(id=id_nuevo,fechaEmision=fecha_nueva,cliente=factura_cliente,servicios=factura_servicios,productos=factura_productos,vendedor=factura_vendedor,tipoComprobante=factura_tipo,nroNota=factura_nro,serieNota=factura_serie,codigoComprobante=factura_codigoFact,codigoNotaCredito=factura_codigo,estadoNotaCredito=factura_estado,tipoCambio=factura_cambio,monedaNota=factura_moneda).save()
-    time.sleep(0.5)
-"""
+        return HttpResponseRedirect(reverse('sistema_2:fact'))
+
+def almacenesSistema(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    return render(request,'sistema_2/inventariosSistema.html',{
+        'info':config_docs.objects.get(id=1),
+        'usr_rol': user_logued,
+    })

@@ -104,9 +104,8 @@
               {% endif %}
               <td>{{ factura.estadoSunat }}</td>
               <td style="text-align: center;">
-                {% if factura.estadoSunat == 'Aceptada' %}
+                {% if factura.estadoSunat == 'Aceptado' or factura.estadoSunat == 'Aceptado con Obs.' %}
                 <a class="btn btn-danger" id="{{ factura.id }}" style="font-size: 11px;" data-bs-toggle="modal" data-bs-target="#notaCredito" onclick="generarNota(this.id)">NC</a>
-                <!--<a class="btn btn-danger" href="{% url 'sistema_2:emitir_nota_credito_factura' factura.id %}">NC</a>-->
                 {% endif %}
               </td>
           </tr>

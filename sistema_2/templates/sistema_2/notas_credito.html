@@ -43,7 +43,11 @@
                     <div class="bg-primary rounded-pill" style="color: white; padding: 1px 6px 1px 6px; text-align: center;">{{ notaCred.estadoNotaCredito }}</div>
                 {% endif %}
               </td>
-              <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:descargar_nota_credito' notaCred.id %}"><i class="fas fa-download"></i></a></td>
+              {% if notaCred.estadoNotaCredito == 'Enviada' %}
+                <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:download_nota' notaCred.id %}"><i class="fas fa-download"></i></a></td>
+              {% else %}
+                <td></td>
+              {% endif %}
               {% if notaCred.estadoNotaCredito == 'Generada' %}
                 <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:enviar_nota_credito' notaCred.id %}"><i class="fas fa-arrow-right"></i></a></td>
               {% else %}
