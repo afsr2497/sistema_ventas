@@ -104,8 +104,10 @@ class cotizaciones(models.Model):
     nroDocumento = models.CharField(max_length=128,null=True)
     nroCotizacion = models.CharField(max_length=128,null=True)
     serieCotizacion = models.CharField(max_length=128,null=True)
-    fecha_emision = models.DateField(null=True)
+    fecha_emision = models.DateField(default=datetime.date.today)
+    fecha_vencReg = models.DateField(default=datetime.date.today)
     registroCoti = models.CharField(max_length=64,default='0')
+    cred_dias = models.CharField(max_length=64,default='0')
 
 class guias(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
@@ -268,6 +270,7 @@ class abonosOperacion(models.Model):
     conectado = models.CharField(max_length=64,default='0')
     idRegistroOp = models.CharField(max_length=64,default='0')
     comprobanteCancelado = models.CharField(max_length=64,default='PENDIENTE')
+    fechaAbono = models.DateField(default=datetime.date.today)
 
 class inventariosProductos(models.Model):
     fechaInventario = models.DateField(default=timezone.now)

@@ -64,6 +64,8 @@ addEventListener('DOMContentLoaded',()=>{
     let btnAgregar = document.getElementById('agregarProducto')
     let btnAgregarSer = document.getElementById('agregarServicio')
 
+    let cantidadDiasCredito = document.getElementById('diasCredit')
+
     let cantidadCuotas = document.getElementById('nroCuotas')
 
     let cliente_info
@@ -429,6 +431,7 @@ addEventListener('DOMContentLoaded',()=>{
             'mostrarDescuento':mostrarDescuento,
             'mostrarPU':mostrarPU,
             'mostrarVU':mostrarVU,
+            'diasCredito':cantidadDiasCredito.value,
         }
         fetch(url,{
             method:"POST",

@@ -187,6 +187,18 @@
                 </div>
             </div>
             <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Crédito a ...</label>
+                    <input class="form-control" type="number" id="diasCredit" list="diasCredito" placeholder="Credito a ... días" value="{{ prof.cred_dias }}">
+                    <datalist id="diasCredito">
+                        <option value="15">
+                        <option value="30">
+                        <option value="45">
+                        <option value="60">
+                    </datalist>
+                </div>
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-8">
                     <label>Observaciones</label>
                     <input class="form-control" type="text" placeholder="Observaciones ..." id="obsCot" value="{{ prof.observacionesCot }}">

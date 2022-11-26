@@ -32,6 +32,7 @@
     <div style="height: 1000px; overflow: scroll;">
         <table class="table table-bordered table-hover" id="abonosTable">
             <thead class="table-dark">
+                <td>Fecha</td>
                 <th>Banco</th>
                 <th>Moneda</th>
                 <th>Nro de operacion</th>
@@ -47,6 +48,7 @@
             <tbody>
                 {% for abono in abonos_info %}
                 <tr>
+                    <td>{{ abono.fechaAbono|date:'d-m-Y' }}</td>
                     <td>{{ abono.datos_banco.1 }}</td>
                     <td>{{ abono.datos_banco.2 }}</td>
                     <td>{{ abono.nro_operacion }}</td>

@@ -996,12 +996,18 @@ def agregar_proforma(request):
             cot_fecha = data.get('proforma').get('fecha')
             cot_fechaVenc = data.get('proforma').get('fecha_vencimiento')
             cot_cantCuotas = str(data.get('nroCuotas'))
+            cot_diasCredito = str(data.get('diasCredito'))
+            if cot_diasCredito != '':
+                cot_diasCredito = cot_diasCredito
+            else:
+                cot_diasCredito = '0'
             cot_estado = 'Generada'
             cot_tipo = data.get('proforma').get('tipo_proforma')
             cot_descuento = str(data.get('mostrarDescuento'))
             cot_mostrarPU = str(data.get('mostrarPU'))
             cot_mostrarVU = str(data.get('mostrarVU'))
             fecha_nueva = parse(cot_fecha)
+            fecha_validez = parse(cot_fechaVenc)
             datos_doc = config_docs.objects.get(id=1)
             cot_serie = datos_doc.cotiSerie
             cot_nro = datos_doc.cotiNro
@@ -1015,7 +1021,7 @@ def agregar_proforma(request):
             id_last = cotizaciones.objects.latest('id').id
             id_last = int(id_last)
             id_nuevo = id_last + 1
-            cotizaciones(id=id_nuevo,fecha_emision=fecha_nueva,cliente=cot_cliente,productos=cot_productos,servicios=cot_servicios,vendedor=cot_vendedor,pagoProforma=cot_pago,monedaProforma=cot_moneda,fechaProforma=cot_fecha,fechaVencProforma=cot_fechaVenc,tipoProforma=cot_tipo,codigoProforma=cot_codigo,tipoCambio=cot_cambio,estadoProforma=cot_estado,imprimirDescuento=cot_descuento,imprimirPU=cot_mostrarPU,imprimirVU=cot_mostrarVU,cantidadCuotas=cot_cantCuotas,observacionesCot=cot_observaciones,nroDocumento=cot_nro_documento,nroCotizacion=cot_nro,serieCotizacion=cot_serie).save()
+            cotizaciones(id=id_nuevo,cred_dias=cot_diasCredito,fecha_vencReg=fecha_validez,fecha_emision=fecha_nueva,cliente=cot_cliente,productos=cot_productos,servicios=cot_servicios,vendedor=cot_vendedor,pagoProforma=cot_pago,monedaProforma=cot_moneda,fechaProforma=cot_fecha,fechaVencProforma=cot_fechaVenc,tipoProforma=cot_tipo,codigoProforma=cot_codigo,tipoCambio=cot_cambio,estadoProforma=cot_estado,imprimirDescuento=cot_descuento,imprimirPU=cot_mostrarPU,imprimirVU=cot_mostrarVU,cantidadCuotas=cot_cantCuotas,observacionesCot=cot_observaciones,nroDocumento=cot_nro_documento,nroCotizacion=cot_nro,serieCotizacion=cot_serie).save()
             time.sleep(0.5)
             return JsonResponse({'status': 'Todo added!'})
 
@@ -1220,6 +1226,11 @@ def editar_proforma(request,ind):
             cot_cantCuotas = data.get('nroCuotas')
             cot_observaciones = data.get('obsProforma')
             cot_nro_documento = data.get('nroDocCot')
+            cot_diasCredito = str(data.get('diasCredito'))
+            if cot_diasCredito != '':
+                cot_diasCredito = cot_diasCredito
+            else:
+                cot_diasCredito = '0'
             cot_vendedor[0] = proforma_editar.vendedor[0]
             cot_pago = data.get('proforma').get('tipo_pago')
             cot_moneda = data.get('proforma').get('moneda')
@@ -1242,6 +1253,7 @@ def editar_proforma(request,ind):
             proforma_editar.tipoCambio = cot_cambio
             proforma_editar.imprimirPU = cot_imprimirPU
             proforma_editar.imprimirVU = cot_imprimirVU
+            proforma_editar.cred_dias = cot_diasCredito
             print(proforma_editar.imprimirPU)
             print(proforma_editar.imprimirVU)
             proforma_editar.imprimirDescuento = cot_mostrarDescuento
@@ -2108,12 +2120,20 @@ def descargar_proforma(request,ind):
                 can.drawString(25,640,'Dni:')
                 can.drawString(120,640,str(proforma_info.cliente[4]))
             can.drawString(25,630,'Forma de Pago:')
-            can.drawString(120,630,str(proforma_info.pagoProforma))
+            if proforma_info.pagoProforma == 'CONTADO':
+                can.drawString(120,630,str(proforma_info.pagoProforma))
+            if proforma_info.pagoProforma == 'CREDITO':
+                can.drawString(120,630,str(proforma_info.pagoProforma) + ' ' + str(proforma_info.cred_dias))
 
-            can.drawString(230,640,'Fecha de emision:')
+            #Calculo de la validez
+            d1 = datetime.strptime(proforma_info.fechaProforma, "%Y-%m-%d")
+            d2 = datetime.strptime(proforma_info.fechaVencProforma, "%Y-%m-%d")
+            delta = d2 - d1
+
+            can.drawString(230,640,'Fecha:')
             can.drawString(320,640,str(proforma_info.fechaProforma))
-            can.drawString(230,630,'Fecha de vencimiento:')
-            can.drawString(320,630,str(proforma_info.fechaVencProforma))
+            can.drawString(230,630,'Validez:')
+            can.drawString(320,630,str(f'{delta.days} días'))
 
             can.drawString(430,640,'Nro de Documento:')
             can.drawString(520,640,str(proforma_info.nroDocumento))
@@ -5535,7 +5555,7 @@ def verificar_factura_teFacturo(request,ind):
                 refFactura = factura_verificar.codigoFactura
                 egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
         if factura_verificar.estadoSunat == 'Anulado' and factura_verificar.stockAct == '1':
-            factura_verificar.stockAct == '0'
+            factura_verificar.stockAct = '0'
             factura_verificar.save()
             for producto in factura_verificar.productos:
                 prod_mod = products.objects.get(codigo=producto[2])
@@ -7060,11 +7080,19 @@ def descargar_proforma_dolares(request,ind):
                 can.drawString(25,640,'Dni:')
                 can.drawString(120,640,str(proforma_info.cliente[4]))
             can.drawString(25,630,'Forma de Pago:')
-            can.drawString(120,630,str(proforma_info.pagoProforma))
+            if proforma_info.pagoProforma == 'CONTADO':
+                can.drawString(120,630,str(proforma_info.pagoProforma))
+            if proforma_info.pagoProforma == 'CREDITO':
+                can.drawString(120,630,str(proforma_info.pagoProforma) + ' ' + str(proforma_info.cred_dias))
 
-            can.drawString(230,640,'Fecha de emision:')
+            #Calculo de los dias de validez
+            d1 = datetime.strptime(proforma_info.fechaProforma, "%Y-%m-%d")
+            d2 = datetime.strptime(proforma_info.fechaVencProforma, "%Y-%m-%d")
+            delta = d2 - d1
+
+            can.drawString(230,640,'Fecha:')
             can.drawString(320,640,str(proforma_info.fechaProforma))
-            can.drawString(230,630,'Fecha de vencimiento:')
+            can.drawString(230,630,'Validez:')
             can.drawString(320,630,str(proforma_info.fechaVencProforma))
 
             can.drawString(430,640,'Nro de Documento:')
@@ -7762,6 +7790,17 @@ def registro_abonos(request):
         print(codigo_coti)
         print(codigo_vendedor)
         abonoEstado = 'PENDIENTE'
+        if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+            mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+        else:
+            mes = str((datetime.now()-timedelta(hours=5)).month)
+        
+        if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+            dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+        else:
+            dia = str((datetime.now()-timedelta(hours=5)).day)
+        abono_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+        fecha_registro = parse(abono_fecha)
         if facturaCancelada == 'on':
             abonoEstado = 'CANCELADO'
             comprobante_abono = facturas.objects.get(codigoFactura=codigo_comprobante)
@@ -7771,7 +7810,7 @@ def registro_abonos(request):
             for abono in abonos_totales:
                 abono.comprobanteCancelado = 'CANCELADO'
                 abono.save()
-        abonosOperacion(comprobanteCancelado=abonoEstado,datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
+        abonosOperacion(fechaAbono=fecha_registro,comprobanteCancelado=abonoEstado,datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
         return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
     return render(request,'sistema_2/registro_abonos.html',{
         'bancos_totales':regCuenta.objects.all().order_by('id'),
