@@ -56,6 +56,68 @@ def ingresos(request):
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     ing = ingresos_stock.objects.all()
+    if request.method == 'POST':
+        if 'Filtrar' in request.POST:
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            print(fecha_inicial)
+            print(fecha_final)
+            if fecha_inicial != '' and fecha_final != '':
+                ing = ing.filter(fecha_emision__range=[fecha_inicial,fecha_final]).order_by('-id')
+                return render(request,'sistema_2/ingresos.html',{
+                    'ing': ing.order_by('-id'),
+                    'usr_rol': user_logued,
+                    'fecha_inicial':fecha_inicial,
+                    'fecha_final':fecha_final,
+                })
+        elif 'Exportar' in request.POST:
+            print('Se solicita el excel')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                ing = ing.filter(fecha_emision__range=[fecha_inicial,fecha_final]).order_by('id')
+                info_ingresos=[]
+                for ingreso in ing:
+                    info_ingresos.append([ingreso.fecha_emision,ingreso.producto_codigo,ingreso.producto_nombre,ingreso.cantidad,ingreso.stock_anterior,ingreso.nuevo_stock])
+                tabla_excel = pd.DataFrame(info_ingresos,columns=['Fecha','Codigo de producto','Producto','Cantidad','Stock anterior','Nuevo Stock'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                ing = ingresos_stock.objects.all().order_by('id')
+                info_ingresos=[]
+                for ingreso in ing:
+                    info_ingresos.append([ingreso.fecha_emision,ingreso.producto_codigo,ingreso.producto_nombre,ingreso.cantidad,ingreso.stock_anterior,ingreso.nuevo_stock])
+                tabla_excel = pd.DataFrame(info_ingresos,columns=['Fecha','Codigo de producto','Producto','Cantidad','Stock anterior','Nuevo Stock'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
     return render(request,'sistema_2/ingresos.html',{
         'ing': ing.order_by('-id'),
         'usr_rol': user_logued,
@@ -67,9 +129,71 @@ def egresos(request):
     usr = userProfile.objects.all()
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
-    ing = egreso_stock.objects.all()
+    egr = egreso_stock.objects.all()
+    if request.method == 'POST':
+        if 'Filtrar' in request.POST:
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            print(fecha_inicial)
+            print(fecha_final)
+            if fecha_inicial != '' and fecha_final != '':
+                egr = egr.filter(fecha_emision__range=[fecha_inicial,fecha_final]).order_by('-id')
+                return render(request,'sistema_2/egresos.html',{
+                    'ing': egr.order_by('-id'),
+                    'usr_rol': user_logued,
+                    'fecha_inicial':fecha_inicial,
+                    'fecha_final':fecha_final,
+                })
+        elif 'Exportar' in request.POST:
+            print('Se solicita el excel')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                egr = egr.filter(fecha_emision__range=[fecha_inicial,fecha_final]).order_by('id')
+                info_egresos=[]
+                for egreso in egr:
+                    info_egresos.append([egreso.fecha_emision,egreso.producto_codigo,egreso.producto_nombre,egreso.cantidad,egreso.stock_anterior,egreso.nuevo_stock])
+                tabla_excel = pd.DataFrame(info_egresos,columns=['Fecha','Codigo de producto','Producto','Cantidad','Stock anterior','Nuevo Stock'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                egr = egreso_stock.objects.all().order_by('id')
+                info_egresos=[]
+                for egreso in egr:
+                    info_egresos.append([egreso.fecha_emision,egreso.producto_codigo,egreso.producto_nombre,egreso.cantidad,egreso.stock_anterior,egreso.nuevo_stock])
+                tabla_excel = pd.DataFrame(info_egresos,columns=['Fecha','Codigo de producto','Producto','Cantidad','Stock anterior','Nuevo Stock'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
     return render(request,'sistema_2/egresos.html',{
-        'ing': ing.order_by('-id'),
+        'ing': egr.order_by('-id'),
         'usr_rol': user_logued,
     })
 
@@ -79,6 +203,33 @@ def dashboard(request):
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     return render(request,'sistema_2/dashboard.html',{
+        'usr_rol': user_logued,
+    })
+
+@login_required(login_url='/sistema_2')
+def dashboard_clientes(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    return render(request,'sistema_2/dashboard_clientes.html',{
+        'usr_rol': user_logued,
+    })
+
+@login_required(login_url='/sistema_2')
+def dashboard_productos(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    return render(request,'sistema_2/dashboard_productos.html',{
+        'usr_rol': user_logued,
+    })
+
+@login_required(login_url='/sistema_2')
+def dashboard_ventas(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    return render(request,'sistema_2/dashboard_ventas.html',{
         'usr_rol': user_logued,
     })
 
@@ -94,7 +245,6 @@ def login_view(request):
             return render(request,'sistema_2/log_in.html',{
                 "message": "DATOS INVALIDOS!",
             })
-
     return render(request,'sistema_2/log_in.html')
 
 def log_out(request):
@@ -1494,7 +1644,7 @@ def fact(request):
                     suma_total = suma_total + float(elemento[8])
                 suma_total = round(suma_total,2)
                 info_facturas.append(['','','','','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
                 doc_excel.active.column_dimensions['A'].width = 30
@@ -1569,7 +1719,165 @@ def fact(request):
                     suma_total = suma_total + float(elemento[7])
                 suma_total = round(suma_total,2)
                 info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+        elif 'detalle' in request.POST:
+            print('Se solicita el excel')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                facturas_filtradas = facturas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final]).order_by('id')
+                info_facturas=[]
+                for factura in facturas_filtradas:
+                    total_precio_soles = 0.00
+                    total_precio = 0.00
+                    for producto in factura.productos:
+                        if factura.monedaFactura == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if factura.monedaFactura == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto])
+                    for servicio in factura.servicios:
+                        if factura.monedaFactura == 'SOLES':
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'SOLES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                        if factura.monedaFactura == 'DOLARES':
+                            if servicio[3] == 'SOLES':
+                                v_producto = (Decimal(servicio[4])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if servicio[3] == 'DOLARES':
+                            v_producto = Decimal(servicio[4])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                            v_producto = Decimal('%.2f' % v_producto)
+                        if servicio[3] == 'SOLES':
+                            v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                            v_producto = Decimal('%.2f' % v_producto)
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'','',factura.monedaFactura,'%.2f'%v_producto])
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                suma_total = 0
+                for elemento in info_facturas:
+                    suma_total = suma_total + float(elemento[8])
+                suma_total = round(suma_total,2)
+                info_facturas.append(['','','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['E'].width = 30
+                doc_excel.active.column_dimensions['F'].width = 30
+                doc_excel.active.column_dimensions['G'].width = 30
+                doc_excel.active.column_dimensions['H'].width = 30
+                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                facturas_exportar = facturas.objects.all()
+                info_facturas=[]
+                for factura in facturas_exportar:
+                    total_precio_soles = 0.00
+                    total_precio = 0.00
+                    for producto in factura.productos:
+                        if factura.monedaFactura == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if factura.monedaFactura == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto])
+                    for servicio in factura.servicios:
+                        if factura.monedaFactura == 'SOLES':
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'SOLES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                        if factura.monedaFactura == 'DOLARES':
+                            if servicio[3] == 'SOLES':
+                                v_producto = (Decimal(servicio[4])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if servicio[3] == 'DOLARES':
+                            v_producto = Decimal(servicio[4])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                            v_producto = Decimal('%.2f' % v_producto)
+                        if servicio[3] == 'SOLES':
+                            v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                            v_producto = Decimal('%.2f' % v_producto)
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'','',factura.monedaFactura,'%.2f'%v_producto])
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                suma_total = 0
+                for elemento in info_facturas:
+                    suma_total = suma_total + float(elemento[7])
+                suma_total = round(suma_total,2)
+                info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
                 doc_excel.active.column_dimensions['A'].width = 30

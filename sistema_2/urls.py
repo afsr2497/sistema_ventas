@@ -126,4 +126,7 @@ urlpatterns = [
     path('crear_nota_credito',views.crear_nota_credito,name='crear_nota_credito'),
     path('download_nota/<str:ind>',views.download_nota,name='download_nota'),
     path('almacenesSistema',views.almacenesSistema,name='almacenesSistema'),
+    path('dashboard_clientes',views.dashboard_clientes,name='dashboard_clientes'),
+    path('dashboard_productos',views.dashboard_productos,name='dashboard_productos'),
+    path('dashboard_ventas',views.dashboard_ventas,name='dashboard_ventas'),
 ]

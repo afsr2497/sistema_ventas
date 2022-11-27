@@ -1,0 +1,575 @@
+{% extends "sistema_2/layout_3.html" %}
+{% load static %}
+
+
+{% block code %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded',()=>{
+        let grafVendedor = document.getElementById('grafVendedor')
+        let grafVentas = document.getElementById('grafVentas')
+        let grafVendedoresTiempo = document.getElementById('grafVendedoresTiempo')
+        let pieClientes = document.getElementById('pieClientes')
+        let pieProductos = document.getElementById('pieProductos')
+
+        let tablaVendedoresTiempo = new Chart(grafVendedoresTiempo,{
+            type:'bar',
+            options:{
+                scales:{
+                    x:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                    y:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                },
+            },
+            data:{
+                labels:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+                datasets:[{
+                    label:'V1',
+                    backgroundColor:'#0275d8',
+                    data:[],
+                },
+                {
+                    label:'V2',
+                    backgroundColor:'#FF0000',
+                    data:[],
+                },
+                {
+                    label:'V3',
+                    backgroundColor:'#00FF00',
+                    data:[],
+                },
+                {
+                    label:'V4',
+                    backgroundColor:'#FF00FF',
+                    data:[],
+                },
+                {
+                    label:'V5',
+                    backgroundColor:'#00FFFF',
+                    data:[],
+                },
+                {
+                    label:'V6',
+                    backgroundColor:'#FFFF00',
+                    data:[],
+                }]
+            }
+        })
+
+        fetch('/sistema_2/get_ventas_tiempo_vendedor?tiempo=2022&moneda=SOLES')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            for(var i = 0; i < data.vendedor.length; i++)
+            {
+                tablaVendedoresTiempo.data.datasets[i].label = data.vendedor[i]
+                tablaVendedoresTiempo.data.datasets[i].data = data.ventas_vendedor[i]
+            }
+            tablaVendedoresTiempo.update()
+        })
+
+        let pieGrafClientes = new Chart(pieClientes, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                    backgroundColor: ["#FF0000", "#00FF00","#0000FF","#FF00FF","#00FFFF",'#FFFF00','#70db93','#5c3317','#9f5f9f','#b5a642','#a62a2a','#7093db','#871f78','#238e23','#dbdb70'],
+                    data: []
+                    }
+                ]
+            },
+        })
+
+        //fetch('/sistema_2/get_clientes_15')
+        //.then(response => response.json())
+        //.then(data => {
+        //    console.log(data)
+        //    pieGrafClientes.data.labels = data.nombre_clientes_15.slice(0,15)
+        //    pieGrafClientes.data.datasets[0].data = data.ventas_clientes_15.slice(0,15)
+        //    pieGrafClientes.update()
+        //})
+
+        let pieGrafProductos = new Chart(pieProductos, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                    backgroundColor: ["#FF0000", "#00FF00","#0000FF","#FF00FF","#00FFFF",'#FFFF00','#70db93','#5c3317','#9f5f9f','#b5a642','#a62a2a','#7093db','#871f78','#238e23','#dbdb70'],
+                    data: []
+                    }
+                ]
+            },
+        })
+
+        //fetch('/sistema_2/get_productos_15')
+        //.then(response => response.json())
+        //.then(data => {
+        //    console.log(data)
+        //    pieGrafProductos.data.labels = data.codigo_productos.slice(0,15)
+        //    pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,15)
+        //    pieGrafProductos.update()
+        //})
+
+        let tablaVendedor = new Chart(grafVendedor,{
+            type:'bar',
+            options:{
+                scales:{
+                    x:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                    y:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                },
+            },
+            data:{
+                labels:[],
+                datasets:[{
+                    label:'Soles',
+                    backgroundColor:'#0275d8',
+                    data:[],
+                },
+                {
+                    label:'Dolares',
+                    backgroundColor:'red',
+                    data:[],
+                }]
+            }
+        })
+
+        let tablaVentas = new Chart(grafVentas,{
+            type:'bar',
+            options:{
+                scales:{
+                    x:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                    y:{
+                        grid:{
+                            display: false,
+                        },
+                    },
+                },
+            },
+            data:{
+                labels:[],
+                datasets:[{
+                    label:'Soles',
+                    backgroundColor:'#0275d8',
+                    data:[],
+                },
+                {
+                    label:'Dolares',
+                    backgroundColor:'red',
+                    data:[],
+                }]
+            }
+        })
+
+        fetch('/sistema_2/get_clients_statistics?cantidad=15&tiempo=0')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.clientes_mas_ventas)
+            console.log(data.ventas_clientes)
+            tablaClientes = document.getElementById('tablaClientes')
+            tablaClientes.innerHTML = ''
+            for(var i = 0; i < data.clientes_mas_ventas.length; i++)
+            {
+                let nuevaFila = `
+                        <tr>
+                            <td>${data.clientes_mas_ventas[i]}</td>
+                            <td>${data.razon_clientes[i]}</td>
+                            <td class='text-end'>${data.ventas_clientes[i]}</td>
+                        </tr>`;
+                tablaClientes.innerHTML += nuevaFila
+            }
+            pieGrafClientes.data.labels = data.razon_clientes.slice(0,15)
+            pieGrafClientes.data.datasets[0].data = data.ventas_clientes.slice(0,15)
+            pieGrafClientes.update()
+        })
+
+        fetch('/sistema_2/get_products_statistics?cantidad=15&tiempo=0')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            tablaProductos = document.getElementById('tablaProductos')
+            tablaProductos.innerHTML=''
+            for(var i = 0; i < data.productos_mas_ventas.length; i++)
+            {
+                let nuevaFila = `
+                        <tr>
+                            <td>${data.productos_mas_ventas[i]}</td>
+                            <td>${data.nombres_productos[i]}</td>
+                            <td class='text-end'>${data.ventas_productos[i]}</td>
+                        </tr>`;
+                tablaProductos.innerHTML += nuevaFila
+            }
+            pieGrafProductos.data.labels = data.nombres_productos.slice(0,15)
+            pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,15)
+            pieGrafProductos.update()
+        })
+
+        fetch('/sistema_2/get_vendedor_statistics?cantidad=10&tiempo=0&soles=1&dolares=0')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            tablaVendedor.data.labels = data.vendedor_mas_ventas.slice(0,10)
+            tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,10)
+            tablaVendedor.data.datasets[1].data = data.ventas_vendedor_dolares.slice(0,10)
+            tablaVendedor.update()
+        })
+
+        fetch('/sistema_2/get_ventas_meses/10')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            tablaVentas.data.labels = data.lista_meses.slice(0,10)
+            tablaVentas.data.datasets[0].data = data.ventas_meses_soles.slice(0,10)
+            tablaVentas.data.datasets[1].data = data.ventas_meses_dolares.slice(0,10)
+            tablaVentas.update()
+        })
+
+        
+
+        let btnFiltrarClientes = document.getElementById('filtrarClientes')
+        btnFiltrarClientes.addEventListener('click',modificarTablaClientes)
+
+        let btnFiltrarProductos = document.getElementById('filtrarProductos')
+        btnFiltrarProductos.addEventListener('click',modificarTablaProductos)
+
+        let btnFiltrarVendedor = document.getElementById('filtrarVendedor')
+        btnFiltrarVendedor.addEventListener('click',modificarTablaVendedor)
+
+        let btnFiltrarVentas = document.getElementById('filtrarVentas')
+        btnFiltrarVentas.addEventListener('click',modificarTablaVentas)
+
+        let btnFiltrarVendedoresTiempo = document.getElementById('filtrarVendedoresTiempo')
+        btnFiltrarVendedoresTiempo.addEventListener('click',modificarTablaVendedoresTiempo)
+
+        function modificarTablaVendedoresTiempo()
+        {
+            let filtroVendedoresMoneda = document.getElementById('filtroVendedoresMoneda')
+            let filtroVendedoresTiempo = document.getElementById('filtroVendedoresTiempo')
+            fetch(`/sistema_2/get_ventas_tiempo_vendedor?tiempo=${filtroVendedoresTiempo.value}&moneda=${filtroVendedoresMoneda.value}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                for(var i = 0; i < 6; i++)
+                {
+                    tablaVendedoresTiempo.data.datasets[i].label = ''
+                    tablaVendedoresTiempo.data.datasets[i].data = []
+                }
+                for(var i = 0; i < data.vendedor.length; i++)
+                {
+                    tablaVendedoresTiempo.data.datasets[i].label = data.vendedor[i]
+                    tablaVendedoresTiempo.data.datasets[i].data = data.ventas_vendedor[i]
+                }
+                tablaVendedoresTiempo.update()
+            })
+        }
+
+        function modificarTablaClientes()
+        {
+            let filtroClientes = document.getElementById('filtroClientes')
+            let mesesClientes = document.getElementById('mesesClientes')
+            let tablaClientes = document.getElementById('tablaClientes')
+
+            fetch(`/sistema_2/get_clients_statistics?cantidad=${filtroClientes.value}&tiempo=${mesesClientes.value}`)
+            .then(response => response.json())
+            .then(data => {
+                tablaClientes.innerHTML = ''
+                for(var i = 0; i < data.clientes_mas_ventas.length; i++)
+                {
+                    let nuevaFila = `
+                            <tr>
+                                <td>${data.clientes_mas_ventas[i]}</td>
+                                <td>${data.razon_clientes[i]}</td>
+                                <td class='text-end'>${data.ventas_clientes[i]}</td>
+                            </tr>`;
+                    tablaClientes.innerHTML += nuevaFila
+                }
+                pieGrafClientes.data.labels = data.razon_clientes.slice(0,Number(`${filtroClientes.value}`))
+                pieGrafClientes.data.datasets[0].data = data.ventas_clientes.slice(0,Number(`${filtroClientes.value}`))
+                pieGrafClientes.update()
+            })
+        }
+
+        function modificarTablaProductos()
+        {
+            let filtroProductos = document.getElementById('filtroProductos')
+            let mesesProductos = document.getElementById('mesesProductos')
+            let tablaProductos = document.getElementById('tablaProductos')
+
+            fetch(`/sistema_2/get_products_statistics?cantidad=${filtroProductos.value}&tiempo=${mesesProductos.value}`)
+            .then(response => response.json())
+            .then(data => {
+                tablaProductos.innerHTML = ''
+                for(var i = 0; i < data.productos_mas_ventas.length; i++)
+                {
+                    let nuevaFila = `
+                            <tr>
+                                <td>${data.productos_mas_ventas[i]}</td>
+                                <td>${data.nombres_productos[i]}</td>
+                                <td class='text-end'>${data.ventas_productos[i]}</td>
+                            </tr>`;
+                    tablaProductos.innerHTML += nuevaFila
+                }
+                pieGrafProductos.data.labels = data.nombres_productos.slice(0,Number(`${filtroProductos.value}`))
+                pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,Number(`${filtroProductos.value}`))
+                pieGrafProductos.update()
+            })
+        }
+
+        function modificarTablaVendedor()
+        {
+            let filtroVendedor = document.getElementById('filtroVendedor')
+            let mesesVendedor = document.getElementById('mesesVendedor')
+            let vendedorSoles = document.getElementById('vendedorSoles')
+            let vendedorDolares= document.getElementById('vendedorDolares')
+            let datoSoles = '0'
+            let datoDolares = '0'
+
+            fetch(`/sistema_2/get_vendedor_statistics?cantidad=${filtroVendedor.value}&tiempo=${mesesVendedor.value}&soles=${datoSoles}&dolares=${datoDolares}`)
+            .then(response => response.json())
+            .then(data => {
+                tablaVendedor.data.labels = data.vendedor_mas_ventas.slice(0,parseInt(filtroVendedor.value))
+                console.log(data)
+                tablaVendedor.data.datasets[0].data = data.ventas_vendedor.slice(0,parseInt(filtroVendedor.value))
+                tablaVendedor.data.datasets[1].data = data.ventas_vendedor_dolares.slice(0,parseInt(filtroVendedor.value))
+                tablaVendedor.update()
+            })
+        }
+
+        function modificarTablaVentas()
+        {
+            let filtroVentas = document.getElementById('filtroVentas')
+
+            fetch(`/sistema_2/get_ventas_meses/${filtroVentas.value}`)
+            .then(response => response.json())
+            .then(data => {
+                tablaVentas.data.labels = data.lista_meses.slice(0,parseInt(filtroVentas.value))
+                tablaVentas.data.datasets[0].data = data.ventas_meses_soles.slice(0,parseInt(filtroVentas.value))
+                tablaVentas.data.datasets[1].data = data.ventas_meses_dolares.slice(0,parseInt(filtroVentas.value))
+                tablaVentas.update()
+            })
+        }
+
+        
+    })
+</script>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <div class="row" style="border-bottom: solid 1px black">
+        <div class="col-12">
+            <div class="row text-center">
+                <h5>Clientes con mas ventas</h5>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroClientes" style="font-size: 12px;">
+                        <option value="15">Top 15</option>
+                        <option value="10">Top 10</option>
+                        <option value="5">Top 5</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-select" id="mesesClientes" style="font-size: 12px;">
+                        <option value="0">Presente mes</option>
+                        <option value="1">Ultimo mes</option>
+                        <option value="3">Ultimos 3 meses</option>
+                        <option value="6">Ultimos 6 meses</option>
+                        <option value="12">Ultimo año</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarClientes" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div class="row" style="font-size: 10px;">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <th>Ruc</th>
+                        <th>Razon social</th>
+                        <th>Valor vendido</th>
+                    </thead>
+                    <tbody id="tablaClientes">
+    
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-6" style="display:none;">
+            <div class="row text-center">
+                <h5>Productos con mas ventas</h5>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroProductos" style="font-size: 12px;">
+                        <option value="15">Top 15</option>
+                        <option value="10">Top 10</option>
+                        <option value="5">Top 5</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-select" id="mesesProductos" style="font-size: 12px;">
+                        <option value="0">Presente mes</option>
+                        <option value="1">Ultimo mes</option>
+                        <option value="3">Ultimos 3 meses</option>
+                        <option value="6">Ultimos 6 meses</option>
+                        <option value="12">Ultimo año</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarProductos" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div class="container row" style="font-size: 10px;">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <th>Codigo</th>
+                        <th>Producto</th>
+                        <th>Valor vendido</th>
+                    </thead>
+                    <tbody id="tablaProductos">
+    
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br>
+    </div>
+    <br>
+    <div class="row" style="border-bottom: solid 1px black;">
+        <div class="col-12">
+            <div class="row text-center">
+                <h5>Grafico de clientes</h5>
+            </div>
+            <div class="row">
+                <canvas width="200" height="100" id="pieClientes"></canvas>
+            </div>
+        </div>
+        <div class="col-6" style="display: none;">
+            <div class="row text-center">
+                <h5>Gráfico de productos</h5>
+            </div>
+            <div class="row">
+                <canvas width="200" height="100" id="pieProductos"></canvas>
+            </div>
+        </div>
+        <br>
+    </div>
+    <br>
+    <div class="row" style="border-bottom: solid 1px black; display: none;">
+        <div class="col-6">
+            <div class="row text-center">
+                <h5>Vendedores con mas ventas</h5>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroVendedor" style="font-size: 12px;">
+                        <option value="10">Top 10</option>
+                        <option value="5">Top 5</option>
+                        <option value="3">Top 3</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-select" id="mesesVendedor" style="font-size: 12px;">
+                        <option value="0">Presente mes</option>
+                        <option value="1">Ultimo mes</option>
+                        <option value="3">Ultimos 3 meses</option>
+                        <option value="6">Ultimos 6 meses</option>
+                        <option value="12">Ultimo año</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarVendedor" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <canvas width="200" height="100" id="grafVendedor"></canvas>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="row text-center">
+                <h5>Ventas mensuales</h5>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroVentas" style="font-size: 12px;">
+                        <option value="10">Ultimos 10 meses</option>
+                        <option value="5">Ultimos 5 meses</option>
+                        <option value="3">Ultimos 3 meses</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarVentas" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div>
+                <canvas width="200" height="100" id="grafVentas"></canvas>
+            </div>
+        </div>
+        <br>
+    </div>
+    <br>
+    <div class="row justify-content-center" style="border-bottom: solid 1px black; display: none;">
+        <div class="col-10">
+            <div class="row text-center">
+                <h5>Vendedores a lo largo del tiempo</h5>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <select class="form-select" id="filtroVendedoresMoneda" style="font-size: 12px;">
+                        <option value="SOLES">Soles</option>
+                        <option value="DOLARES">Dolares</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-select" id="filtroVendedoresTiempo" style="font-size: 12px;">
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-success" id="filtrarVendedoresTiempo" style="font-size: 12px;">Filtrar</button>
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <canvas width="200" height="100" id="grafVendedoresTiempo"></canvas>
+            </div>
+        </div>
+    </div>
+    <br>
+</div>
+
+
+{% endblock %}

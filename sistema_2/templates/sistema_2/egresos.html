@@ -15,6 +15,36 @@
 {% block content%}
 <div class="container">
   <h1>Egresos de stock</h1>
+  <br>
+  <div>
+    <form class="row g-12" method="post" action="{% url 'sistema_2:egresos' %}">
+    {% csrf_token %}
+        <div class="col-md-2">
+            <label>Fecha inicial</label>
+            <input type="date" class="form-control col-md-1" name="fecha_inicio" value="{{ fecha_inicial }}">
+        </div>
+        <div class="col-md-2">
+            <label>Fecha final</label>
+            <input type="date" class="form-control col-md-1" name="fecha_fin" value="{{ fecha_final }}">
+        </div>
+        <div class="col-md-1">
+          <br>
+          <button type="submit" class="btn btn-success" name="Filtrar">Filtrar</button>
+        </div>
+        <div class="col-md-2">
+          <br>
+          <button type="submit" class="btn btn-success" name="Exportar">Exportar Excel</button>
+        </div>
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-1"></div>
+        <div class="col-md-2">
+          <br>
+          <a class="btn btn-success float-end" style="color: white;" href="{% url 'sistema_2:egresos' %}">Reestablecer</a>
+        </div>
+    </form>
+  </div>
+  <br>
   <table id="egresosTable" class="table table-bordered table-hover" style="font-size: 12px;">
     <thead class="table-dark">
       <tr>
