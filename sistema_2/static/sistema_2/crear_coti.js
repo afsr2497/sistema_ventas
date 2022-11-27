@@ -68,6 +68,8 @@ addEventListener('DOMContentLoaded',()=>{
 
     let cantidadCuotas = document.getElementById('nroCuotas')
 
+    let validezDias = document.getElementById('validezProf')
+
     let cliente_info
     let almacenes
 
@@ -432,6 +434,7 @@ addEventListener('DOMContentLoaded',()=>{
             'mostrarPU':mostrarPU,
             'mostrarVU':mostrarVU,
             'diasCredito':cantidadDiasCredito.value,
+            'diasValidez':validezDias.value,
         }
         fetch(url,{
             method:"POST",

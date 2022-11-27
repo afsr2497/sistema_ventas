@@ -110,6 +110,7 @@ class cotizaciones(models.Model):
     fecha_vencReg = models.DateField(default=datetime.date.today)
     registroCoti = models.CharField(max_length=64,default='0')
     cred_dias = models.CharField(max_length=64,default='0')
+    validez_dias = models.CharField(max_length=64,default='7')
 
 class guias(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)

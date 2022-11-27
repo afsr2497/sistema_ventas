@@ -36,7 +36,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.files.base import ContentFile,File
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '1'
+entorno_sistema = '0'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -1147,10 +1147,15 @@ def agregar_proforma(request):
             cot_fechaVenc = data.get('proforma').get('fecha_vencimiento')
             cot_cantCuotas = str(data.get('nroCuotas'))
             cot_diasCredito = str(data.get('diasCredito'))
+            cot_diasValidez = str(data.get('diasValidez'))
             if cot_diasCredito != '':
                 cot_diasCredito = cot_diasCredito
             else:
                 cot_diasCredito = '0'
+            if cot_diasValidez != '':
+                cot_diasValidez = cot_diasValidez
+            else:
+                cot_diasValidez = '0'
             cot_estado = 'Generada'
             cot_tipo = data.get('proforma').get('tipo_proforma')
             cot_descuento = str(data.get('mostrarDescuento'))
@@ -1171,7 +1176,7 @@ def agregar_proforma(request):
             id_last = cotizaciones.objects.latest('id').id
             id_last = int(id_last)
             id_nuevo = id_last + 1
-            cotizaciones(id=id_nuevo,cred_dias=cot_diasCredito,fecha_vencReg=fecha_validez,fecha_emision=fecha_nueva,cliente=cot_cliente,productos=cot_productos,servicios=cot_servicios,vendedor=cot_vendedor,pagoProforma=cot_pago,monedaProforma=cot_moneda,fechaProforma=cot_fecha,fechaVencProforma=cot_fechaVenc,tipoProforma=cot_tipo,codigoProforma=cot_codigo,tipoCambio=cot_cambio,estadoProforma=cot_estado,imprimirDescuento=cot_descuento,imprimirPU=cot_mostrarPU,imprimirVU=cot_mostrarVU,cantidadCuotas=cot_cantCuotas,observacionesCot=cot_observaciones,nroDocumento=cot_nro_documento,nroCotizacion=cot_nro,serieCotizacion=cot_serie).save()
+            cotizaciones(id=id_nuevo,validez_dias=cot_diasValidez,cred_dias=cot_diasCredito,fecha_vencReg=fecha_validez,fecha_emision=fecha_nueva,cliente=cot_cliente,productos=cot_productos,servicios=cot_servicios,vendedor=cot_vendedor,pagoProforma=cot_pago,monedaProforma=cot_moneda,fechaProforma=cot_fecha,fechaVencProforma=cot_fechaVenc,tipoProforma=cot_tipo,codigoProforma=cot_codigo,tipoCambio=cot_cambio,estadoProforma=cot_estado,imprimirDescuento=cot_descuento,imprimirPU=cot_mostrarPU,imprimirVU=cot_mostrarVU,cantidadCuotas=cot_cantCuotas,observacionesCot=cot_observaciones,nroDocumento=cot_nro_documento,nroCotizacion=cot_nro,serieCotizacion=cot_serie).save()
             time.sleep(0.5)
             return JsonResponse({'status': 'Todo added!'})
 
@@ -2441,7 +2446,7 @@ def descargar_proforma(request,ind):
             can.drawString(230,640,'Fecha:')
             can.drawString(320,640,str(proforma_info.fechaProforma))
             can.drawString(230,630,'Validez:')
-            can.drawString(320,630,str(f'{delta.days} días'))
+            can.drawString(320,630,str(proforma_info.validez_dias)+' días')
 
             can.drawString(430,640,'Nro de Documento:')
             can.drawString(520,640,str(proforma_info.nroDocumento))
@@ -7401,7 +7406,7 @@ def descargar_proforma_dolares(request,ind):
             can.drawString(230,640,'Fecha:')
             can.drawString(320,640,str(proforma_info.fechaProforma))
             can.drawString(230,630,'Validez:')
-            can.drawString(320,630,str(proforma_info.fechaVencProforma))
+            can.drawString(320,630,str(proforma_info.validez_dias) + ' días')
 
             can.drawString(430,640,'Nro de Documento:')
             can.drawString(520,640,str(proforma_info.nroDocumento))
