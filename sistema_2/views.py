@@ -1382,6 +1382,11 @@ def editar_proforma(request,ind):
             cot_observaciones = data.get('obsProforma')
             cot_nro_documento = data.get('nroDocCot')
             cot_diasCredito = str(data.get('diasCredito'))
+            cot_diasValidez = str(data.get('diasValidez'))
+            if cot_diasCredito != '':
+                cot_diasCredito = cot_diasCredito
+            else:
+                cot_diasCredito = '0'
             if cot_diasCredito != '':
                 cot_diasCredito = cot_diasCredito
             else:
@@ -1409,6 +1414,7 @@ def editar_proforma(request,ind):
             proforma_editar.imprimirPU = cot_imprimirPU
             proforma_editar.imprimirVU = cot_imprimirVU
             proforma_editar.cred_dias = cot_diasCredito
+            proforma_editar.validez_dias = cot_diasValidez
             print(proforma_editar.imprimirPU)
             print(proforma_editar.imprimirVU)
             proforma_editar.imprimirDescuento = cot_mostrarDescuento
@@ -4555,7 +4561,7 @@ def armar_json_factura(factura_info):
             "moneda":moneda,
             "fechaEmision":factura_info.fechaFactura,
             "horaEmision":null,
-            "fechaVencimiento":factura_info.fechaVencFactura,
+            "fechaVencimiento": null,
             "formaPago":factura_info.pagoFactura,
             "medioPago": "DEPOSITO_CUENTA",
             "condicionPago": null,

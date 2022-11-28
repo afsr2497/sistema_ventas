@@ -32,7 +32,6 @@ addEventListener('DOMContentLoaded',()=>{
     let usuarioTelefono = document.getElementById('telefonoUsr')
 
     let proformaFecha = document.getElementById('fechaProf')
-    let proformaVencFecha = document.getElementById('fechaVencProf')
     let proformaTCcompra = document.getElementById('tccompraProf')
     let proformaTCventa = document.getElementById('tcventaProf')
     let proformaMoneda = document.getElementById('monedaProf')
@@ -420,7 +419,7 @@ addEventListener('DOMContentLoaded',()=>{
             {
                 
                 'fecha':proformaFecha.value,
-                'fecha_vencimiento':proformaVencFecha.value,
+                'fecha_vencimiento':'2022-11-26',
                 'tc_compra':proformaTCcompra.value,
                 'tc_venta':proformaTCventa.value,
                 'moneda':proformaMoneda.value,

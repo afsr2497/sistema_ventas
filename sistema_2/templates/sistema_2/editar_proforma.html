@@ -117,8 +117,14 @@
                     <input type="date" class="form-control" placeholder="Fecha ..." id="fechaProf" value="{{ prof.fechaProforma }}">
                 </div>
                 <div class="col-md-6">
-                    <label>Fecha de vencimiento</label>
-                    <input type="date" class="form-control" placeholder="Fecha ..." id="fechaVencProf" value="{{ prof.fechaVencProforma }}">
+                    <label>Validez (*)</label>
+                    <input class="form-control" type="number" id="validezProf" list="diasValidez" placeholder="Validez a ... días" value="{{ prof.validez_dias }}">
+                    <datalist id="diasValidez">
+                        <option value="1">
+                        <option value="5">
+                        <option value="7">
+                        <option value="15">
+                    </datalist>
                 </div>
             </div>
             <div class="row mb-3">
