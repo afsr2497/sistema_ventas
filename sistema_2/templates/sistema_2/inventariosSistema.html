@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container" style="height: 100vh;overflow: scroll;">
     <form method="post" action="{% url 'sistema_2:nuevoAlmacen' %}">
     {% csrf_token %}
         <h4>Gestion de almacenes</h4>

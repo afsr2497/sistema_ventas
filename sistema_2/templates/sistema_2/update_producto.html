@@ -16,77 +16,78 @@
 
 
 {% block content %}
-
-<h5 class="modal-title">Actualizar producto</h5>
-<form method="post" action="{% url 'sistema_2:actualizar_producto' producto.id %}">
-{% csrf_token %}
-    </div>
-            <div class="modal-body">
-            <h6>Campos obligatorios (*)</h6>
-            <br>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label>Nombre</label>
-            <input type="text" class="form-control" name="nombre" id="actNombre" value="{{ producto.nombre }}">
+<div class="container" style="height: 100vh;overflow: scroll;">
+    <h5 class="modal-title">Actualizar producto</h5>
+    <form method="post" action="{% url 'sistema_2:actualizar_producto' producto.id %}">
+    {% csrf_token %}
         </div>
-        <div class="col-md-4">
-            <label>Codigo (*)</label>
-            <input type="text" class="form-control" required name="codigo" id="actCodigo" value="{{ producto.codigo }}">
+                <div class="modal-body">
+                <h6>Campos obligatorios (*)</h6>
+                <br>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Nombre</label>
+                <input type="text" class="form-control" name="nombre" id="actNombre" value="{{ producto.nombre }}">
+            </div>
+            <div class="col-md-4">
+                <label>Codigo (*)</label>
+                <input type="text" class="form-control" required name="codigo" id="actCodigo" value="{{ producto.codigo }}">
+            </div>
         </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label>Categoria</label>
-            <input type="text" class="form-control" name="categoria" id="actCategoria" value="{{ producto.categoria }}">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Categoria</label>
+                <input type="text" class="form-control" name="categoria" id="actCategoria" value="{{ producto.categoria }}">
+            </div>
+            <div class="col-md-4">
+                <label>Sub Categoria</label>
+                <input type="text" class="form-control" name="subCategoria" id="actSubCategoria" value="{{ producto.subCategoria }}">
+            </div>
         </div>
-        <div class="col-md-4">
-            <label>Sub Categoria</label>
-            <input type="text" class="form-control" name="subCategoria" id="actSubCategoria" value="{{ producto.subCategoria }}">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Unidad de medida</label>
+                <input type="text" class="form-control" name="unidadMed" id="actUnidad" value="{{ producto.unidad_med }}">
+            </div>
+            <div class="col-md-4">
+                <label>Codigo Sunat (*)</label>
+                <input type="text" class="form-control" required name="codSunat" id="actCodSunat" value="{{ producto.codigo_sunat }}">
+            </div>
         </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label>Unidad de medida</label>
-            <input type="text" class="form-control" name="unidadMed" id="actUnidad" value="{{ producto.unidad_med }}">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Precio de venta sin IGV (*)</label>
+                <input type="number" step="0.01" class="form-control" required name="pvsinIGV" id="actPVsinIGV" value="{{ producto.precio_venta_sin_igv }}">
+            </div>
+            <div class="col-md-4">
+                <label>Precio de compra sin IGV (*)</label>
+                <input type="number" step="0.01" class="form-control" required name="pcsinIGV" id="actPCsinIGV" value="{{ producto.precio_compra_sin_igv }}">
+            </div>
         </div>
-        <div class="col-md-4">
-            <label>Codigo Sunat (*)</label>
-            <input type="text" class="form-control" required name="codSunat" id="actCodSunat" value="{{ producto.codigo_sunat }}">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Moneda</label>
+                <select name="moneda" class="selectpicker form-control" id="actMoneda">
+                    {% if producto.moneda == 'DOLARES' %}
+                    <option value="DOLARES" selected>DOLARES</option>
+                    <option value="SOLES">SOLES</option>
+                    {% else %}
+                    <option value="DOLARES">DOLARES</option>
+                    <option value="SOLES" selected>SOLES</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label>Peso (Kg) (*)</label>
+                <input type="number" step="0.01" class="form-control" required name="pesoProducto" id="actPeso" value="{{ producto.pesoProducto }}">
+            </div>
         </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label>Precio de venta sin IGV (*)</label>
-            <input type="number" step="0.01" class="form-control" required name="pvsinIGV" id="actPVsinIGV" value="{{ producto.precio_venta_sin_igv }}">
+        <br>
+        <div>
+            <button type="button" class="btn btn-secondary" href="{% url 'sistema_2:dashboard' %}">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Actualizar</button>
         </div>
-        <div class="col-md-4">
-            <label>Precio de compra sin IGV (*)</label>
-            <input type="number" step="0.01" class="form-control" required name="pcsinIGV" id="actPCsinIGV" value="{{ producto.precio_compra_sin_igv }}">
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label>Moneda</label>
-            <select name="moneda" class="selectpicker form-control" id="actMoneda">
-                {% if producto.moneda == 'DOLARES' %}
-                <option value="DOLARES" selected>DOLARES</option>
-                <option value="SOLES">SOLES</option>
-                {% else %}
-                <option value="DOLARES">DOLARES</option>
-                <option value="SOLES" selected>SOLES</option>
-                {% endif %}
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label>Peso (Kg) (*)</label>
-            <input type="number" step="0.01" class="form-control" required name="pesoProducto" id="actPeso" value="{{ producto.pesoProducto }}">
-        </div>
-    </div>
-    <br>
-    <div>
-        <button type="button" class="btn btn-secondary" href="{% url 'sistema_2:dashboard' %}">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-    </div>
-</form>
+    </form>
+</div>
 
 {% endblock %}

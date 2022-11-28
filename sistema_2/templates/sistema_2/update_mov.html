@@ -188,103 +188,104 @@
 
 
 {% block content %}
-
-<h5 class="modal-title">Actualizar registro</h5>
-<form method="post" action="{% url 'sistema_2:actualizar_mov' operacion.id %}">
-{% csrf_token %}
-    </div>
-        <div class="modal-body">
-        <h6>Campos obligatorios (*)</h6>
+<div class="container" style="height: 100vh;overflow: scroll;">
+    <h5 class="modal-title">Actualizar registro</h5>
+    <form method="post" action="{% url 'sistema_2:actualizar_mov' operacion.id %}">
+    {% csrf_token %}
+        </div>
+            <div class="modal-body">
+            <h6>Campos obligatorios (*)</h6>
+            <br>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>Concepto</label>
+                <input type="text" class="form-control" name="nombre" id="actNombre" value="{{ operacion.detalleOperacion }}">
+            </div>
+            <div class="col-md-6">
+                <label>Cliente</label>
+                <select class="selectpicker form-control" data-live-search="true" name="infoCliente" id="clienteSeleccionado">
+                    {% for cliente in clientes %}
+                        {% if cliente.nombre != '' %}
+                            {% if cliente_info == cliente.id %}
+                            <option value="{{ cliente.id }}" selected>{{ cliente.nombre }} {{ cliente.apellido }}</option>
+                            {% else %}
+                            <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }}</option>
+                            {% endif %}
+                        {% else %}
+                            {% if cliente.id == cliente_info %}
+                            <option value="{{ cliente.id }}" selected>{{ cliente.razon_social }}</option>
+                            {% else %}
+                            <option value="{{ cliente.id }}">{{ cliente.razon_social }}</option>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Moneda</label>
+                <input type="text" class="form-control" name="categoria" id="actCategoria" value="{{ operacion.monedaOperacion }}">
+            </div>
+            <div class="col-md-3">
+                <label>Monto</label>
+                <input type="text" class="form-control" name="subCategoria" id="actSubCategoria" value="{{ operacion.montoOperacion }}">
+            </div>
+            <div class="col-md-3">
+                <label>Nro de operacion</label>
+                <input type="text" class="form-control" name="subCategoria" id="actSubCategoria" value="{{ operacion.nroOperacion }}">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label>Código del vendedor</label>
+                <select class="selectpicker form-control"  id="vendedorSeleccionado">
+                    {% for usuario in usuarios %}
+                        <option value="{{ usuario.codigo }}">{{ usuario.codigo }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <br>
+                <input id="vendedorCodigo" type="text" name="infoVendedor" class="form-control" value="{{ operacion.vendedorOperacion.2 }}" required>
+            </div>
+        </div>
         <br>
-    <div class="row mb-3">
-        <div class="col-md-3">
-            <label>Concepto</label>
-            <input type="text" class="form-control" name="nombre" id="actNombre" value="{{ operacion.detalleOperacion }}">
+        <h6>Actualizar documentos</h6>
+        <br>
+        <div class="row mb-3">
+            <div class="col-md-3" hidden>
+                <label>Cotizacion (*)</label>
+                <select class="form-select" id="cotiSeleccionada" >
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label>Factura / Boleta (*)</label>
+                <select class="form-select"  id="facturaSeleccionada" >
+                </select>
+            </div>
         </div>
-        <div class="col-md-6">
-            <label>Cliente</label>
-            <select class="selectpicker form-control" data-live-search="true" name="infoCliente" id="clienteSeleccionado">
-                {% for cliente in clientes %}
-                    {% if cliente.nombre != '' %}
-                        {% if cliente_info == cliente.id %}
-                        <option value="{{ cliente.id }}" selected>{{ cliente.nombre }} {{ cliente.apellido }}</option>
-                        {% else %}
-                        <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }}</option>
-                        {% endif %}
-                    {% else %}
-                        {% if cliente.id == cliente_info %}
-                        <option value="{{ cliente.id }}" selected>{{ cliente.razon_social }}</option>
-                        {% else %}
-                        <option value="{{ cliente.id }}">{{ cliente.razon_social }}</option>
-                        {% endif %}
-                    {% endif %}
-                {% endfor %}
-            </select>
+        <br>
+        <h6>Documentos seleccionados</h6>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>Factura / Boleta</label>
+                <input class="form-control" id="infoComprobante" name="infoFactura" value="{{ operacion.comprobanteOperacion }}" required>
+            </div>
+            <div class="col-md-3">
+                <label>Cotizacion</label>
+                <input class="form-control" id="infoCotizacion" name="infoCotizacion" value="{{ operacion.cotizacionOperacion }}" required>
+            </div>
+            <div class="col-md-3">
+                <label>Guia (*)</label>
+                <input class="form-control" name="infoGuia" id="guiaSeleccionada" value="{{ operacion.guiaOperacion }}">
+            </div>
         </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label>Moneda</label>
-            <input type="text" class="form-control" name="categoria" id="actCategoria" value="{{ operacion.monedaOperacion }}">
+        <br>
+        <div>
+            <button type="button" class="btn btn-secondary"><a type="button" href="{% url 'sistema_2:ver_movimientos' id_bank %}" style="color: white; text-decoration: none;">Salir</a></button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
         </div>
-        <div class="col-md-3">
-            <label>Monto</label>
-            <input type="text" class="form-control" name="subCategoria" id="actSubCategoria" value="{{ operacion.montoOperacion }}">
-        </div>
-        <div class="col-md-3">
-            <label>Nro de operacion</label>
-            <input type="text" class="form-control" name="subCategoria" id="actSubCategoria" value="{{ operacion.nroOperacion }}">
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label>Código del vendedor</label>
-            <select class="selectpicker form-control"  id="vendedorSeleccionado">
-                {% for usuario in usuarios %}
-                    <option value="{{ usuario.codigo }}">{{ usuario.codigo }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            <br>
-            <input id="vendedorCodigo" type="text" name="infoVendedor" class="form-control" value="{{ operacion.vendedorOperacion.2 }}" required>
-        </div>
-    </div>
-    <br>
-    <h6>Actualizar documentos</h6>
-    <br>
-    <div class="row mb-3">
-        <div class="col-md-3" hidden>
-            <label>Cotizacion (*)</label>
-            <select class="form-select" id="cotiSeleccionada" >
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label>Factura / Boleta (*)</label>
-            <select class="form-select"  id="facturaSeleccionada" >
-            </select>
-        </div>
-    </div>
-    <br>
-    <h6>Documentos seleccionados</h6>
-    <div class="row mb-3">
-        <div class="col-md-3">
-            <label>Factura / Boleta</label>
-            <input class="form-control" id="infoComprobante" name="infoFactura" value="{{ operacion.comprobanteOperacion }}" required>
-        </div>
-        <div class="col-md-3">
-            <label>Cotizacion</label>
-            <input class="form-control" id="infoCotizacion" name="infoCotizacion" value="{{ operacion.cotizacionOperacion }}" required>
-        </div>
-        <div class="col-md-3">
-            <label>Guia (*)</label>
-            <input class="form-control" name="infoGuia" id="guiaSeleccionada" value="{{ operacion.guiaOperacion }}">
-        </div>
-    </div>
-    <br>
-    <div>
-        <button type="button" class="btn btn-secondary"><a type="button" href="{% url 'sistema_2:ver_movimientos' id_bank %}" style="color: white; text-decoration: none;">Salir</a></button>
-        <button type="submit" class="btn btn-primary">Guardar</button>
-    </div>
-</form>
+    </form>
+</div>
 
 {% endblock %}

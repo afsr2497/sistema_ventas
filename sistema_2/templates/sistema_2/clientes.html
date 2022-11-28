@@ -66,7 +66,7 @@
 
 {% block content%}
 
-<div class="container">
+<div class="container" style="height: 100vh;overflow: scroll;">
   <h1>Clientes</h1>
   <div>
       <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoCli">Nuevo <i class="fa fa-plus"></i></a>
@@ -76,7 +76,7 @@
       <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#importarCli">Importar<i class="fas fa-file-import"></i></a>
   </div>
   <br>
-  <div style="height: 1000px;overflow: scroll;">
+  <div>
     <table class="table table-bordered table-hover" id="clientesTable" style="font-size: 12px;">
       <thead class="table-dark">
           <tr>

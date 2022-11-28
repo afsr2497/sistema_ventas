@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container" style="height: 100vh;overflow: scroll;">
     <form method="post" action="{% url 'sistema_2:configurar_documentos' %}">
     {% csrf_token %}
     <div>

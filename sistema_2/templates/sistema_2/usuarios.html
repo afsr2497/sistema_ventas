@@ -27,7 +27,7 @@
 {% endblock %}
 
 {% block content%}
-<div class="container">
+<div class="container" style="height: 100vh;overflow: scroll;">
   <h1>Usuarios del sistema</h1>
   <div>
     <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoUsuario">Nuevo <i class="fas fa-plus"></i></a>
@@ -39,7 +39,7 @@
     </div>
   {% endif %}
   <br>
-  <div style="height: 1000px;overflow: scroll;">
+  <div>
     <table id="usuariosTable" class="table table-bordered table-hover" style="font-size: 12px;">
       <thead class="table-dark">
         <tr>
