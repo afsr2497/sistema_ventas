@@ -3,6 +3,41 @@ var info_cot =
     tipo_cot: 'Servicios',
 }
 
+function cambiarCabos()
+{
+    let cabosTabla = document.querySelectorAll('.cabos')
+    if($('#mostrarCabos').prop('checked')){
+        for(let i = 0; i < cabosTabla.length; i++)
+        {
+            console.log(cabosTabla)
+            cabosTabla[i].style.display = ''
+        }
+    }
+    else{
+        for(let i = 0; i < cabosTabla.length; i++)
+        {
+            cabosTabla[i].style.display = 'none'
+        }
+    }
+}
+
+function cambiarPaños()
+{
+    let panhosTabla = document.querySelectorAll('.panhos')
+    if($('#mostrarPanhos').prop('checked')){
+        for(let i = 0; i < panhosTabla.length; i++)
+        {
+            panhosTabla[i].style.display = ''
+        }
+    }
+    else{
+        for(let i = 0; i < panhosTabla.length; i++)
+        {
+            panhosTabla[i].style.display = 'none'
+        }
+    }
+}
+
 addEventListener('DOMContentLoaded',()=>{
     //Se leen todas las variables que se guardaran
     let tipo_proforma = document.getElementById('tipoProforma')
@@ -248,11 +283,27 @@ addEventListener('DOMContentLoaded',()=>{
         {
             if(productoCantidad.value !== '')
             {
+                let cabos = ''
+                let panhos = ''
+                if($('#mostrarCabos').prop('checked')){
+                    cabos = ''
+                }
+                else{
+                    cabos = 'none'
+                }
+                if($('#mostrarPanhos').prop('checked')){
+                    panhos = ''
+                }
+                else{
+                    panhos = 'none'
+                }
                 let nuevaFila = `
                         <tr>
                             <td>${productoSeleccionado.value}</td>
                             <td>${productoNombre.value}</td>
                             <td>${productoCodigo.value}</td>
+                            <td class="cabos" style="display: ${cabos};"><input type='number' class="form-control" style="width: 60px; font-size: 10px;" value=""></td>
+                            <td class="panhos" style="display:${panhos};"><input type='number' class="form-control" style="width: 60px; font-size: 10px;" value=""></td>
                             <td>${productoUnidad.value}</td>
                             <td>${proAlmacenes.value}</td>
                             <td>${productoMoneda.value}</td>
@@ -370,7 +421,7 @@ addEventListener('DOMContentLoaded',()=>{
             for(var i = 0;i < longitudProductos; i++)
             {
                 let celdas = productosTabla.rows.item(i)
-                let productoArreglo = [celdas.cells.item(0).innerHTML,celdas.cells.item(1).innerHTML,celdas.cells.item(2).innerHTML,celdas.cells.item(3).innerHTML,celdas.cells.item(4).innerHTML,celdas.cells.item(5).innerHTML,celdas.cells.item(6).firstChild.value,celdas.cells.item(7).firstChild.value,celdas.cells.item(8).firstChild.value,'0',celdas.cells.item(8).firstChild.value] 
+                let productoArreglo = [celdas.cells.item(0).innerHTML,celdas.cells.item(1).innerHTML,celdas.cells.item(2).innerHTML,celdas.cells.item(5).innerHTML,celdas.cells.item(6).innerHTML,celdas.cells.item(7).innerHTML,celdas.cells.item(8).firstChild.value,celdas.cells.item(9).firstChild.value,celdas.cells.item(10).firstChild.value,'0',celdas.cells.item(10).firstChild.value,celdas.cells.item(3).firstChild.value,celdas.cells.item(4).firstChild.value] 
                 arregloProductos.push(productoArreglo)
             }
         }
@@ -378,10 +429,29 @@ addEventListener('DOMContentLoaded',()=>{
         let arregloCliente = [clienteSeleccionado.value,clienteNombre.value,clienteApellido.value,clienteRazon.value,clienteDni.value,clienteRuc.value,clienteEmail.value,clienteContacto.value,clienteTelefono.value,clienteDireccion.value,direccionEntrega.value]
         let arregloVendedor = [usuarioSeleccionado.value,usuarioNombre.value,usuarioCodigo.value,usuarioTelefono.value]
         
+        let nombreCabos = document.getElementById('nombreCabos')
+        let nombrePanhos = document.getElementById('nombrePanhos')
+
+        let nombresColumnas = [nombreCabos.value,nombrePanhos.value]
+
         let mostrarDescuento = '0'
         let mostrarPU = '0'
         let mostrarVU = '0'
+        let mostrarCabos = '0'
+        let mostrarPanhos = '0'
 
+        if($('#mostrarCabos').prop('checked')){
+            mostrarCabos = '1'
+        }
+        else{
+            mostrarCabos = '0'
+        }
+        if($('#mostrarPanhos').prop('checked')){
+            mostrarPanhos = '1'
+        }
+        else{
+            mostrarPanhos = '0'
+        }
         if($('#mostrarDescuento').prop('checked')){
             mostrarDescuento = '1'
             console.log(mostrarDescuento)
@@ -434,6 +504,9 @@ addEventListener('DOMContentLoaded',()=>{
             'mostrarVU':mostrarVU,
             'diasCredito':cantidadDiasCredito.value,
             'diasValidez':validezDias.value,
+            'mostrarCabos':mostrarCabos,
+            'mostrarPanhos':mostrarPanhos,
+            'nombresColumnas':nombresColumnas,
         }
         fetch(url,{
             method:"POST",

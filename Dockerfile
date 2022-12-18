@@ -15,5 +15,7 @@ RUN pip3 install requests
 RUN pip3 install tk
 RUN pip3 install python-math
 RUN pip3 install beautifulsoup4
+RUN pip3 install django-storages
+RUN pip3 install boto
 COPY . .
 CMD python3 manage.py runserver 0.0.0.0:80

@@ -111,6 +111,9 @@ class cotizaciones(models.Model):
     registroCoti = models.CharField(max_length=64,default='0')
     cred_dias = models.CharField(max_length=64,default='0')
     validez_dias = models.CharField(max_length=64,default='7')
+    mostrarCabos = models.CharField(max_length=64,default='0')
+    mostrarPanhos = models.CharField(max_length=64,default='0')
+    nombresColumnas = ArrayField(models.CharField(max_length=64,default=''),default=list())
 
 class guias(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)
@@ -139,6 +142,7 @@ class guias(models.Model):
     estadoSunat = models.CharField(max_length=128,null=True)
     fecha_emision = models.DateField(null=True)
     cotiRelacionada = models.CharField(max_length=128,default='')
+    origenGuia = ArrayField(models.CharField(max_length=512,default=''),default=list())
     
 
 class facturas(models.Model):
@@ -283,3 +287,6 @@ class inventariosProductos(models.Model):
     codigoInventario = models.CharField(max_length=64,default='INV-0000')
     almacenInventario = models.CharField(max_length=64,default='Chimbote')
 
+class ubigeoDistrito(models.Model):
+    distritoUbigeo = models.CharField(max_length=256,default='')
+    codigoUbigeo = models.CharField(max_length=256,default='')

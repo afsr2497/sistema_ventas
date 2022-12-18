@@ -4,6 +4,12 @@ var info_cot =
 }
 
 addEventListener('DOMContentLoaded',()=>{
+    let origenDep = document.getElementById('origenDep')
+    let origenDir = document.getElementById('origenDir')
+    let origenDis = document.getElementById('origenDis')
+    let origenPro = document.getElementById('origenPro')
+    let origenUbi = document.getElementById('origenUbi')
+
     let idenProforma = document.getElementById('idProforma')
     let tipo_proforma = document.getElementById('tipoProforma')
     let seccionServicios = document.getElementById('serviciosSec')
@@ -257,11 +263,14 @@ addEventListener('DOMContentLoaded',()=>{
         let arregloTransporte = [transportistaRazon.value,transportistaRuc.value]
         let datosVehiculo = [placaVehiculo.value,nombreConductor.value,dniConductor.value]
 
+        let origenGuia = [origenDep.value,origenDir.value,origenDis.value,origenPro.value,origenUbi.value]
+
         let observacionesGuia = document.getElementById('obsGuia')
 
         url = '/sistema_2/editar_guia/' + idenProforma.value
         console.log(url)
         ejemplo = {
+            'origenGuia':origenGuia,
             'obsGuia':observacionesGuia.value,
             'ubigeoCliente':ubigeoCliente.value,
             'transporte':arregloTransporte,

@@ -137,12 +137,12 @@
                 </div>
                 <div class="col-md-6">
                     <label>Validez (*)</label>
-                    <input class="form-control" type="number" id="validezProf" list="diasValidez" placeholder="Validez a ... días">
+                    <input class="form-control" type="text" id="validezProf" list="diasValidez" placeholder="Validez a ... días">
                     <datalist id="diasValidez">
-                        <option value="1">
-                        <option value="5">
-                        <option value="7">
-                        <option value="15">
+                        <option value="1 DÍAS">
+                        <option value="5 DÍAS">
+                        <option value="7 DÍAS">
+                        <option value="15 DÍAS">
                     </datalist>
                 </div>
             </div>
@@ -178,25 +178,31 @@
                 <div class="col-md-4">
                     <label>Modificacion del documento</label>
                     <br>
-                    <input class="form-check-input" type="checkbox" id="mostrarDescuento" checked>
+                    <input class="form-check-input" type="checkbox" id="mostrarDescuento">
                     <label class="form-check-label" for="flexCheckDefault">Mostrar descuento</label>
                     <br>
-                    <input class="form-check-input" type="checkbox" id="mostrarPU" checked>
+                    <input class="form-check-input" type="checkbox" id="mostrarPU">
                     <label class="form-check-label" for="flexCheckDefault">Mostrar PU</label>
                     <br>
                     <input class="form-check-input" type="checkbox" id="mostrarVU" checked>
                     <label class="form-check-label" for="flexCheckDefault">Mostrar VU</label>
+                    <br>
+                    <input class="form-check-input" type="checkbox" id="mostrarPanhos" onchange="cambiarPaños()">
+                    <label class="form-check-label" for="flexCheckDefault">Paños</label>
+                    <br>
+                    <input class="form-check-input" type="checkbox" id="mostrarCabos" onchange="cambiarCabos()">
+                    <label class="form-check-label" for="flexCheckDefault">Cabos</label>
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label class="form-label">Crédito a ...</label>
-                    <input class="form-control" type="number" id="diasCredit" list="diasCredito" placeholder="Credito a ... días">
+                    <input class="form-control" type="text" id="diasCredit" list="diasCredito" placeholder="Credito a ... días">
                     <datalist id="diasCredito">
-                        <option value="15">
-                        <option value="30">
-                        <option value="45">
-                        <option value="60">
+                        <option value="15 DÍAS">
+                        <option value="30 DÍAS">
+                        <option value="45 DÍAS">
+                        <option value="60 DÍAS">
                     </datalist>
                 </div>
             </div>
@@ -226,6 +232,8 @@
                         <th>Id</th>
                         <th>Nombre</th>
                         <th>Codigo</th>
+                        <th class="cabos" style="display: none;"><input class="form-control" id="nombreCabos" style="width: 60px; font-size: 10px;"></th>
+                        <th class="panhos" style="display: none;"><input class="form-control" id="nombrePanhos" style="width: 60px; font-size: 10px;"></th>
                         <th>Unidad de medida</th>
                         <th>Almacen</th>
                         <th>Moneda</th>

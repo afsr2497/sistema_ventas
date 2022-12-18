@@ -10,7 +10,7 @@ from django import forms
 from reportlab.pdfgen import canvas
 from django.shortcuts import render, redirect
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos
+from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from django.db.models import Q
@@ -503,6 +503,7 @@ def clientes(request):
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     cli = clients.objects.all()
+    ubigeosInfo = ubigeoDistrito.objects.all().order_by('id')
     if request.method == 'POST':
         cliente_nombre = request.POST.get('nombre')
         cliente_apellido = request.POST.get('apellido')
@@ -523,6 +524,7 @@ def clientes(request):
     return render(request,'sistema_2/clientes.html',{
         'cli': cli.order_by('id'),
         'usr_rol': user_logued,
+        'ubiInfo':ubigeosInfo,
     })
 
 @login_required(login_url='/sistema_2')
@@ -1148,6 +1150,9 @@ def agregar_proforma(request):
             cot_cantCuotas = str(data.get('nroCuotas'))
             cot_diasCredito = str(data.get('diasCredito'))
             cot_diasValidez = str(data.get('diasValidez'))
+            cot_mostrarCabos = str(data.get('mostrarCabos'))
+            cot_mostrarPanhos = str(data.get('mostrarPanhos'))
+            cot_nombresColumnas = data.get('nombresColumnas')
             if cot_diasCredito != '':
                 cot_diasCredito = cot_diasCredito
             else:
@@ -1176,7 +1181,7 @@ def agregar_proforma(request):
             id_last = cotizaciones.objects.latest('id').id
             id_last = int(id_last)
             id_nuevo = id_last + 1
-            cotizaciones(id=id_nuevo,validez_dias=cot_diasValidez,cred_dias=cot_diasCredito,fecha_vencReg=fecha_validez,fecha_emision=fecha_nueva,cliente=cot_cliente,productos=cot_productos,servicios=cot_servicios,vendedor=cot_vendedor,pagoProforma=cot_pago,monedaProforma=cot_moneda,fechaProforma=cot_fecha,fechaVencProforma=cot_fechaVenc,tipoProforma=cot_tipo,codigoProforma=cot_codigo,tipoCambio=cot_cambio,estadoProforma=cot_estado,imprimirDescuento=cot_descuento,imprimirPU=cot_mostrarPU,imprimirVU=cot_mostrarVU,cantidadCuotas=cot_cantCuotas,observacionesCot=cot_observaciones,nroDocumento=cot_nro_documento,nroCotizacion=cot_nro,serieCotizacion=cot_serie).save()
+            cotizaciones(nombresColumnas=cot_nombresColumnas,mostrarCabos=cot_mostrarCabos,mostrarPanhos=cot_mostrarPanhos,id=id_nuevo,validez_dias=cot_diasValidez,cred_dias=cot_diasCredito,fecha_vencReg=fecha_validez,fecha_emision=fecha_nueva,cliente=cot_cliente,productos=cot_productos,servicios=cot_servicios,vendedor=cot_vendedor,pagoProforma=cot_pago,monedaProforma=cot_moneda,fechaProforma=cot_fecha,fechaVencProforma=cot_fechaVenc,tipoProforma=cot_tipo,codigoProforma=cot_codigo,tipoCambio=cot_cambio,estadoProforma=cot_estado,imprimirDescuento=cot_descuento,imprimirPU=cot_mostrarPU,imprimirVU=cot_mostrarVU,cantidadCuotas=cot_cantCuotas,observacionesCot=cot_observaciones,nroDocumento=cot_nro_documento,nroCotizacion=cot_nro,serieCotizacion=cot_serie).save()
             time.sleep(0.5)
             return JsonResponse({'status': 'Todo added!'})
 
@@ -1366,6 +1371,7 @@ def editar_proforma(request,ind):
     ser = services.objects.all()
     prod = products.objects.all()
     proforma_editar = cotizaciones.objects.get(id=ind)
+    ubigeosTotales = ubigeoDistrito.objects.all().order_by('id')
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax:
         if request.method == 'POST':
@@ -1383,6 +1389,9 @@ def editar_proforma(request,ind):
             cot_nro_documento = data.get('nroDocCot')
             cot_diasCredito = str(data.get('diasCredito'))
             cot_diasValidez = str(data.get('diasValidez'))
+            cot_mostrarCabos = str(data.get('mostrarCabos'))
+            cot_mostrarPanhos = str(data.get('mostrarPanhos'))
+            cot_nombresColumnas = data.get('nombresColumnas')
             if cot_diasCredito != '':
                 cot_diasCredito = cot_diasCredito
             else:
@@ -1415,6 +1424,9 @@ def editar_proforma(request,ind):
             proforma_editar.imprimirVU = cot_imprimirVU
             proforma_editar.cred_dias = cot_diasCredito
             proforma_editar.validez_dias = cot_diasValidez
+            proforma_editar.mostrarCabos = cot_mostrarCabos
+            proforma_editar.mostrarPanhos = cot_mostrarPanhos
+            proforma_editar.nombresColumnas = cot_nombresColumnas
             print(proforma_editar.imprimirPU)
             print(proforma_editar.imprimirVU)
             proforma_editar.imprimirDescuento = cot_mostrarDescuento
@@ -1429,6 +1441,7 @@ def editar_proforma(request,ind):
         'ser':ser,
         'usr_rol': user_logued,
         'almacenes':almacenesInfo,
+        'ubiTotal':ubigeosTotales,
     })
 
 @login_required(login_url='/sistema_2')
@@ -1527,12 +1540,14 @@ def editar_guia(request,ind):
     ser = services.objects.all()
     prod = products.objects.all()
     proforma_editar = guias.objects.get(id=ind)
+    ubigeosTotales = ubigeoDistrito.objects.all().order_by('id')
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax:
         if request.method == 'POST':
             data = json.load(request)
+            origenGuia = data.get('origenGuia')
+            print(origenGuia)
             cot_ubigeo = data.get('ubigeoCliente')
-            print(cot_ubigeo)
             cot_cliente = data.get('cliente')
             cot_productos = data.get('productos')
             cot_servicios = data.get('servicios')
@@ -1542,7 +1557,6 @@ def editar_guia(request,ind):
             cot_moneda = data.get('proforma').get('moneda')
             cot_fecha = data.get('proforma').get('fecha')
             cot_fecha_venc = data.get('proforma').get('fecha_vencimiento')
-            print(cot_fecha_venc)
             cot_tipo = data.get('proforma').get('tipo_proforma')
             cot_cambio = [data.get('proforma').get('tc_compra'),data.get('proforma').get('tc_venta')]
             cot_estado = 'Generada'
@@ -1565,7 +1579,7 @@ def editar_guia(request,ind):
             proforma_editar.datosTransportista = cot_transporte
             proforma_editar.ubigeoGuia = cot_ubigeo
             proforma_editar.datosVehiculo = cot_vehiculo
-            print(proforma_editar.fechaVencGuia)
+            proforma_editar.origenGuia = origenGuia
             proforma_editar.save()
             return JsonResponse({'status': 'Todo added!'})
     return render(request,'sistema_2/editar_guia.html',{
@@ -1573,6 +1587,7 @@ def editar_guia(request,ind):
         'pro':prod,
         'ser':ser,
         'usr_rol': user_logued,
+        'ubiTotal':ubigeosTotales,
     })
 
 @login_required(login_url='/sistema_2')
@@ -1780,7 +1795,7 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     for servicio in factura.servicios:
                         if factura.monedaFactura == 'SOLES':
                             if servicio[3] == 'DOLARES':
@@ -1804,7 +1819,7 @@ def fact(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'','',factura.monedaFactura,'%.2f'%v_producto])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_facturas:
@@ -1857,7 +1872,7 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     for servicio in factura.servicios:
                         if factura.monedaFactura == 'SOLES':
                             if servicio[3] == 'DOLARES':
@@ -1881,7 +1896,7 @@ def fact(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'','',factura.monedaFactura,'%.2f'%v_producto])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_facturas:
@@ -2452,7 +2467,7 @@ def descargar_proforma(request,ind):
             can.drawString(230,640,'Fecha:')
             can.drawString(320,640,str(proforma_info.fechaProforma))
             can.drawString(230,630,'Validez:')
-            can.drawString(320,630,str(proforma_info.validez_dias)+' días')
+            can.drawString(320,630,str(proforma_info.validez_dias))
 
             can.drawString(430,640,'Nro de Documento:')
             can.drawString(520,640,str(proforma_info.nroDocumento))
@@ -2515,6 +2530,55 @@ def descargar_proforma(request,ind):
                 can.drawString(lista_x[1] + 5,lista_y[0] + 3,producto[2])
                 lista_y = [lista_y[0] - 16,lista_y[1] - 16]
             
+            condicion_nueva = str(proforma_info.mostrarCabos) + str(proforma_info.mostrarPanhos)
+            lista_agregada = [120,150]
+            if condicion_nueva == '00':
+                lista_x[2] = 120
+
+            if condicion_nueva == '01':
+                lista_x[2] = 150
+                lista_agregada[1] = 120
+            
+            if condicion_nueva == '10':
+                lista_x[2] = 150
+                lista_agregada[0] = 120
+
+            if condicion_nueva == '11':
+                lista_x[2] = 180
+                lista_agregada[0] = 120
+                lista_agregada[1] = 150
+
+            lista_y = [550,565]
+            if proforma_info.mostrarCabos == '1':
+                #Valores iniciales
+                lista_y = [550,565]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_agregada[0], lista_y[0] + 3,proforma_info.nombresColumnas[0])
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_agregada[0] + 20,lista_y[0] + 3,str(producto[11]))
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+            
+            lista_y = [550,565]
+            if proforma_info.mostrarPanhos == '1':
+                #Valores iniciales
+                lista_y = [550,565]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_agregada[1], lista_y[0] + 3,proforma_info.nombresColumnas[1])
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_agregada[1] + 20,lista_y[0] + 3,str(producto[12]))
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+
             #Valores iniciales
             lista_y = [550,565]
             #Ingreso de campo de descripcion de producto
@@ -2541,6 +2605,7 @@ def descargar_proforma(request,ind):
                 can.drawString(lista_x[3] + 5,lista_y[0] + 3,producto[3])
                 lista_y = [lista_y[0] - 16,lista_y[1] - 16]
             
+
             condicion_imprimir = proforma_info.imprimirVU + proforma_info.imprimirPU + proforma_info.imprimirDescuento
             if condicion_imprimir == '100':
                 lista_x[4] = 360
@@ -2567,6 +2632,8 @@ def descargar_proforma(request,ind):
                 lista_x[4] = 360
                 lista_x[5] = 420
                 lista_x[6] = 480
+            
+            
 
             if proforma_info.imprimirVU == '1':
                 #Valores iniciales
@@ -4277,12 +4344,12 @@ def armar_json_guia(guia_info):
                 },
                 "puntoPartida":
                 {
-                    "departamento": "02",
-                    "direccion": "Mza. J4 Lote. 39",
-                    "distrito": "NUEVO CHIMBOTE",
+                    "departamento": str(guia_info.origenGuia[0]),
+                    "direccion": str(guia_info.origenGuia[1]),
+                    "distrito": str(guia_info.origenGuia[2]),
                     "pais": "PERU",
-                    "provincia": "SANTA",
-                    "ubigeo": "021809",
+                    "provincia": str(guia_info.origenGuia[3]),
+                    "ubigeo": str(guia_info.origenGuia[4]),
                     "urbanizacion": ""
                 },
                 "numeroContenedor": ""
@@ -5393,7 +5460,8 @@ def gen_guia_cot(request,ind):
     except:
         id_last = 0
     id_nuevo = id_last + 1
-    guias(cotiRelacionada=cotiGuia,id=id_nuevo,fecha_emision=fecha_nueva,observacionesGuia=guia_obs,nroDocumento=guia_nroDocumento,cantidadCuotas=guia_nro_cuotas,datosVehiculo=guia_vehiculo,serieGuia=guia_serie,nroGuia=guia_nro,datosTraslado=guia_traslado,datosTransportista=guia_transportista,fechaVencGuia=guia_fecha_venc,cliente=guia_cliente,productos=guia_productos,servicios=guia_servicios,vendedor=guia_vendedor,pagoGuia=guia_pago,monedaGuia=guia_moneda,fechaGuia=guia_fecha,tipoGuia=guia_tipo,codigoGuia=guia_codigo,tipoCambio=guia_cambio,estadoGuia=guia_estado).save()
+    origenGuia = ['02',"Mza. J4 Lote. 39","NUEVO CHIMBOTE","SANTA","021809"]
+    guias(origenGuia=origenGuia,cotiRelacionada=cotiGuia,id=id_nuevo,fecha_emision=fecha_nueva,observacionesGuia=guia_obs,nroDocumento=guia_nroDocumento,cantidadCuotas=guia_nro_cuotas,datosVehiculo=guia_vehiculo,serieGuia=guia_serie,nroGuia=guia_nro,datosTraslado=guia_traslado,datosTransportista=guia_transportista,fechaVencGuia=guia_fecha_venc,cliente=guia_cliente,productos=guia_productos,servicios=guia_servicios,vendedor=guia_vendedor,pagoGuia=guia_pago,monedaGuia=guia_moneda,fechaGuia=guia_fecha,tipoGuia=guia_tipo,codigoGuia=guia_codigo,tipoCambio=guia_cambio,estadoGuia=guia_estado).save()
     cot_gen.estadoProforma = 'Emitida'
     cot_gen.save()
     return HttpResponseRedirect(reverse('sistema_2:gui'))
@@ -7412,7 +7480,7 @@ def descargar_proforma_dolares(request,ind):
             can.drawString(230,640,'Fecha:')
             can.drawString(320,640,str(proforma_info.fechaProforma))
             can.drawString(230,630,'Validez:')
-            can.drawString(320,630,str(proforma_info.validez_dias) + ' días')
+            can.drawString(320,630,str(proforma_info.validez_dias))
 
             can.drawString(430,640,'Nro de Documento:')
             can.drawString(520,640,str(proforma_info.nroDocumento))
@@ -7470,6 +7538,54 @@ def descargar_proforma_dolares(request,ind):
             for producto in grupos_productos[contador_grupos]:
                 can.drawString(lista_x[1] + 5,lista_y[0] + 3,producto[2])
                 lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            condicion_nueva = str(proforma_info.mostrarCabos) + str(proforma_info.mostrarPanhos)
+            lista_agregada = [120,150]
+            if condicion_nueva == '00':
+                lista_x[2] = 120
+
+            if condicion_nueva == '01':
+                lista_x[2] = 150
+                lista_agregada[1] = 120
+            
+            if condicion_nueva == '10':
+                lista_x[2] = 150
+                lista_agregada[0] = 120
+
+            if condicion_nueva == '11':
+                lista_x[2] = 180
+                lista_agregada[0] = 120
+                lista_agregada[1] = 150
+
+            lista_y = [550,565]
+            if proforma_info.mostrarCabos == '1':
+                #Valores iniciales
+                lista_y = [550,565]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_agregada[0], lista_y[0] + 3,proforma_info.nombresColumnas[0])
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_agregada[0] + 20,lista_y[0] + 3,str(producto[11]))
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+            
+            lista_y = [550,565]
+            if proforma_info.mostrarPanhos == '1':
+                #Valores iniciales
+                lista_y = [550,565]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_agregada[1], lista_y[0] + 3,proforma_info.nombresColumnas[1])
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_agregada[1] + 20,lista_y[0] + 3,str(producto[12]))
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
             
             #Valores iniciales
             lista_y = [550,565]
@@ -9424,3 +9540,32 @@ def almacenesSistema(request):
         'info':config_docs.objects.get(id=1),
         'usr_rol': user_logued,
     })
+
+def agregarUbigeo(request):
+    if request.method == 'POST':
+        distritoUbigeo = request.POST.get('distritoUbigeo')
+        codigoUbigeo = request.POST.get('codigoUbigeo')
+        print(distritoUbigeo)
+        print(codigoUbigeo)
+        actualizarFlag = 0
+        try:
+            regActualizar = ubigeoDistrito.objects.get(distritoUbigeo=distritoUbigeo)
+            actualizarFlag = 1
+        except:
+            try:
+                regActualizar = ubigeoDistrito.objects.get(codigoUbigeo=codigoUbigeo)
+                actualizarFlag = 1
+            except:
+                actualizarFlag = 0
+        if actualizarFlag == 0:
+            ubigeoDistrito(distritoUbigeo=distritoUbigeo,codigoUbigeo=codigoUbigeo).save()
+        else:
+            regActualizar.distritoUbigeo = distritoUbigeo
+            regActualizar.codigoUbigeo = codigoUbigeo
+            regActualizar.save()
+        return HttpResponseRedirect(reverse('sistema_2:clientes'))
+
+def eliminarUbigeo(request,ind):
+    ubigeoConseguir = ubigeoDistrito.objects.get(id=ind)
+    ubigeoConseguir.delete()
+    return HttpResponseRedirect(reverse('sistema_2:clientes'))

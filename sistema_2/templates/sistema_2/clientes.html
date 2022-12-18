@@ -59,6 +59,15 @@
     nuevoTelefono.value = ''
     nuevoDireccion.value = ''
   }
+
+  function eliminarUbigeos()
+  {
+    let distritoUbigeo = document.getElementById('distritoUbigeo')
+    let codigoUbigeo = document.getElementById('codigoUbigeo')
+
+    distritoUbigeo.value = ''
+    codigoUbigeo.value = ''
+  }
 </script>
 
 {% endblock %}
@@ -68,12 +77,24 @@
 
 <div class="container" style="height: 100vh;overflow: scroll;">
   <h1>Clientes</h1>
-  <div>
+  <div class="row">
+    <div class="col-2">
       <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoCli">Nuevo <i class="fa fa-plus"></i></a>
+    </div>
+    <div class="col-8"></div>
+    <div class="col-2">
+      <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#nuevoUbi">Nuevo Ubigeo<i class="fa fa-plus"></i></a>
+    </div>
   </div>
   <br>
-  <div>
+  <div class="row">
+    <div class="col-2">
       <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#importarCli">Importar<i class="fas fa-file-import"></i></a>
+    </div>
+    <div class="col-8"></div>
+    <div class="col-2">
+      <a class="btn btn-success" style="color: white;" data-bs-toggle="modal" data-bs-target="#verUbigeos">Ver ubigeos</a>
+    </div>
   </div>
   <br>
   <div>
@@ -348,5 +369,72 @@
   </div>
 </div>
 
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="nuevoUbi">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar ubigeo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="eliminarUbigeos()"></button>
+      </div>
+      <div class="modal-body">
+        <h6>Campos obligatorios (*)</h6>
+        <br>
+        <form method="post" action="{% url 'sistema_2:agregarUbigeo' %}">
+        {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6">
+              <label>Distrito (*)</label>
+              <input type="text" class="form-control" required name="distritoUbigeo" id="distritoUbigeo">
+            </div>
+            <div class="col-md-6">
+              <label>Ubigeo (*)</label>
+              <input type="text" class="form-control" required name="codigoUbigeo" id="codigoUbigeo">
+            </div>
+          </div>
+          <br>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarUbigeos()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Agregar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" id="verUbigeos">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ver Ubigeos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <div style="height:450px;overflow: auto;">
+            <table class="table table-bordered" >
+              <thead class="table-dark">
+                <th>Distrito</th>
+                <th>Codigo</th>
+                <th>Eliminar</th>
+              </thead>
+              <tbody >
+                {% for ubigeo in ubiInfo %}
+                <tr>
+                  <td>{{ ubigeo.distritoUbigeo }}</td>
+                  <td>{{ ubigeo.codigoUbigeo }}</td>
+                  <td style="text-align: center;"><a class="btn btn-danger" href="{% url 'sistema_2:eliminarUbigeo' ubigeo.id %}" >Eliminar</a></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

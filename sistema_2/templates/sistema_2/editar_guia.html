@@ -9,6 +9,15 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
 <script src="{% static 'sistema_2/edit_guia.js' %}"></script>
+<script>
+    function actualizarUbigeo()
+    {
+        let ubigeoActual = document.getElementById('ubigeoCliente')
+        let nuevoUbigeo = document.getElementById('nuevoUbigeo')
+
+        ubigeoActual.value = nuevoUbigeo.value
+    }
+</script>
 
 {% endblock %}
 
@@ -36,6 +45,159 @@
         </div>
     </div>
     <br>
+    <div>
+        <h4>Punto de partida</h4>
+        <div class="row mb-3">
+            <div class="col-4">
+                <label>Departamento</label>
+                <select class="form-select" id="origenDep">
+                    {% if prof.origenGuia.0 == '01' %}
+                        <option value="01" selected>AMAZONAS</option>
+                    {% else %}
+                        <option value="01">AMAZONAS</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '02' %}
+                        <option value="02" selected>ANCASH</option>
+                    {% else %}
+                        <option value="02">ANCASH</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '03' %}
+                        <option value="03" selected>APURIMAC</option>
+                    {% else %}
+                        <option value="03">APURIMAC</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '04' %}
+                        <option value="04" selected>AREQUIPA</option>
+                    {% else %}
+                        <option value="04">AREQUIPA</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '05' %}
+                        <option value="05" selected>AYACUCHO</option>
+                    {% else %}
+                        <option value="05">AYACUCHO</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '06' %}
+                        <option value="06" selected>CAJAMARCA</option>
+                    {% else %}
+                        <option value="06">CAJAMARCA</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '07' %}
+                        <option value="07" selected>CALLAO</option>
+                    {% else %}
+                        <option value="07">CALLAO</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '08' %}
+                        <option value="08" selected>CUSCO</option>
+                    {% else %}
+                        <option value="08">CUSCO</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '09' %}
+                        <option value="09" selected>HUANCAVELICA</option>
+                    {% else %}
+                        <option value="09">HUANCAVELICA</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '10' %}
+                        <option value="10" selected>HUANUCO</option>
+                    {% else %}
+                        <option value="10">HUANUCO</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '11' %}
+                        <option value="11" selected>ICA</option>
+                    {% else %}
+                        <option value="11">ICA</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '12' %}
+                        <option value="12" selected>JUNIN</option>
+                    {% else %}
+                        <option value="12">JUNIN</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '13' %}
+                        <option value="13" selected>LA LIBERTAD</option>
+                    {% else %}
+                        <option value="13">LA LIBERTAD</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '14' %}
+                        <option value="14" selected>LAMBAYEQUE</option>
+                    {% else %}
+                        <option value="14">LAMBAYEQUE</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '15' %}
+                        <option value="15" selected>LIMA</option>
+                    {% else %}
+                        <option value="15">LIMA</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '16' %}
+                        <option value="16" selected>LORETO</option>
+                    {% else %}
+                        <option value="16">LORETO</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '17' %}
+                        <option value="17" selected>MADRE DE DIOS</option>
+                    {% else %}
+                        <option value="17">MADRE DE DIOS</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '18' %}
+                        <option value="18" selected>MOQUEGUA</option>
+                    {% else %}
+                        <option value="18">MOQUEGUA</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '19' %}
+                        <option value="19" selected>PASCO</option>
+                    {% else %}
+                        <option value="19">PASCO</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '20' %}
+                        <option value="20" selected>PIURA</option>
+                    {% else %}
+                        <option value="20">PIURA</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '21' %}
+                        <option value="21" selected>PUNO</option>
+                    {% else %}
+                        <option value="21">PUNO</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '22' %}
+                        <option value="22" selected>SAN MARTIN</option>
+                    {% else %}
+                        <option value="22">SAN MARTIN</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '23' %}
+                        <option value="23" selected>TACNA</option>
+                    {% else %}
+                        <option value="23">TACNA</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '24' %}
+                        <option value="24" selected>TUMBES</option>
+                    {% else %}
+                        <option value="24">TUMBES</option>
+                    {% endif %}
+                    {% if prof.origenGuia.0 == '25' %}
+                        <option value="25" selected>UCAYALI</option>
+                    {% else %}
+                        <option value="25">UCAYALI</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="col-4">
+                <label>Direccion</label>
+                <input type="text" class="form-control" placeholder="Direccion" id="origenDir" value="{{ prof.origenGuia.1 }}">
+            </div>
+            <div class="col-4">
+                <label>Distrito</label>
+                <input type="text" class="form-control" placeholder="Distrito" id="origenDis" value="{{ prof.origenGuia.2 }}">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-4">
+                <label>Provincia</label>
+                <input type="text" class="form-control" placeholder="Provincia" id="origenPro" value="{{ prof.origenGuia.3 }}">
+            </div>
+            <div class="col-4">
+                <label>Ubigeo</label>
+                <input type="text" class="form-control" placeholder="Ubigeo" id="origenUbi" value="{{ prof.origenGuia.4 }}">
+            </div>
+        </div>
+    </div>
     <div>
         <h4>Datos del cliente</h4>
         <div class="row mb-3">
@@ -112,11 +274,20 @@
             </div>
         </div>
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label>Peso extra de la carga (*)</label>
                 <input type="number" class="form-control" placeholder="Peso extra de la carga" id="pesoBruto" value="{{ prof.datosTraslado.4 }}">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <label>Distrito</label>
+                <select class="form-select" onchange="actualizarUbigeo()" id="nuevoUbigeo">
+                    <option selected></option>
+                    {% for ubigeo in ubiTotal %}
+                    <option value="{{ ubigeo.codigoUbigeo }}">{{ ubigeo.distritoUbigeo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
                 <label>Nro Ubigeo del cliente (*)</label>
                 <input type="text" class="form-control" placeholder="Ubigeo del cliente" id="ubigeoCliente" value="{{ prof.ubigeoGuia }}">
             </div>
