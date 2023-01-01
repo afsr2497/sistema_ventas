@@ -269,7 +269,8 @@ class regOperacion(models.Model):
 class abonosOperacion(models.Model):
     datos_banco = ArrayField(models.CharField(max_length=128),default=list())
     datos_cliente = ArrayField(models.CharField(max_length=128),default=list())
-    nro_operacion = models.CharField(max_length=64,default='0')
+    nro_operacion = models.CharField(max_length=64,default='')
+    nro_operacion_2 = models.CharField(max_length=64,default='')
     codigo_comprobante = models.CharField(max_length=64,default='')
     codigo_guia = models.CharField(max_length=64,default='')
     codigo_coti = models.CharField(max_length=64,default='')

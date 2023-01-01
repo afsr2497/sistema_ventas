@@ -8209,6 +8209,7 @@ def registro_abonos(request):
         print('Hola a todos')
         id_banco = request.POST.get('bancoAbono')
         nro_operacion = request.POST.get('nroOperacionAbono')
+        nro_operacion_2 = request.POST.get('nroOperacion2Abono')
         id_cliente = request.POST.get('clienteAbono')
         codigo_comprobante = request.POST.get('facturas_cliente')
         codigo_guia = request.POST.get('guiaSeleccionada')
@@ -8245,7 +8246,7 @@ def registro_abonos(request):
             for abono in abonos_totales:
                 abono.comprobanteCancelado = 'CANCELADO'
                 abono.save()
-        abonosOperacion(fechaAbono=fecha_registro,comprobanteCancelado=abonoEstado,datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
+        abonosOperacion(nro_operacion_2=nro_operacion_2,fechaAbono=fecha_registro,comprobanteCancelado=abonoEstado,datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
         return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
     return render(request,'sistema_2/registro_abonos.html',{
         'bancos_totales':regCuenta.objects.all().order_by('id'),
@@ -8260,6 +8261,34 @@ def comprobar_abonos(request):
     for registro in registros_abonos:
         for reg in registros_bancos:
             if(registro.nro_operacion == reg.nroOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
+                reg.conectado_abono = '1'
+                reg.comprobanteOperacion = [registro.codigo_comprobante]
+                reg.guiaOperacion = [registro.codigo_guia]
+                reg.cotizacionOperacion = [registro.codigo_coti]
+                usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
+                reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
+                reg.estadoOperacion = 'COMPLETO'
+                clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
+                reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
+                reg.save()
+                registro.conectado = '1'
+                registro.idRegistroOp = str(reg.id)
+                registro.save()
+            elif(registro.nro_operacion_2 == reg.nroOperacion_2) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
+                reg.conectado_abono = '1'
+                reg.comprobanteOperacion = [registro.codigo_comprobante]
+                reg.guiaOperacion = [registro.codigo_guia]
+                reg.cotizacionOperacion = [registro.codigo_coti]
+                usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
+                reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
+                reg.estadoOperacion = 'COMPLETO'
+                clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
+                reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
+                reg.save()
+                registro.conectado = '1'
+                registro.idRegistroOp = str(reg.id)
+                registro.save()
+            elif(registro.codigo_comprobante in reg.comprobanteOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
                 reg.conectado_abono = '1'
                 reg.comprobanteOperacion = [registro.codigo_comprobante]
                 reg.guiaOperacion = [registro.codigo_guia]
@@ -8303,10 +8332,12 @@ def actualizar_abono(request,ind):
         abonoActualizar = abonosOperacion.objects.get(id=ind)
         id_banco = request.POST.get('bancoAbono')
         nro_operacion = request.POST.get('nroOperacionAbono')
+        nro_operacion_2 = request.POST.get('nroOperacion2Abono')
         factura_cancelada = request.POST.get('facturaCancelada')
         datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
         abonoActualizar.datos_banco = datos_banco
         abonoActualizar.nro_operacion = nro_operacion
+        abonoActualizar.nro_operacion_2 = nro_operacion_2
         #Desenlazar abono:
         if abonoActualizar.conectado == '1':
             regBanc = regOperacion.objects.get(id=abonoActualizar.idRegistroOp)
