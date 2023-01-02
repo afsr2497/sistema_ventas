@@ -34,6 +34,7 @@ from apis_net_pe import ApisNetPe
 import openpyxl
 from dateutil.relativedelta import relativedelta
 from django.core.files.base import ContentFile,File
+import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
 entorno_sistema = '0'
@@ -265,6 +266,7 @@ def usuarios(request):
         usuario_email = request.POST.get('email')
         usuario_tipo = request.POST.get('tipo')
         usuario_celular = request.POST.get('celular')
+        usuario_descuento = str(request.POST.get('descuento_maximo'))
         ultimo_usuario = userProfile.objects.latest('id')
         id_final = ultimo_usuario.id
         ultimo_usuario.save()
@@ -283,11 +285,15 @@ def usuarios(request):
             indicador_celular = 1
             mensaje = mensaje + 'El numero de telefono ya se encuentra asociado a otro usuario.'
         
+        if usuario_descuento.isnumeric():
+            usuario_descuento = str(round(float(usuario_descuento),2))
+        else:
+            usuario_descuento = '0'
         if indicador_nombre == 0 and indicador_email == 0 and indicador_celular == 0:
             codigo_nuevo = 'USR-' + str(id_nuevo)
             usuario_django = User.objects.create_user(username=usuario_nombre,password=usuario_contra,email=usuario_email)
             usuario_django.save()
-            usuario_nuevo = userProfile(id=id_nuevo,usuario=usuario_django,codigo=codigo_nuevo,tipo=usuario_tipo,celular=usuario_celular)
+            usuario_nuevo = userProfile(id=id_nuevo,usuario=usuario_django,codigo=codigo_nuevo,tipo=usuario_tipo,celular=usuario_celular,descuento_maximo=usuario_descuento)
             usuario_nuevo.save()
             mensaje = 'Usuario creador satisfactoriamente'
             return render(request,'sistema_2/usuarios.html',{
@@ -332,6 +338,7 @@ def actualizar_usuario(request,ind):
         usuario_tipo = request.POST.get('tipo')
         usuario_celular = request.POST.get('celular')
         usuario_contra = request.POST.get('contra')
+        usuario_descuento = str(request.POST.get('descuento_maximo'))
 
         usuario_username = usuario_username.lower().title()
 
@@ -369,6 +376,7 @@ def actualizar_usuario(request,ind):
             usuario_django.save()
             usuario_actualizar.tipo = usuario_tipo
             usuario_actualizar.celular = usuario_celular
+            usuario_actualizar.descuento_maximo = usuario_descuento
             usuario_actualizar.save()
             mensaje = 'Usuario actualizado satisfactoriamente'
             user_logued = userProfile.objects.get(usuario=usuario_logued)
@@ -514,12 +522,17 @@ def clientes(request):
         cliente_contacto = request.POST.get('contacto')
         cliente_telefono = request.POST.get('telefono')
         cliente_direccion = request.POST.get('direccion')
+        cliente_habilitado_comisiones = request.POST.get('habilitado_comisiones')
+        if cliente_habilitado_comisiones == 'on':
+            cliente_habilitado_comisiones = '1'
+        else:
+            cliente_habilitado_comisiones = '0'
         try:
             ultimo_cliente = clients.objects.latest('id')
             cliente_id = int(ultimo_cliente.id) + 1
         except:
             cliente_id = 1
-        clients(id=cliente_id,nombre=cliente_nombre,apellido=cliente_apellido,razon_social=cliente_razon,dni=cliente_dni,ruc=cliente_ruc,email=cliente_email,contacto=cliente_contacto,telefono=cliente_telefono,direccion_fiscal=cliente_direccion).save()
+        clients(habilitado_comisiones=cliente_habilitado_comisiones,id=cliente_id,nombre=cliente_nombre,apellido=cliente_apellido,razon_social=cliente_razon,dni=cliente_dni,ruc=cliente_ruc,email=cliente_email,contacto=cliente_contacto,telefono=cliente_telefono,direccion_fiscal=cliente_direccion).save()
         return HttpResponseRedirect(reverse('sistema_2:clientes'))
     return render(request,'sistema_2/clientes.html',{
         'cli': cli.order_by('id'),
@@ -545,6 +558,11 @@ def actualizar_cliente(request,ind):
         cliente_contacto = request.POST.get('contacto')
         cliente_telefono = request.POST.get('telefono')
         cliente_direccion = request.POST.get('direccion')
+        cliente_habilitado_comisiones = request.POST.get('habilitado_comisiones')
+        if cliente_habilitado_comisiones == 'on':
+            cliente_habilitado_comisiones = '1'
+        else:
+            cliente_habilitado_comisiones = '0'
         cliente_actualizar.nombre = cliente_nombre
         cliente_actualizar.apellido = cliente_apellido
         cliente_actualizar.razon_social = cliente_razon
@@ -554,6 +572,7 @@ def actualizar_cliente(request,ind):
         cliente_actualizar.contacto = cliente_contacto
         cliente_actualizar.telefono = cliente_telefono
         cliente_actualizar.direccion_fiscal = cliente_direccion
+        cliente_actualizar.habilitado_comisiones = cliente_habilitado_comisiones
         cliente_actualizar.save()
         return HttpResponseRedirect(reverse('sistema_2:clientes'))
     return HttpResponseRedirect(reverse('sistema_2:clientes'))
@@ -5941,6 +5960,7 @@ def verificar_factura_teFacturo(request,ind):
                 operacion = 'Egreso Factura'
                 refFactura = factura_verificar.codigoFactura
                 egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+               
         if factura_verificar.estadoSunat == 'Anulado' and factura_verificar.stockAct == '1':
             factura_verificar.stockAct = '0'
             factura_verificar.save()
@@ -7285,7 +7305,8 @@ def comisiones(request):
                 for registro in registros_totales:
                     if len(registro.vendedorOperacion) > 0:
                         if registro.vendedorOperacion[0] == str(id_vendedor):
-                            registros_vendedor.append(registro)
+                            if clients.objects.get(id=registro.clienteOperacion[0]).comisiones_habilitado == '1':
+                                registros_vendedor.append(registro)
                 for registro in registros_vendedor:
                     if registro.monedaOperacion == 'DOLARES':
                         factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
@@ -9383,6 +9404,7 @@ def nuevoAlmacen(request):
         almacenAgregar = request.POST.get('nuevoAlmacen')
         infoDocs = config_docs.objects.get(id=1)
         infoDocs.almacenesSistema.append(str(almacenAgregar))
+        infoDocs.almacenesDescuento.append('0')
         infoDocs.save()
         productosTotales = products.objects.all()
         for producto in productosTotales:
@@ -9402,6 +9424,8 @@ def eliminarAlmancen(request,alm):
         print(producto.id)
         producto.save()
     infoDocs = config_docs.objects.get(id=1)
+    indice_almacen = infoDocs.almacenesSistema.index(str(alm))
+    infoDocs.almacenesDescuento.pop(indice_almacen)
     infoDocs.almacenesSistema.remove(str(alm))
     infoDocs.save()
     return HttpResponseRedirect(reverse('sistema_2:configurar_documentos'))
@@ -9600,3 +9624,196 @@ def eliminarUbigeo(request,ind):
     ubigeoConseguir = ubigeoDistrito.objects.get(id=ind)
     ubigeoConseguir.delete()
     return HttpResponseRedirect(reverse('sistema_2:clientes'))
+
+def cambiarAlmacen(request):
+    if request.method == "POST":
+        productoId = request.POST.get('cambioProductoId')
+        almacenOrigen = request.POST.get('almacenOrigen')
+        almacenDestino = request.POST.get('almacenRecepcion')
+        cantidadProductos = str(request.POST.get('cantidadProductosCambio'))
+        print(productoId)
+        print(almacenOrigen)
+        print(almacenDestino)
+        print(cantidadProductos)
+        if productoId != '' and almacenOrigen != '' and almacenDestino != '' and cantidadProductos != '':
+            prod_mod = products.objects.get(id=productoId)
+
+            #Actualizar stock en el almancen de origen
+            for almacen in prod_mod.stock:
+                if almacen[0] == almacenOrigen:
+                    almacen[1] = str(round(float(almacen[1]) - float(cantidadProductos),2))
+                    prod_mod.save()
+            prod_mod.save()
+
+            #Actualizar stock en el almacen de destino
+            for almacen in prod_mod.stock:
+                if almacen[0] == almacenDestino:
+                    almacen[1] = str(round(float(almacen[1]) + float(cantidadProductos),2))
+                    prod_mod.save()
+            prod_mod.save()
+
+            stock_nuevo = prod_mod.stockTotal
+            usuario_logued = User.objects.get(username=request.user.username)
+            user_logued = userProfile.objects.get(usuario=usuario_logued)
+            usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+            if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+            else:
+                mes = str((datetime.now()-timedelta(hours=5)).month)
+            if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+            else:
+                dia = str((datetime.now()-timedelta(hours=5)).day)
+            producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+            datos_fecha = producto_fecha.split('-')
+            producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+            egreso_stock(referencia='Traslado',operacionIngreso='Traslado origen',stock_anterior=stock_nuevo,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=prod_mod.id,producto_nombre=prod_mod.nombre,producto_codigo=prod_mod.codigo,almacen=almacenOrigen,cantidad=cantidadProductos,fechaIngreso=producto_fecha).save()
+            ingresos_stock(referencia='Traslado',operacionIngreso='Traslado destino',stock_anterior=stock_nuevo,nuevo_stock=stock_nuevo,producto_nombre=prod_mod.nombre,vendedorStock=usuario_info,producto_id=prod_mod.id,producto_codigo=prod_mod.codigo,almacen=almacenDestino,cantidad=cantidadProductos,fechaIngreso=producto_fecha).save()
+            print('Se registrara el cambio')
+    return HttpResponseRedirect(reverse('sistema_2:productos'))
+
+def exportarKardex(request,ind):
+    producto_info = products.objects.get(id=ind)
+    ingresos_totales = ingresos_stock.objects.all().order_by('id')
+    egresos_totales = egreso_stock.objects.all().order_by('id')
+    informacion_kardex = []
+    for ingreso in ingresos_totales:
+        if producto_info.codigo == ingreso.producto_codigo:
+            informacion_kardex.append([dt.date(int(ingreso.fechaIngreso.split('-')[2].lstrip('0')),int(ingreso.fechaIngreso.split('-')[1].lstrip('0')),int(ingreso.fechaIngreso.split('-')[0].lstrip('0'))),ingreso.referencia,ingreso.almacen,ingreso.stock_anterior,ingreso.nuevo_stock,ingreso.cantidad,''])
+    
+    for egreso in egresos_totales:
+        if producto_info.codigo == egreso.producto_codigo:
+            informacion_kardex.append([dt.date(int(egreso.fechaIngreso.split('-')[2].lstrip('0')),int(egreso.fechaIngreso.split('-')[1].lstrip('0')),int(egreso.fechaIngreso.split('-')[0].lstrip('0'))),egreso.referencia,egreso.almacen,egreso.stock_anterior,egreso.nuevo_stock,'',egreso.cantidad])
+    informacion_kardex = sorted(informacion_kardex, key=lambda info:info[0])
+    
+    tabla_excel = pd.DataFrame(informacion_kardex,columns=['Fecha','Referencia','Almacen','Stock anterior','Nuevo Stock','Cantidad de ingreso','Cantidad de egreso'])
+    tabla_excel.to_excel('info_excel.xlsx',index=False)
+    doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+    doc_excel.active.column_dimensions['A'].width = 30
+    doc_excel.active.column_dimensions['B'].width = 30
+    doc_excel.active.column_dimensions['C'].width = 30
+    doc_excel.active.column_dimensions['D'].width = 30
+    doc_excel.active.column_dimensions['E'].width = 30
+    doc_excel.active.column_dimensions['F'].width = 30
+    doc_excel.active.column_dimensions['G'].width = 30
+    doc_excel.active.column_dimensions['H'].width = 30
+    doc_excel.active.column_dimensions['I'].width = 30
+    doc_excel.save("info_excel.xlsx")
+    response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+    response['Content-Disposition'] = nombre
+    return response
+
+#Total de ventas / Total de compras - Comparar cantidades
+def actualizar_kpi(request):
+    productos_totales = products.objects.all()
+    ingresos_totales = ingresos_stock.objects.all()
+    egresos_totales = egreso_stock.objects.all()
+    for prod_mod in productos_totales:
+        cantidad_ingresos = 0
+        cantidad_egresos = 0
+        if float(prod_mod.stockTotal) > 0:
+            print('Producto con stock mas a 0')
+            for ingreso in ingresos_totales:
+                if ingreso.producto_codigo == prod_mod.codigo:
+                    if ingreso.operacionIngreso == 'Ingreso productos':
+                        cantidad_ingresos = cantidad_ingresos + round(float(ingreso.cantidad),2)
+            
+            for egreso in egresos_totales:
+                if egreso.producto_codigo == prod_mod.codigo:
+                    if egreso.operacionIngreso == 'Egreso Factura':
+                        cantidad_egresos = cantidad_egresos + round(float(egreso.cantidad),2)
+            print(prod_mod.codigo)
+            print(cantidad_ingresos)
+            print(cantidad_egresos)
+            if (cantidad_egresos > 0) and (cantidad_ingresos > 0):
+                prod_mod.kpi_info = str(round(float(float(cantidad_egresos)/float(cantidad_ingresos)),2))
+                prod_mod.save()
+    return HttpResponseRedirect(reverse('sistema_2:productos'))
+
+def actualizarInfoCliente(request,ind):
+    if request.method == 'POST':
+        tipoCliente = request.POST.get('tipo_cliente')
+        endeudamientoCliente = request.POST.get('endeudamiento_cliente')
+        print(tipoCliente)
+        print(endeudamientoCliente)
+        cliente_mod = clients.objects.get(id=ind)
+        cliente_mod.tipo_cliente = tipoCliente
+        cliente_mod.max_endedudamiento = str(round(float(endeudamientoCliente),2))
+        cliente_mod.save()
+    return HttpResponseRedirect(reverse('sistema_2:clientes'))
+
+def comprasMensuales(request,ind):
+
+    year_actual = datetime.now().year
+    month_actual = datetime.now().month
+    nueva_fecha_1 = datetime(year_actual,month_actual,1,0,0,0,0) - relativedelta(months=int(1))
+    nueva_fecha_2 = datetime(year_actual,month_actual,1,0,0,0,0) - relativedelta(months=int(2))
+    nueva_fecha_3 = datetime(year_actual,month_actual,1,0,0,0,0) - relativedelta(months=int(3))
+
+    facturas_1 = facturas.objects.filter(fecha_emision__gte = nueva_fecha_1)
+    facturas_2 = facturas.objects.filter(fecha_emision__gte = nueva_fecha_2).filter(fecha_emision__lte = nueva_fecha_1)
+    facturas_3 = facturas.objects.filter(fecha_emision__gte = nueva_fecha_3).filter(fecha_emision__lte = nueva_fecha_2)
+
+    total_mes_1_cliente = Decimal(0.00)
+    for factura in facturas_1:
+        if str(factura.cliente[0]) == str(ind):
+            total_precio_soles = Decimal(0.00)
+            for producto in factura.productos:
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'SOLES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+            total_mes_1_cliente = Decimal(total_mes_1_cliente) + Decimal(total_precio_soles)
+    
+    total_mes_2_cliente = Decimal(0.00)
+    for factura in facturas_2:
+        if str(factura.cliente[0]) == str(ind):
+            total_precio_soles = Decimal(0.00)
+            for producto in factura.productos:
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'SOLES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+            total_mes_2_cliente = Decimal(total_mes_2_cliente) + Decimal(total_precio_soles)
+
+    total_mes_3_cliente = Decimal(0.00)
+    for factura in facturas_3:
+        if str(factura.cliente[0]) == str(ind):
+            total_precio_soles = Decimal(0.00)
+            for producto in factura.productos:
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'SOLES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+            total_mes_3_cliente = Decimal(total_mes_3_cliente) + Decimal(total_precio_soles)
+    return JsonResponse({
+        'historico':[['Mes actual',str(round(float(total_mes_1_cliente),2))],['Mes anterior',str(round(float(total_mes_2_cliente),2))],['Dos meses atras',str(round(float(total_mes_3_cliente),2))]],
+    })
+
+def consultarDescuento(request):
+    almacen = request.GET.get('almacenInfo')
+    confi = config_docs.objects.get(id=1)
+    indice_descuento = confi.almacenesSistema.index(almacen)
+    descuento_almacen = confi.almacenesDescuento[indice_descuento]
+    return JsonResponse({
+        'info':descuento_almacen
+    })
+
+def actualizarDescuentoAlmacen(request,almacen):
+    if request.method == 'POST':
+        almacen_descuento = str(request.POST.get('descuentoActualizado'))
+        confi = config_docs.objects.get(id=1)
+        indice_descuento = confi.almacenesSistema.index(almacen)
+        confi.almacenesDescuento[indice_descuento] = almacen_descuento
+        confi.save()
+    return HttpResponseRedirect(reverse('sistema_2:almacenesSistema'))

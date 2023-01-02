@@ -130,5 +130,12 @@ urlpatterns = [
     path('dashboard_productos',views.dashboard_productos,name='dashboard_productos'),
     path('dashboard_ventas',views.dashboard_ventas,name='dashboard_ventas'),
     path('agregarUbigeo',views.agregarUbigeo,name='agregarUbigeo'),
-    path('eliminarUbigeo/<str:ind>',views.eliminarUbigeo,name='eliminarUbigeo')
+    path('eliminarUbigeo/<str:ind>',views.eliminarUbigeo,name='eliminarUbigeo'),
+    path('cambiarAlmacen',views.cambiarAlmacen,name='cambiarAlmacen'),
+    path('exportarKardex/<str:ind>',views.exportarKardex,name='exportarKardex'),
+    path('actualizar_kpi',views.actualizar_kpi,name='actualizar_kpi'),
+    path('actualizarInfoCliente/<str:ind>',views.actualizarInfoCliente,name='actualizarInfoCliente'),
+    path('comprasMensuales/<str:ind>',views.comprasMensuales,name='comprasMensuales'),
+    path('consultarDescuento',views.consultarDescuento,name='consultarDescuento'),
+    path('actualizarDescuentoAlmacen/<str:almacen>',views.actualizarDescuentoAlmacen,name='actualizarDescuentoAlmacen')
 ]

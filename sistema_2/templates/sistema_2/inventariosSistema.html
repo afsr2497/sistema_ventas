@@ -1,6 +1,22 @@
 {% extends "sistema_2/layout_3.html" %}
 {% load static %}
 
+{% block code %}
+<script>
+    function consutlarDescuentoAlmacen(identificador)
+    {
+        let descuentoAlmacenInfo = document.getElementById('descuentoAlmacenInfo' + identificador.substring(4))
+        console.log(identificador.substring(4))
+        fetch(`/sistema_2/consultarDescuento?almacenInfo=${identificador.substring(4)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            descuentoAlmacenInfo.innerHTML = data.info
+        })
+    }
+</script>
+{% endblock %}
+
 {% block content %}
 
 <div class="container" style="height: 100vh;overflow: scroll;">
@@ -24,12 +40,14 @@
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
                 <th>Almacenes</th>
+                <th>Descuento</th>
                 <th>Eliminar</th>
             </thead>
             <tbody>
             {% for almacen in info.almacenesSistema %}
                 <tr>
                     <td>{{ almacen }}</td>
+                    <td class="text-center"><a class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#edit{{ almacen }}" id="vera{{ almacen }}" onclick="consutlarDescuentoAlmacen(this.id)"><i class="fas fa-edit"></i></a></td>
                     <td class="text-center"><a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#alm{{ almacen }}">Eliminar</a></td>
                 </tr>
             {% endfor %}
@@ -54,6 +72,35 @@
                 <a class="btn btn-danger" href="{% url 'sistema_2:eliminarAlmacen' almacen %}">Eliminar</a>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
             </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% for almacen in info.almacenesSistema %}
+<div class="modal fade" tabindex="-1" role="dialog" id="edit{{ almacen }}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'sistema_2:actualizarDescuentoAlmacen' almacen %}">
+            {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar descuento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>El descuento en este almacen es : <p id="descuentoAlmacenInfo{{ almacen }}"></p></p>
+                    <div class="row">
+                        <div class="col-6">
+                            <label>Descuento del almacen</label>
+                            <input class="form-control" type="number" step="0.01" name="descuentoActualizado">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type='submit' class="btn btn-success">Actualizar</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

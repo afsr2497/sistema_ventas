@@ -130,8 +130,18 @@
     <div class="col-md-2">
       <a class="btn btn-success" style="font-size: 11px;" data-bs-toggle="modal" data-bs-target="#actualizarPreciosPro">Actualizar precios</a>
     </div>
-    <div class="col-md-3">
-      <a class="btn btn-danger float-end" style="color: white; font-size: 11px;" data-bs-toggle="modal" data-bs-target="#eliminarTodo">Eliminar todo <i class="fa fa-trash"></i></a>
+    <div class="col-3">
+      <div class="row">
+        <div class="col-4">
+          <a class="btn btn-success" style="font-size: 11px;" href="{% url 'sistema_2:actualizar_kpi' %}">Actualizar KPI</a>
+        </div>
+        <div class="col-4">
+          <a class="btn btn-success" style="font-size: 11px;" data-bs-toggle="modal" data-bs-target="#cambiarAlmacen">Cambiar almacen</a>
+        </div>
+        <div class="col-4">
+          <a class="btn btn-danger float-end" style="color: white; font-size: 11px;" data-bs-toggle="modal" data-bs-target="#eliminarTodo">Eliminar todo <i class="fa fa-trash"></i></a>
+        </div>
+      </div>
     </div>
   </div>
   <br>
@@ -148,8 +158,10 @@
         <th scope="col">Sub Categoria</th>
         <th scope="col">Unidad de medida</th>
         <th scope="col">Stock total</th>
+        <th scope="col">KPI del producto</th>
         <th scope="col">Ver Stock</th>
         <th scope="col">Editar</th>
+        <th scope="col">Kardex</th>
         <th scope="col">Eliminar</th>
       </tr>
     </thead>
@@ -165,8 +177,10 @@
               <td>{{ producto.sub_categoria }}</td>
               <td>{{ producto.unidad_med }}</td>
               <td>{{ producto.stockTotal }}</td>
+              <td>{{ producto.kpi_info }}</td>
               <td style="text-align: center;"><a class="btn btn-info" id="stock{{ producto.id }}" data-bs-toggle="modal" data-bs-target="#stock0" onclick="obtenerStock(this.id)"><i class="fa fa-eye"></i></a></td>
               <td style="text-align: center;"><a class="btn btn-warning" href="{% url 'sistema_2:update_producto' producto.id %}"><i class="fa fa-edit"></i></a></td>
+              <td style="text-align: center;"><a class="btn btn-primary" href="{% url 'sistema_2:exportarKardex' producto.id %}">K</a></td>
               <td style="text-align: center;"><a class="btn btn-danger" id="eliminar{{ producto.id }}" onclick="eliminarProducto(this.id)"><i class="fa fa-trash"></i></a></td>
       </tr>
     {% endfor %}
@@ -215,6 +229,64 @@
         <a class="btn btn-primary" href="{% url 'sistema_2:eliminarTodo' %}">Eliminar</a>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!--Actualizar stock -->
+<div class="modal fade" tabindex="-1" role="dialog" id="cambiarAlmacen">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Trasladar productos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'sistema_2:cambiarAlmacen' %}">
+      {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12">
+              <p style="font-size: 14px;">Seleccionar producto</p>
+              <select class="selectpicker form-control" data-live-search="true" name="cambioProductoId">
+              <option></option>
+              {% for producto in pro %}
+                <option value="{{ producto.id }}">{{ producto.nombre }} {{ producto.codigo }}</option>
+              {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <p style="font-size: 14px;">Seleccionar almacen de origen</p>
+              <select class="selectpicker form-control" data-live-search="true" name="almacenOrigen">
+                <option value="" selected></option>
+                {% for almacen in almacenes %}
+                <option value="{{ almacen }}">{{ almacen }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6">
+              <p style="font-size: 14px;">Seleccionar almacen de destino</p>
+              <select class="selectpicker form-control" data-live-search="true" name="almacenRecepcion">
+                <option value="" selected></option>
+                {% for almacen in almacenes %}
+                <option value="{{ almacen }}">{{ almacen }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <p style="font-size: 14px;">Cantidad de productos</p>
+              <input class="form-control" step="0.01" name="cantidadProductosCambio" type="number">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" >Cambiar</a>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

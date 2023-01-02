@@ -68,6 +68,26 @@
     distritoUbigeo.value = ''
     codigoUbigeo.value = ''
   }
+
+  function historicoClientes(idCliente)
+  {
+    let cuerpoTablaHistorico = document.getElementById('cuerpoTablaHistorico')
+    console.log(idCliente.substring(9))
+    fetch(`/sistema_2/comprasMensuales/${idCliente.substring(9)}`)
+    .then(response => response.json())
+    .then(data => {
+      for(var i = 0; i < data.historico.length; i++)
+      {
+        cuerpoTablaHistorico.innerHTML += `
+                    <tr>
+                      <td>${data.historico[i][0]}</td>
+                      <td>${data.historico[i][1]}</td>
+                    </tr>
+        `
+      }
+      console.log(data)
+    })
+  }
 </script>
 
 {% endblock %}
@@ -111,6 +131,8 @@
               <th scope="col">Telefono</th>
               <th scope="col">Direccion fiscal</th>
               <th scope="col">Direcciones</th>
+              <th scope="col">Segmentacion</th>
+              <th scope="col">Historico</th>
               <th scope="col">Editar</th>
               <th scope="col">Eliminar</th>
           </tr>
@@ -128,6 +150,8 @@
               <td>{{ cliente.telefono }}</td>
               <td>{{ cliente.direccion_fiscal }}</td>
               <td style="text-align: center;"><a class="btn btn-info" data-bs-toggle="modal" data-bs-target="#direcciones{{ cliente.id }}"><i class="fa fa-eye"></i></a></td>
+              <td style="text-align: center;"><a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tipo{{ cliente.id }}">S</a></td>
+              <td style="text-align: center;"><a class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#historico" id="historico{{ cliente.id }}" onclick="historicoClientes(this.id)">H</a></td>
               <td style="text-align: center;"><a class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#cliente{{ cliente.id }}"><i class="fa fa-edit"></i></a></td>
               <td style="text-align: center;"><a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar{{ cliente.id }}"><i class="fa fa-trash"></i></a></td>
           </tr>
@@ -136,6 +160,97 @@
     </table>
   </div>
 </div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="historico">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Historico del cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <thead class="table-dark">
+            <th>Mes</th>
+            <th>Valor de ventas</th>
+          </thead>
+          <tbody id="cuerpoTablaHistorico">
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+
+      </div>
+</div>
+
+
+{% for cliente in cli %}
+<div class="modal fade" tabindex="-1" role="dialog" id="tipo{{ cliente.id }}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tipo de cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'sistema_2:actualizarInfoCliente' cliente.id %}">
+      {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-6">
+              <p>El cliente es del tipo : {{ cliente.tipo_cliente }}</p>
+            </div>
+            <div class="col-6">
+              <p>El endeudamiento del cliente es : {{ cliente.max_endeudamiento }}</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <label>Tipo de cliente</label>
+              <select class="selectpicker form-select" data-live-search="true" name="tipo_cliente">
+                <option value=""></option>
+                {% if cliente.tipo_cliente == 'S' %}
+                <option value="S" selected>S</option>
+                {% else %}
+                <option value="S">S</option>
+                {% endif %}
+                {% if cliente.tipo_cliente == 'A' %}
+                <option value="A" selected>A</option>
+                {% else %}
+                <option value="A">A</option>
+                {% endif %}
+                {% if cliente.tipo_cliente == 'B' %}
+                <option value="B" selected>B</option>
+                {% else %}
+                <option value="B">B</option>
+                {% endif %}
+                {% if cliente.tipo_cliente == 'C' %}
+                <option value="C" selected>C</option>
+                {% else %}
+                <option value="C">C</option>
+                {% endif %}
+                {% if cliente.tipo_cliente == 'D' %}
+                <option value="D" selected>D</option>
+                {% else %}
+                <option value="D">D</option>
+                {% endif %}
+              </select>
+            </div>
+            <div class="col-6">
+              <label>Endeudamiento del cliente</label>
+              <input class="form-control" type="number" step="0.01" name="endeudamiento_cliente">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" type="submit">Modificar</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
 
 {% for cliente in cli %}
 <div class="modal fade" tabindex="-1" role="dialog" id="eliminar{{ cliente.id }}">
@@ -257,9 +372,18 @@
             </div>
           </div>
           <div class="row mb-3">
-            <div class="col-md-12">
+            <div class="col-md-6">
               <label>Direccion fiscal (*)</label>
               <input type="text" class="form-control" required name="direccion" value="{{ cliente.direccion_fiscal }}">
+            </div>
+            <div class="col-6">
+              <br>
+              {% if cliente.habilitado_comisiones == '1' %}
+              <input class="form-check-input" type="checkbox" name="habilitado_comisiones" checked>
+              {% else %}
+              <input class="form-check-input" type="checkbox" name="habilitado_comisiones">
+              {% endif %}
+              <label>Habilitado para comisiones</label>
             </div>
           </div>
           <div class="modal-footer">
@@ -357,6 +481,11 @@
             <div class="col-md-6">
               <label>Direccion fiscal (*)</label>
               <input type="text" class="form-control" required name="direccion" id="nuevaDireccion">
+            </div>
+            <div class="col-6">
+              <br>
+              <input class="form-check-input" type="checkbox" name="habilitado_comisiones" checked>
+              <label>Habilitado para comisiones</label>
             </div>
           </div>
           <div class="modal-footer">

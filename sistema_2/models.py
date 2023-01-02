@@ -15,6 +15,7 @@ class userProfile(models.Model):
     tipo = models.CharField(max_length=20)
     celular = models.CharField(max_length=20)
     rolesUsuario = ArrayField(models.CharField(max_length=64),default=['1','1','1','1'])
+    descuento_maximo = models.CharField(max_length=24,default='0')
 
 class clients(models.Model):
     id = models.AutoField(primary_key=True)
@@ -28,6 +29,9 @@ class clients(models.Model):
     telefono = models.CharField(max_length=64,null=True)
     direccion_fiscal = models.CharField(max_length=512,default='SinDireccion')
     direcciones = ArrayField(models.CharField(max_length=256),null=True)
+    habilitado_comisiones = models.CharField(max_length=8,default='1')
+    tipo_cliente = models.CharField(max_length=8,default='S')
+    max_endeudamiento = models.CharField(max_length=32,default='0')
 
 class products(models.Model):
     id = models.AutoField(primary_key=True)
@@ -45,6 +49,7 @@ class products(models.Model):
     stock = ArrayField(ArrayField(models.CharField(max_length=20)),default=list())
     stockTotal = models.CharField(max_length=128,default='0')
     pesoProducto = models.CharField(max_length=128,default='0')
+    kpi_info = models.CharField(max_length=128,default='0')
 
 class services(models.Model):
     id = models.AutoField(primary_key=True)
@@ -212,6 +217,7 @@ class config_docs(models.Model):
     cotiNro = models.CharField(max_length=128,null=True)    
     tokenDoc = models.CharField(max_length=128,default='')
     almacenesSistema = ArrayField(models.CharField(max_length=256),default=list())
+    almacenesDescuento = ArrayField(models.CharField(max_length=256),default=list())
 
 class notaCredito(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)

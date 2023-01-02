@@ -116,6 +116,10 @@
               <label>Celular</label>
               <input type="tel" class="form-control" pattern="[0-9]{9}" required name="celular" placeholder="Numero de celular" id="celularNuevo">
             </div>
+            <div class="col-md-6">
+              <label>Descuento maximo</label>
+              <input type="number" step="0.01" class="form-control" required name="descuento_maximo" placeholder="Descuento maximo" id="descuentoMaximo">
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarInfo()">Cancelar</button>
@@ -172,6 +176,10 @@
             <div class="col-md-6">
               <label>Celular</label>
               <input type="text" class="form-control" required name="celular" value="{{ usuario.celular }}">
+            </div>
+            <div class="col-md-6">
+              <label>Descuento maximo</label>
+              <input type="number" step="0.01" class="form-control" required name="descuento_maximo" placeholder="Descuento maximo" value="{{ usuario.descuento_maximo }}">
             </div>
           </div>
           <div class="modal-footer">
