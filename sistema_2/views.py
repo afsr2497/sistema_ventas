@@ -6036,20 +6036,127 @@ def verificar_factura_teFacturo(request,ind):
 
 @login_required(login_url='/sistema_2')
 def verificar_boleta_teFacturo(request,ind):
-    boleta_verificar = boletas.objects.get(id=ind)
-    info_data = {
-        'emisor':'20541628631',
-        'numero':str(boleta_verificar.nroBoleta),
-        'serie':str(boleta_verificar.serieBoleta),
-        'tipoComprobante':'03'
-    }
-    headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
-    url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
-    r = requests.put(url_pedido,headers=headers_info,json=info_data)
-    print(r)
-    print(r.content)
-    boleta_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
-    boleta_verificar.save()
+    if entorno_sistema == '1':
+        boleta_verificar = boletas.objects.get(id=ind)
+        info_data = {
+            'emisor':'20541628631',
+            'numero':str(boleta_verificar.nroBoleta),
+            'serie':str(boleta_verificar.serieBoleta),
+            'tipoComprobante':'03'
+        }
+        headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
+        url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
+        r = requests.put(url_pedido,headers=headers_info,json=info_data)
+        print(r)
+        print(r.content)
+        boleta_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
+        boleta_verificar.save()
+        if ((boleta_verificar.estadoSunat == 'Aceptado') or (boleta_verificar.estadoSunat == 'Aceptado con Obs.')) and boleta_verificar.stockAct == '0':
+            boleta_verificar.stockAct = '1'
+            boleta_verificar.save()
+            for producto in boleta_verificar.productos:
+                prod_mod = products.objects.get(codigo=producto[2])
+                stock_pasado = prod_mod.stockTotal
+                stknow = float(prod_mod.stockTotal)
+                stkact = stknow - float(producto[8])
+                stkact = str(round(stkact,2))
+                prod_mod.stockTotal = stkact
+                prod_mod.save()
+                for almacen in prod_mod.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
+                        prod_mod.save()
+                prod_mod.save()
+                stock_nuevo = prod_mod.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Egreso Boleta'
+                refFactura = boleta_verificar.codigoBoleta
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+               
+        if boleta_verificar.estadoSunat == 'Anulado' and boleta_verificar.stockAct == '1':
+            boleta_verificar.stockAct = '0'
+            boleta_verificar.save()
+            for producto in boleta_verificar.productos:
+                prod_mod = products.objects.get(codigo=producto[2])
+                stock_pasado = prod_mod.stockTotal
+                stknow = float(prod_mod.stockTotal)
+                stkact = stknow + float(producto[8])
+                stkact = str(round(stkact,2))
+                prod_mod.stockTotal = stkact
+                prod_mod.save()
+                for almacen in prod_mod.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) + float(producto[8]),2))
+                        prod_mod.save()
+                prod_mod.save()
+                stock_nuevo = prod_mod.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Anulacion Boleta'
+                refFactura = boleta_verificar.codigoBoleta
+                ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+    if entorno_sistema == '0':
+        boleta_verificar = boletas.objects.get(id=ind)
+        boleta_verificar.stockAct = '1'
+        boleta_verificar.estadoSunat = 'Aceptada'
+        boleta_verificar.save()
+        if boleta_verificar.stockAct == '0':
+            for producto in boleta_verificar.productos:
+                prod_mod = products.objects.get(codigo=producto[2])
+                stock_pasado = prod_mod.stockTotal
+                stknow = float(prod_mod.stockTotal)
+                stkact = stknow - float(producto[8])
+                stkact = str(round(stkact,2))
+                prod_mod.stockTotal = stkact
+                prod_mod.save()
+                for almacen in prod_mod.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
+                        prod_mod.save()
+                prod_mod.save()
+                stock_nuevo = prod_mod.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Egreso Boleta'
+                refFactura = boleta_verificar.codigoBoleta
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
     return HttpResponseRedirect(reverse('sistema_2:bole'))
 
 @login_required(login_url='/sistema_2')

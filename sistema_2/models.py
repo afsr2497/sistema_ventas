@@ -201,6 +201,7 @@ class boletas(models.Model):
     estadoSunat = models.CharField(max_length=128,default='')
     fecha_emision = models.DateField(null=True)
     registroBoleta = models.CharField(max_length=64,default='0')
+    stockAct = models.CharField(max_length=64,default='0')
 
 class config_docs(models.Model):
     boletaSerie = models.CharField(max_length=128,null=True)
