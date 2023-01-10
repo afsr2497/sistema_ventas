@@ -667,12 +667,31 @@ def productos(request):
             producto_pcsinIGV = round(float(request.POST.get('pcsinIGV')),2)
             producto_pcconIGV = round(producto_pcsinIGV*1.18,2)
             producto_moneda = request.POST.get('moneda')
+            producto_kit = request.POST.get('producto_kit')
+            stock_producto = [['Chimbote','0.00'],['Lima','0.00'],['Trujillo','0.00'],['Chiclayo','0.00']]
+            stock_total = '0.00'
+            if producto_kit == 'on':
+                print('Se creara el kit')
+                id_producto_a = str(request.POST.get('seleccion_producto_a'))
+                codigo_producto_a = str(request.POST.get('codigo_producto_a'))
+                cantidad_producto_a = str(round(float(request.POST.get('cantidad_producto_a')),2))
+                id_producto_b = str(request.POST.get('seleccion_producto_b'))
+                codigo_producto_b = str(request.POST.get('codigo_producto_b'))
+                cantidad_producto_b = str(round(float(request.POST.get('cantidad_producto_b')),2))
+                producto_kit = '1'
+                producto_A = [id_producto_a,codigo_producto_a,cantidad_producto_a]
+                producto_B = [id_producto_b,codigo_producto_b,cantidad_producto_b]
+            else:
+                print('No se creara el kit')
+                producto_kit = '0'
+                producto_A = []
+                producto_B = []
             try:
                 ultimo_producto = products.objects.latest('id')
                 producto_id = int(ultimo_producto.id) + 1
             except:
                 producto_id = 1
-            products(pesoProducto=producto_peso,id=producto_id,nombre=producto_nombre,codigo=producto_codigo,categoria=producto_categoria,sub_categoria=producto_subCategoria,unidad_med=producto_unidad,precio_compra_sin_igv=producto_pcsinIGV,precio_compra_con_igv=producto_pcconIGV,precio_venta_sin_igv=producto_pvsinIGV,precio_venta_con_igv=producto_pvconIGV,codigo_sunat=producto_sunat,moneda=producto_moneda).save()
+            products(stockTotal=stock_total,stock=stock_producto,producto_kit=producto_kit,producto_A=producto_A,producto_B=producto_B,pesoProducto=producto_peso,id=producto_id,nombre=producto_nombre,codigo=producto_codigo,categoria=producto_categoria,sub_categoria=producto_subCategoria,unidad_med=producto_unidad,precio_compra_sin_igv=producto_pcsinIGV,precio_compra_con_igv=producto_pcconIGV,precio_venta_sin_igv=producto_pvsinIGV,precio_venta_con_igv=producto_pvconIGV,codigo_sunat=producto_sunat,moneda=producto_moneda).save()
             return HttpResponseRedirect(reverse('sistema_2:productos'))
         elif 'Filtrar' in request.POST:
             filtro_categoria = request.POST.get('filtroCategoria')
@@ -4262,21 +4281,29 @@ def enviar_guia(request,ind):
     print(info_data)
     headers_info={"X-Auth-Token":token_info.tokenDoc,"Content-Type":"application/json"}
     url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/guia-remision'
-    r = requests.post(url_pedido,headers=headers_info,json=info_data)
-    print(r)
-    print(r.content)
-    if((r.status_code == 201) or (r.status_code == 409)):
-        guia_info.estadoGuia = 'Enviada'
-    if(r.status_code == 401):
-        guia_info.estadoGuia = 'Emitida'
-    if(r.status_code == 403):
-        guia_info.estadoGuia = 'Emitida'
-    guia_info.save()
-    return HttpResponseRedirect(reverse('sistema_2:gui'))
+    if entorno_sistema == '1':
+        r = requests.post(url_pedido,headers=headers_info,json=info_data)
+        print(r)
+        print(r.content)
+        nueva_guia = guias.objects.get(id=ind)
+        if((r.status_code == 201) or (r.status_code == 409)):
+            nueva_guia.estadoGuia = 'Enviada'
+        if(r.status_code == 401):
+            nueva_guia.estadoGuia = 'Emitida'
+        if(r.status_code == 403):
+            nueva_guia.estadoGuia = 'Emitida'
+        nueva_guia.save()
+        return HttpResponseRedirect(reverse('sistema_2:gui'))
+    if entorno_sistema == '0':
+        print(info_data)
+        nueva_guia = guias.objects.get(id=ind)
+        print(nueva_guia.productos)
+        nueva_guia.estadoGuia = 'Enviada'
+        nueva_guia.save()
+        return HttpResponseRedirect(reverse('sistema_2:gui'))
 
 
 def armar_json_guia(guia_info):
-    productos = []
     peso = 0
     for producto in guia_info.productos:
         peso = peso + round(float(producto[11])*float(producto[8]),2)
@@ -4284,6 +4311,44 @@ def armar_json_guia(guia_info):
     peso = round(peso,2)
     peso = str(int(peso))
     print(peso)
+    productos_extras = []
+    for producto in guia_info.productos:
+        producto_info = products.objects.get(id=producto[0])
+        if producto_info.producto_kit == '1':
+            producto_a = products.objects.get(id=producto_info.producto_A[0])
+            producto_b = products.objects.get(id=producto_info.producto_B[0])
+            arreglo_producto_a = [
+                str(producto_a.id),
+                str(producto_a.codigo),
+                str(producto_a.nombre),
+                str(producto_a.unidad_med),
+                str(producto[4]),
+                str(producto_a.moneda),
+                '0.00',
+                '0',
+                str(producto_info.producto_A[2]),
+                '1',
+                str(producto_info.producto_A[2]),
+                str(producto_a.pesoProducto)]
+            arreglo_producto_b = [
+                str(producto_b.id),
+                str(producto_b.codigo),
+                str(producto_b.nombre),
+                str(producto_b.unidad_med),
+                str(producto[4]),
+                str(producto_b.moneda),
+                '0.00',
+                '0',
+                str(producto_info.producto_B[2]),
+                '1',
+                str(producto_info.producto_B[2]),
+                str(producto_b.pesoProducto)]
+            productos_extras.append(arreglo_producto_a)
+            productos_extras.append(arreglo_producto_b)
+            guia_info.productos.remove(producto)
+    guia_info.productos = guia_info.productos + productos_extras
+    productos = []
+    
     if guia_info.cliente[3] == '':
         destinatario = {
             "nombreLegal": guia_info.cliente[1] + ' ' + guia_info.cliente[2],
@@ -4457,15 +4522,24 @@ def enviar_factura(request,ind):
     info_data = armar_json_factura(factura_info)
     headers_info={"X-Auth-Token":token_info.tokenDoc,"Content-Type":"application/json"}
     url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/factura'
-    r = requests.put(url_pedido,headers=headers_info,json=info_data)
-    print(r)
-    print(r.content)
-    if((r.status_code == 200) or (r.status_code == 409)):
-        factura_info.estadoFactura = 'Enviada'
-    if(r.status_code == 401):
-        factura_info.estadoFactura = 'Generada'
-    factura_info.save()
-    return HttpResponseRedirect(reverse('sistema_2:fact'))
+    if entorno_sistema == '1':
+        r = requests.put(url_pedido,headers=headers_info,json=info_data)
+        print(r)
+        print(r.content)
+        nueva_factura = facturas.objects.get(id=ind)
+        if((r.status_code == 200) or (r.status_code == 409)):
+            nueva_factura.estadoFactura = 'Enviada'
+        if(r.status_code == 401):
+            nueva_factura.estadoFactura = 'Generada'
+        nueva_factura.save()
+        return HttpResponseRedirect(reverse('sistema_2:fact'))
+    if entorno_sistema == '0':
+        print(info_data)
+        nueva_factura = facturas.objects.get(id=ind)
+        print(nueva_factura.productos)
+        nueva_factura.estadoFactura = 'Enviada'
+        nueva_factura.save()
+        return HttpResponseRedirect(reverse('sistema_2:fact'))
 
 
 def armar_json_factura(factura_info):
@@ -4489,6 +4563,28 @@ def armar_json_factura(factura_info):
         print(guias_json)
     if factura_info.tipoFactura == 'Servicios':
         guias_json = null
+    producto_extra = []
+    for producto in factura_info.productos:
+        producto_info = products.objects.get(id=producto[0])
+        if producto_info.producto_kit == '1':
+            producto_a = products.objects.get(id=producto_info.producto_A[0])
+            arreglo_producto_a = [
+                str(producto_a.id),
+                str(producto_a.codigo),
+                str(producto_a.nombre),
+                str(producto_a.unidad_med),
+                str(producto[4]),
+                str(producto_a.moneda),
+                str(producto[6]),
+                str(producto[7]),
+                str(producto[8]),
+                '1',
+                str(producto[8]),
+                str(producto_a.pesoProducto)
+            ]
+            producto_extra.append(arreglo_producto_a)
+            factura_info.productos.remove(producto)
+    factura_info.productos = factura_info.productos + producto_extra
     productos = []
     valor_total = 0
     if factura_info.monedaFactura == 'SOLES':
@@ -5460,7 +5556,7 @@ def gen_guia_cot(request,ind):
     if entorno_sistema == '1':
         guia_estado = 'Generada'
     if entorno_sistema == '0':
-        guia_estado = 'Enviada'
+        guia_estado = 'Generada'
     guia_traslado = ['','','PUBLICO','','0']
     guia_transportista = ['','']
     guia_vehiculo = ['','','']
@@ -5578,7 +5674,7 @@ def gen_factura_guia(request,ind):
     if entorno_sistema == '1':
         factura_estado = 'Generada'
     if entorno_sistema == '0':
-        factura_estado = 'Enviada'
+        factura_estado = 'Generada'
     factura_dscto = '1'
     factura_obs = guia_obtener.observacionesGuia
     factura_cuotas = guia_obtener.cantidadCuotas

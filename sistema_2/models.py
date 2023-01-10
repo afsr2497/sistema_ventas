@@ -50,6 +50,9 @@ class products(models.Model):
     stockTotal = models.CharField(max_length=128,default='0')
     pesoProducto = models.CharField(max_length=128,default='0')
     kpi_info = models.CharField(max_length=128,default='0')
+    producto_kit = models.CharField(max_length=12, default='0')
+    producto_A = ArrayField(models.CharField(max_length=64),default=list())
+    producto_B = ArrayField(models.CharField(max_length=64),default=list())
 
 class services(models.Model):
     id = models.AutoField(primary_key=True)

@@ -20,8 +20,6 @@
     <h5 class="modal-title">Actualizar producto</h5>
     <form method="post" action="{% url 'sistema_2:actualizar_producto' producto.id %}">
     {% csrf_token %}
-        </div>
-                <div class="modal-body">
                 <h6>Campos obligatorios (*)</h6>
                 <br>
         <div class="row mb-3">
@@ -84,7 +82,7 @@
         </div>
         <br>
         <div>
-            <button type="button" class="btn btn-secondary" href="{% url 'sistema_2:dashboard' %}">Cancelar</button>
+            <a type="button" class="btn btn-secondary" href="{% url 'sistema_2:dashboard' %}">Cancelar</a>
             <button type="submit" class="btn btn-primary">Actualizar</button>
         </div>
     </form>
