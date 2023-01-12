@@ -137,5 +137,9 @@ urlpatterns = [
     path('actualizarInfoCliente/<str:ind>',views.actualizarInfoCliente,name='actualizarInfoCliente'),
     path('comprasMensuales/<str:ind>',views.comprasMensuales,name='comprasMensuales'),
     path('consultarDescuento',views.consultarDescuento,name='consultarDescuento'),
-    path('actualizarDescuentoAlmacen/<str:almacen>',views.actualizarDescuentoAlmacen,name='actualizarDescuentoAlmacen')
+    path('actualizarDescuentoAlmacen/<str:almacen>',views.actualizarDescuentoAlmacen,name='actualizarDescuentoAlmacen'),
+    path('emisionoc',views.emisionoc,name='emisionoc'),
+    path('crear_orden',views.crear_orden,name='crear_orden'),
+    path('descargar_orden/<str:ind>',views.descargarOrden,name='descargarOrden'),
+    path('editarOrden/<str:ind>',views.editarOrden,name='editarOrden')
 ]

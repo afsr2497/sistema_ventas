@@ -1,0 +1,80 @@
+{% extends "sistema_2/layout_3.html" %}
+
+{% load static %}
+
+{% block code %}
+
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="{% static 'sistema_2/cotizaciones.js' %}"></script>
+
+<script>
+    function alternar()
+    {
+        let elemento_soles = document.getElementById('seleccionSoles')
+        let elemento_dolares = document.getElementById('seleccionDolares')
+        
+        if(elemento_soles.checked === true)
+        {
+            elemento_dolares.disabled = true
+        }
+        else
+        {
+            elemento_dolares.disabled = false
+        }
+
+        if(elemento_dolares.checked === true)
+        {
+            elemento_soles.disabled = true
+        }
+        else
+        {
+            elemento_soles.disabled = false
+        }
+    }
+</script>
+
+{% endblock %}
+
+
+{% block content%}
+
+<div class="container" style="height: 100vh;overflow: scroll;">
+  <h1>Ordenes de compra</h1>
+  <div>
+      <a class="btn btn-success" href="{% url 'sistema_2:crear_orden' %}">Nuevo <i class="fas fa-file-import"></i></a>
+  </div>
+  <br>
+  <br>
+  <table class="table table-bordered table-hover" id="proformasTable" style="font-size: 12px;">
+      <thead class="table-dark">
+          <tr>
+              <th scope="col">Codigo</th>
+              <th scope="col">Vendedor</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">RUC</th>
+              <th scope="col">Proveedor</th>
+              <th scope="col">Descargar OC</th>
+              <th scope="col">Editar</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for orden in ordenes_totales %}
+          <tr>
+              <td>{{ orden.codigo_orden }}</td>
+              <td>{{ orden.usuarioOrden }}</td>
+              <td>{{ orden.fechaOrden }}</td>
+              <td>{{ orden.ruc_proveedor }}</td>
+              <td>{{ orden.proveedorNombre }}</td>
+              <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:descargarOrden' orden.id %}"><i class="fas fa-download"></i></a></td>
+              <td style="text-align: center;">
+                <a class="btn btn-warning" href="{% url 'sistema_2:editarOrden' orden.id %}"><i class="fa fa-edit"></i></a>
+              </td>
+          </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+</div>
+{% endblock %}

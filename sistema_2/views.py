@@ -10,7 +10,7 @@ from django import forms
 from reportlab.pdfgen import canvas
 from django.shortcuts import render, redirect
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito
+from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito,ordenCompra
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from django.db.models import Q
@@ -10020,3 +10020,337 @@ def actualizarDescuentoAlmacen(request,almacen):
         confi.almacenesDescuento[indice_descuento] = almacen_descuento
         confi.save()
     return HttpResponseRedirect(reverse('sistema_2:almacenesSistema'))
+
+def emisionoc(request):
+    ordenes_totales = ordenCompra.objects.all().order_by('-id')
+    return render(request,'sistema_2/ordencompra.html',{
+        'ordenes_totales':ordenes_totales,
+    })
+
+def crear_orden(request):
+    pro = products.objects.all().order_by('id')
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    if request.method == 'POST':
+        data = json.load(request)
+        rucProveedor = data.get('rucProveedor')
+        nombreProveedor = data.get('nombreProveedor')
+        ciudadProveedor = data.get('ciudadProveedor')
+        destinoProveedor = data.get('destinoProveedor')
+        productosOrden = data.get('productos')
+        try:
+            ultima_orden = ordenCompra.objects.latest('id')
+            id_cod = str(ultima_orden.id)
+            while len(id_cod) < 4:
+                id_cod = '0' + id_cod
+            codigoOrden = 'OC-' + id_cod
+        except:
+            id_cod = '1'
+            while len(id_cod) < 4:
+                id_cod = '0' + id_cod
+            codigoOrden = 'ORC-' + id_cod
+        ordenCompra(estado_orden='Generada',codigo_orden=codigoOrden,usuarioOrden=user_logued.codigo,proveedorNombre=nombreProveedor,ruc_proveedor=rucProveedor,productos=productosOrden,direccion=ciudadProveedor,destino=destinoProveedor).save()
+        return JsonResponse({
+            'resp':'ok'
+        })
+    return render(request,'sistema_2/crear_orden.html',{
+        'pro':pro,
+    })
+
+def descargarOrden(request,ind):
+    #Se proceden a generar las paginas del documento
+    #Generacion del documento
+    pdf_name = 'orden_generada.pdf'
+    can = canvas.Canvas(pdf_name,pagesize=A4)
+
+    #Obtencion de la informacion
+    orden_info = ordenCompra.objects.get(id=ind)
+    total_precio = Decimal(0.0000)
+
+    #Generacion del membrete superior derecho
+    can.setStrokeColorRGB(0,0,1)
+    lista_x = [400,580]
+    lista_y = [720,815]
+    can.grid(lista_x,lista_y)
+    can.setFillColorRGB(0,0,0)
+    can.setFont('Helvetica',12)
+    can.drawString(440,785,'RUC: 20541628631')
+    can.setFont('Helvetica-Bold',12)
+    can.drawString(430,765,'ORDEN DE COMPRA')
+    can.setFont('Helvetica',12)
+    can.drawString(460,745,str(orden_info.codigo_orden))
+
+    #Generacion del logo
+    can.drawImage('./sistema_2/static/images/logo_2.png',10,705,width=120,height=120)
+    
+    #Informacion del remitente
+    can.setFont('Helvetica-Bold',10)
+    can.drawString(25,705,'METALPROTEC')
+    can.setFont('Helvetica',7)
+    can.drawString(25,695,'LT 39 MZ. J4 URB. PASEO DEL MAR - ÁNCASH SANTA NUEVO CHIMBOTE')
+    can.drawString(25,687,'Teléfono: (043) 282752')
+    #can.drawString(25,679,'E-Mail: contabilidad@metalprotec.pe')
+
+    #Generacion de la linea de separacion
+    can.line(25,670,580,670)
+
+    #Generacion de los datos del cliente
+    can.drawString(25,660,'Señores:')
+    can.drawString(120,660,str(orden_info.proveedorNombre))
+    can.drawString(25,650,'RUC:')
+    can.drawString(120,650,str(orden_info.ruc_proveedor))
+    can.drawString(25,640,'Nro de Documento:')
+    can.drawString(120,640,str(orden_info.codigo_orden))
+    can.drawString(25,630,'Moneda:')
+    can.drawString(120,630,str(orden_info.monedaOrden))
+
+    #Linea de separacion con los datos del vendedor
+    can.line(25,620,580,620)
+
+    #Datos del vendedor
+    can.drawString(25,610,'Vendedor:')
+    can.drawString(120,610,str(orden_info.usuarioOrden))
+
+
+    can.drawString(25,600,'Fecha:')
+    can.drawString(120,600,str(orden_info.fechaOrden))
+
+    can.drawString(25,590,'Direccion de entrega:')
+    can.drawString(120,590,str(orden_info.destino))
+
+    #Aqui se ponen las cabeceras
+
+    can.setStrokeColorRGB(0,0,1)
+    can.setFillColorRGB(0,0,0)
+    #Campos en cabecera
+    lista_x = [25,580]
+    lista_y = [550,565]
+    can.setFillColorRGB(0,0,1)
+    can.rect(25,550,555,15,fill=1)
+
+    #Valores iniciales
+    lista_x = [25,50,100,310,360,410,460,530]
+    lista_y = [550,565]
+    #Ingreso de campo cantidad
+    can.setFillColorRGB(1,1,1)
+    can.setFont('Helvetica-Bold',7)
+    can.drawString(lista_x[0] + 5, lista_y[0] + 3,'Cant.')
+    can.setFont('Helvetica',7)
+    can.setFillColorRGB(0,0,0)
+    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    for producto in orden_info.productos:
+        can.drawRightString(lista_x[0] + 20,lista_y[0] + 3,str("{:.2f}".format(round(float(producto[5]),2))))
+        lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    
+    #Valores iniciales
+    lista_y = [550,565]
+    #Ingreso de campo de código de producto
+    can.setFillColorRGB(1,1,1)
+    can.setFont('Helvetica-Bold',7)
+    can.drawString(lista_x[1] + 5, lista_y[0] + 3,'Código')
+    can.setFont('Helvetica',7)
+    can.setFillColorRGB(0,0,0)
+    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    for producto in orden_info.productos:
+        can.drawString(lista_x[1] + 5,lista_y[0] + 3,producto[2])
+        lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+
+    #Valores iniciales
+    lista_y = [550,565]
+    #Ingreso de campo de descripcion de producto
+    can.setFillColorRGB(1,1,1)
+    can.setFont('Helvetica-Bold',7)
+    can.drawString(lista_x[2] + 5, lista_y[0] + 3,'Descripción')
+    can.setFont('Helvetica',7)
+    can.setFillColorRGB(0,0,0)
+    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    for producto in orden_info.productos:
+        can.drawString(lista_x[2] + 5,lista_y[0] + 3,producto[1])
+        lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    
+    lista_x[4] = 360
+    
+    #Valores iniciales
+    lista_y = [550,565]
+    #Ingreso de campo de unidad de medida de producto
+    can.setFillColorRGB(1,1,1)
+    can.setFont('Helvetica-Bold',7)
+    can.drawString(lista_x[4] - 5, lista_y[0] + 3,'V.U sin IGV')
+    can.setFont('Helvetica',7)
+    can.setFillColorRGB(0,0,0)
+    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    for producto in orden_info.productos:
+        if orden_info.monedaOrden == 'SOLES':
+            if producto[3] == 'DOLARES':
+                vu_producto = Decimal(producto[4])*Decimal(3.80)
+            if producto[3] == 'SOLES':
+                vu_producto = Decimal(producto[4])
+        if orden_info.monedaOrden == 'DOLARES':
+            if producto[3] == 'SOLES':
+                vu_producto = (Decimal(producto[4])/Decimal(3.80))
+            if producto[3] == 'DOLARES':
+                vu_producto = Decimal(producto[4])
+        can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
+        lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+
+    #Valores iniciales
+    lista_y = [550,565]
+    #Ingreso de campo de valor de venta del producto
+    can.setFillColorRGB(1,1,1)
+    can.setFont('Helvetica-Bold',7)
+    can.drawString(lista_x[7] + 5, lista_y[0] + 3,'Valor Venta')
+    can.setFont('Helvetica',7)
+    can.setFillColorRGB(0,0,0)
+    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    for producto in orden_info.productos:
+        if orden_info.monedaOrden == 'SOLES':
+            if producto[3] == 'DOLARES':
+                v_producto = Decimal(producto[4])*Decimal(3.80)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[5])
+            if producto[3] == 'SOLES':
+                v_producto = Decimal(producto[4])
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[5])
+        if orden_info.monedaOrden == 'DOLARES':
+            if producto[3] == 'SOLES':
+                v_producto = (Decimal(producto[4])/Decimal(3.80))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[5])
+            if producto[3] == 'DOLARES':
+                v_producto = Decimal(producto[4])
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[5])
+        #v_producto = round(v_producto,2)
+        can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(v_producto))))
+        lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+        total_precio = Decimal(total_precio) + Decimal(v_producto)
+
+    #Linea de separacion con los datos finales
+    can.line(25,lista_y[1],580,lista_y[1])
+    #Prueba de impresion
+    
+    #Impresion de los datos bancarios
+    #Scotiabank
+    can.setFont('Helvetica-Bold',8)
+    can.drawString(25,60,'Banco Scotiabank')
+    can.setFont('Helvetica',8)
+    can.drawString(25,50,'Cta Cte Soles: 000 9496505')
+    can.drawString(25,40,'Cta Cte Dolares: 000 5151261')
+
+    #BCP
+    can.setFont('Helvetica-Bold',8)
+    can.drawString(160,60,'Banco de Crédito del Perú')
+    can.setFont('Helvetica',8)
+    can.drawString(160,50,'Cta Cte Soles: 310 9888337 0 02')
+    can.drawString(160,40,'Cta Cte Dolares: 310 9865292 1 35')
+
+    #BBVA
+    can.setFont('Helvetica-Bold',8)
+    can.drawString(320,60,'Banco Continental BBVA')
+    can.setFont('Helvetica',8)
+    can.drawString(320,50,'Cta Cte Soles: 0011 0250 0200615638 80')
+    can.drawString(320,40,'Cta Cte Dolares: 0011 0250 0200653947 88')
+
+    #Linea final de separacion
+    can.line(25,25,580,25)
+
+    #Esta seccion solo va en la hoja final de los productos
+    #Impresion de total venta
+    can.drawRightString(480,lista_y[0]+4,'Total Venta Grabada')
+    if orden_info.monedaOrden == 'SOLES':
+        can.drawRightString(490,lista_y[0]+4,'S/')
+    else:
+        can.drawRightString(490,lista_y[0]+4,'$')
+    can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % total_precio)))
+    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+    #Linea de separacion
+    can.line(480,lista_y[1],580,lista_y[1])
+
+    #Impresion de total IGV
+    igv_precio = Decimal('%.2f' % total_precio)*Decimal(0.18)
+    can.drawRightString(480,lista_y[0]+4,'Total IGV')
+    if orden_info.monedaOrden == 'SOLES':
+        can.drawRightString(490,lista_y[0]+4,'S/')
+    else:
+        can.drawRightString(490,lista_y[0]+4,'$')
+    can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % igv_precio)))
+    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+    #Linea de separacion
+    can.line(480,lista_y[1],580,lista_y[1])
+
+    #Impresion de importe total
+    precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+    can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+    if orden_info.monedaOrden == 'SOLES':
+        can.drawRightString(490,lista_y[0]+4,'S/')
+    else:
+        can.drawRightString(490,lista_y[0]+4,'$')
+    can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(precio_final))))
+    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+    #Linea de separacion
+    can.line(480,lista_y[1],580,lista_y[1])
+
+    #Calculo de la proforma en dolares
+    total_dolares = Decimal(0.0000)
+    for producto in orden_info.productos:
+        if producto[3] == 'SOLES':
+            v_producto = (Decimal(producto[4])/Decimal(3.80))
+            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[5])
+        if producto[3] == 'DOLARES':
+            v_producto = Decimal(producto[4])
+            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[5])
+        total_dolares = Decimal(total_dolares) + Decimal(v_producto)
+    final_dolares = Decimal('%.2f' % total_dolares)*Decimal(1.18)
+
+    #Impresion de importe en otra moneda
+    precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+    can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+    if orden_info.monedaOrden == 'SOLES':
+        can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(final_dolares))))
+    else:
+        can.drawRightString(490,lista_y[0]+4,'S/')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(3.80)))))
+    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+
+    #Linea de separacion con los datos finales
+    can.line(25,lista_y[1],580,lista_y[1])
+    can.save()
+
+    nombre_doc = str(orden_info.codigo_orden) + '.pdf'
+    response = HttpResponse(open('orden_generada.pdf','rb'),content_type='application/pdf')
+    nombre = 'attachment; ' + 'filename=' + nombre_doc
+    response['Content-Disposition'] = nombre
+    return response
+
+def editarOrden(request,ind):
+    pro = products.objects.all().order_by('id')
+    orden_editar = ordenCompra.objects.get(id=ind)
+    if request.method == 'POST':
+        data = json.load(request)
+        rucProveedor = data.get('rucProveedor')
+        nombreProveedor = data.get('nombreProveedor')
+        ciudadProveedor = data.get('ciudadProveedor')
+        destinoProveedor = data.get('destinoProveedor')
+        productosOrden = data.get('productos')
+        print(rucProveedor)
+        print(nombreProveedor)
+        print(ciudadProveedor)
+        print(destinoProveedor)
+        print(productosOrden)
+        orden_editar.ruc_proveedor = rucProveedor
+        orden_editar.proveedorNombre = nombreProveedor
+        orden_editar.direccion = ciudadProveedor
+        orden_editar.destino = destinoProveedor
+        orden_editar.productos = productosOrden
+        orden_editar.save()
+        return JsonResponse({
+            'resp':'ok'
+        })
+
+    return render(request,'sistema_2/edit_orden.html',{
+        'orden':orden_editar,
+        'pro':pro,
+    })

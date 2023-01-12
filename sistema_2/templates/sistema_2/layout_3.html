@@ -109,7 +109,7 @@
                                 </li>
                                 {% endif %}
                                 <li class="dropdown">
-                                    <a href="#" class="nav-link dropdown-toggle  text-truncate" id="dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <a href="#" class="nav-link dropdown-toggle  text-truncate" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-file-invoice" style="color: white; width: 25px;"></i>
                                         <span class="ms-1 d-none d-sm-inline text-white" style="font-size: 14px;">Ventas</span>
                                     </a>
@@ -119,6 +119,15 @@
                                         <li><a class="dropdown-item" href="{% url 'sistema_2:bole' %}">Boletas</a></li>
                                         <li><a class="dropdown-item" href="{% url 'sistema_2:gui' %}">Guias</a></li>
                                         <li><a class="dropdown-item" href="{% url 'sistema_2:notas_credito' %}">Notas de credito</a></li>
+                                    </ul>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#" class="nav-link dropdown-toggle  text-truncate" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-file-invoice" style="color: white; width: 25px;"></i>
+                                        <span class="ms-1 d-none d-sm-inline text-white" style="font-size: 14px;">Compras</span>
+                                    </a>
+                                    <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdown">
+                                        <li><a class="dropdown-item" href="{% url 'sistema_2:emisionoc' %}">Emision OC</a></li>
                                     </ul>
                                 </li>
                                 <li>

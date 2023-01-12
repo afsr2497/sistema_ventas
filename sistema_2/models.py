@@ -301,3 +301,16 @@ class inventariosProductos(models.Model):
 class ubigeoDistrito(models.Model):
     distritoUbigeo = models.CharField(max_length=256,default='')
     codigoUbigeo = models.CharField(max_length=256,default='')
+
+class ordenCompra(models.Model):
+    fechaOrden = models.DateField(default=datetime.date.today)
+    proveedorCodigo = models.CharField(max_length=64,default='000000')
+    proveedorNombre = models.CharField(max_length=64,default='')
+    usuarioOrden = models.CharField(max_length=64,default='')
+    monedaOrden = models.CharField(max_length=64,default='SOLES')
+    productos = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
+    direccion = models.CharField(max_length=64,default='')
+    destino = models.CharField(max_length=64,default='')
+    ruc_proveedor = models.CharField(max_length=64,default='')
+    codigo_orden = models.CharField(max_length=64,default='')
+    estado_orden = models.CharField(max_length=64,default='')
