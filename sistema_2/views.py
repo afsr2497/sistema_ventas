@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -7508,8 +7508,11 @@ def comisiones(request):
                 for registro in registros_totales:
                     if len(registro.vendedorOperacion) > 0:
                         if registro.vendedorOperacion[0] == str(id_vendedor):
-                            if clients.objects.get(id=registro.clienteOperacion[0]).comisiones_habilitado == '1':
-                                registros_vendedor.append(registro)
+                            try:
+                                if clients.objects.get(id=registro.clienteOperacion[0]).habilitado_comisiones == '1':
+                                    registros_vendedor.append(registro)
+                            except:
+                                pass
                 for registro in registros_vendedor:
                     if registro.monedaOperacion == 'DOLARES':
                         factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
@@ -7548,7 +7551,11 @@ def comisiones(request):
                 for registro in registros_totales:
                     if len(registro.vendedorOperacion) > 0:
                         if registro.vendedorOperacion[0] == str(id_vendedor):
-                            registros_vendedor.append(registro)
+                            try:
+                                if clients.objects.get(id=registro.clienteOperacion[0]).habilitado_comisiones == '1':
+                                    registros_vendedor.append(registro)
+                            except:
+                                pass
                 for registro in registros_vendedor:
                     if registro.monedaOperacion == 'DOLARES':
                         factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
@@ -8483,49 +8490,50 @@ def comprobar_abonos(request):
     registros_bancos = regOperacion.objects.filter(tipoOperacion='INGRESO').order_by('id')
     registros_abonos = abonosOperacion.objects.all().order_by('id')
     for registro in registros_abonos:
-        for reg in registros_bancos:
-            if(registro.nro_operacion == reg.nroOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
-                reg.conectado_abono = '1'
-                reg.comprobanteOperacion = [registro.codigo_comprobante]
-                reg.guiaOperacion = [registro.codigo_guia]
-                reg.cotizacionOperacion = [registro.codigo_coti]
-                usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
-                reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
-                reg.estadoOperacion = 'COMPLETO'
-                clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
-                reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
-                reg.save()
-                registro.conectado = '1'
-                registro.idRegistroOp = str(reg.id)
-                registro.save()
-            elif(registro.nro_operacion_2 == reg.nroOperacion_2) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
-                reg.conectado_abono = '1'
-                reg.comprobanteOperacion = [registro.codigo_comprobante]
-                reg.guiaOperacion = [registro.codigo_guia]
-                reg.cotizacionOperacion = [registro.codigo_coti]
-                usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
-                reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
-                reg.estadoOperacion = 'COMPLETO'
-                clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
-                reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
-                reg.save()
-                registro.conectado = '1'
-                registro.idRegistroOp = str(reg.id)
-                registro.save()
-            elif(registro.codigo_comprobante in reg.comprobanteOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
-                reg.conectado_abono = '1'
-                reg.comprobanteOperacion = [registro.codigo_comprobante]
-                reg.guiaOperacion = [registro.codigo_guia]
-                reg.cotizacionOperacion = [registro.codigo_coti]
-                usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
-                reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
-                reg.estadoOperacion = 'COMPLETO'
-                clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
-                reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
-                reg.save()
-                registro.conectado = '1'
-                registro.idRegistroOp = str(reg.id)
-                registro.save()
+        if registro.comprobanteCancelado == 'CANCELADO':
+            for reg in registros_bancos:
+                if(registro.nro_operacion == reg.nroOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
+                    reg.conectado_abono = '1'
+                    reg.comprobanteOperacion = [registro.codigo_comprobante]
+                    reg.guiaOperacion = [registro.codigo_guia]
+                    reg.cotizacionOperacion = [registro.codigo_coti]
+                    usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
+                    reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
+                    reg.estadoOperacion = 'COMPLETO'
+                    clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
+                    reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
+                    reg.save()
+                    registro.conectado = '1'
+                    registro.idRegistroOp = str(reg.id)
+                    registro.save()
+                elif(registro.nro_operacion_2 == reg.nroOperacion_2) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
+                    reg.conectado_abono = '1'
+                    reg.comprobanteOperacion = [registro.codigo_comprobante]
+                    reg.guiaOperacion = [registro.codigo_guia]
+                    reg.cotizacionOperacion = [registro.codigo_coti]
+                    usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
+                    reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
+                    reg.estadoOperacion = 'COMPLETO'
+                    clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
+                    reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
+                    reg.save()
+                    registro.conectado = '1'
+                    registro.idRegistroOp = str(reg.id)
+                    registro.save()
+                elif(registro.codigo_comprobante in reg.comprobanteOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
+                    reg.conectado_abono = '1'
+                    reg.comprobanteOperacion = [registro.codigo_comprobante]
+                    reg.guiaOperacion = [registro.codigo_guia]
+                    reg.cotizacionOperacion = [registro.codigo_coti]
+                    usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
+                    reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
+                    reg.estadoOperacion = 'COMPLETO'
+                    clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
+                    reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
+                    reg.save()
+                    registro.conectado = '1'
+                    registro.idRegistroOp = str(reg.id)
+                    registro.save()
     return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
 
 def eliminar_abono(request,ind):

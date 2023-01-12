@@ -141,5 +141,5 @@ urlpatterns = [
     path('emisionoc',views.emisionoc,name='emisionoc'),
     path('crear_orden',views.crear_orden,name='crear_orden'),
     path('descargar_orden/<str:ind>',views.descargarOrden,name='descargarOrden'),
-    path('editarOrden/<str:ind>',views.editarOrden,name='editarOrden')
+    path('editarOrden/<str:ind>',views.editarOrden,name='editarOrden'),
 ]
