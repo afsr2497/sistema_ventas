@@ -155,20 +155,24 @@
         <thead class="table-dark">
             <tr>
                 <th scope="col">Fecha</th>
-                <th scope="col">Detalle</th>
-                <th scope="col">Moneda</th>
-                <th scope="col">Monto</th>
+                <th scope="col">Banco</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Comprobante</th>
+                <th scope="col">Cotizacion</th>
                 <th scope="col">Nro de operacion</th>
+                <th scope="col">Nro de operacion 2</th>
             </tr>
         </thead>
         <tbody>
-            {% for registro in operacionesVendedor %}
+            {% for abono in operacionesVendedor %}
             <tr>
-                <td>{{ registro.fechaOperacion|date:'d-m-Y' }}</td>
-                <td>{{ registro.detalleOperacion }}</td>
-                <td>{{ registro.monedaOperacion }}</td>
-                <td>{{ registro.montoOperacion }}</td>
-                <th>{{ registro.nroOperacion }}</th>
+                <td>{{ abono.fechaAbono|date:'d-m-Y' }}</td>
+                <td>{{ abono.datos_banco.1 }}-{{ abono.datos_banco.2 }}</td>
+                <td>{{ abono.datos_cliente.1 }}</td>
+                <td>{{ abono.codigo_comprobante }}</td>
+                <td>{{ abono.codigo_coti }}</td>
+                <th>{{ abono.nro_operacion }}</th>
+                <th>{{ abono.nro_operacion_2 }}</th>
             </tr>
             {% endfor %}
         </tbody>

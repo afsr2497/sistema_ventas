@@ -95,7 +95,7 @@
                         </div>
                         <div class="col-md-6">
                             <label>Nro de Operacion 2</label>
-                            <input class="form-control" type="text" name="nroOperacion2Abono" id="nroOperacion2Abono" required>
+                            <input class="form-control" type="text" name="nroOperacion2Abono" id="nroOperacion2Abono">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -141,6 +141,13 @@
                             <input class="form-control" id="vendedorSeleccionado" name="vendedorSeleccionado" readonly>
                         </div>
                     </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <br>
+                            <input class="form-check-input" type="checkbox" name="abonoComisiones" checked>
+                            <label>Habilitado para comisiones</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Agregar</button>
@@ -184,7 +191,7 @@
                         </div>
                         <div class="col-md-6">
                             <label>Nro de Operacion 2</label>
-                            <input class="form-control" type="text" name="nroOperacion2Abono" id="nroOperacion2Abono" value="{{ abono.nro_operacion_2 }}" required>
+                            <input class="form-control" type="text" name="nroOperacion2Abono" id="nroOperacion2Abono" value="{{ abono.nro_operacion_2 }}">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -213,7 +220,7 @@
                         <div class="col-md-6">
                             <br>
                             {% if abono.comprobanteCancelado == 'CANCELADO' %}
-                                <input class="form-check-input" type="checkbox" name="facturaCancelada" disabled>
+                                <input class="form-check-input" type="checkbox" name="facturaCancelada" checked disabled>
                             {% else %}
                                 <input class="form-check-input" type="checkbox" name="facturaCancelada">
                             {% endif %}
@@ -241,6 +248,17 @@
                         <div class="col-md-6">
                             <label>Vendedor</label>
                             <input class="form-control" id="vendedorSeleccionado" name="vendedorSeleccionado" value="{{ abono.codigo_vendedor }}" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <br>
+                            {% if abono.abono_comisionable == '1' %}
+                                <input class="form-check-input" type="checkbox" name="abonoComisiones" checked>
+                            {% else %}
+                                <input class="form-check-input" type="checkbox" name="abonoComisiones">
+                            {% endif %}
+                            <label>Habilitado para comisiones</label>
                         </div>
                     </div>
                 </div>

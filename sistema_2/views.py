@@ -7485,9 +7485,10 @@ def comisiones(request):
     usr = userProfile.objects.all()
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
-    registros_vendedor = []
+    abonos_vendedor = []
+    codigos_ventas = []
     codigoVendedor = ''
-    monto_total = 0
+    monto_total = Decimal(0.0000)
     monto_comision = 0
     month_filter = '01'
     year_filter = '2022'
@@ -7501,111 +7502,134 @@ def comisiones(request):
             codigoVendedor = '0'
             if id_vendedor != '0':
                 codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
-                registros_totales = regOperacion.objects.all().order_by('fechaOperacion')
-                registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
-                registros_totales = registros_totales.filter(estadoOperacion='COMPLETO')
-                registros_totales = registros_totales.filter(fechaOperacion__month=month_filter,fechaOperacion__year=year_filter)
-                for registro in registros_totales:
-                    if len(registro.vendedorOperacion) > 0:
-                        if registro.vendedorOperacion[0] == str(id_vendedor):
+                abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
+                abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
+                abonos_totales = abonos_totales.filter(abono_comisionable='1')
+                abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
+                for abono in abonos_totales:
+                    if len(abono.codigo_vendedor) > 0:
+                        if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
                             try:
-                                if clients.objects.get(id=registro.clienteOperacion[0]).habilitado_comisiones == '1':
-                                    registros_vendedor.append(registro)
+                                if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
+                                    abonos_vendedor.append(abono)
                             except:
                                 pass
-                for registro in registros_vendedor:
-                    if registro.monedaOperacion == 'DOLARES':
-                        factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
-                        tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
-                        dato_sumar = float(registro.montoOperacion)*(tipo_Cambio)
-                    if registro.monedaOperacion == 'SOLES':
-                        dato_sumar = float(registro.montoOperacion)
-                    monto_total = monto_total + dato_sumar
-                monto_total = (monto_total / 1.18)
-                monto_comision = monto_total*0.01
+                for abono in abonos_vendedor:
+                    if not (abono.codigo_comprobante in codigos_ventas):
+                        codigos_ventas.append(abono.codigo_comprobante)
+                    else:
+                        pass
+                for codigo in codigos_ventas:
+                    dato_sumar = 0
+                    if codigo[:4] == 'F001':
+                        comprobante = facturas.objects.get(codigoFactura=codigo)
+                    if codigo[:4] == 'B001':
+                        comprobante = boletas.objects.get(codigoBoleta=codigo)
+                    #Calculo del dato_sumar - Valor de la factura - Productos
+                    total_soles = Decimal(0.0000)
+                    for producto in comprobante.productos:
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_soles = Decimal(total_soles) + Decimal(v_producto)
+                    for servicio in comprobante.servicios:
+                        if servicio[3] == 'DOLARES':
+                            v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        if servicio[3] == 'SOLES':
+                            v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        total_soles = Decimal(total_soles) + Decimal(v_servicio)
+                    #Final del calculo de productos
+                    monto_total = Decimal(monto_total) + Decimal(total_soles)
+                monto_comision = Decimal(monto_total)*Decimal(0.01)
                 monto_total = "{:.2f}".format(round(float(monto_total),2))
                 monto_comision = "{:.2f}".format(round(float(monto_comision),2))
-            return render(request,'sistema_2/comisiones.html',{
-                'usuariosInfo':userProfile.objects.all().order_by('id'),
-                'operacionesVendedor':registros_vendedor,
-                'id_vendedor':codigoVendedor,
-                'month_filter':month_filter,
-                'year_filter':year_filter,
-                'monto_total':str(monto_total),
-                'monto_comision':monto_comision,
-                'tipoUsuario':str(user_logued.tipo),
-                'usuarioSistema':str(user_logued.codigo),
-                'usr_rol': user_logued,
-            })
         elif 'Exportar' in request.POST:
             month_filter = str(request.POST.get('monthInfo'))
             while len(month_filter) < 2:
                 month_filter = '0' + month_filter
             year_filter = str(request.POST.get('yearInfo'))
             id_vendedor = request.POST.get('id_vendedor')
+            info_abonos = []
             if id_vendedor != '0':
-                registros_totales = regOperacion.objects.all().order_by('fechaOperacion')
-                registros_totales = registros_totales.filter(tipoOperacion='INGRESO')
-                registros_totales = registros_totales.filter(estadoOperacion='COMPLETO')
-                registros_totales = registros_totales.filter(fechaOperacion__month=month_filter,fechaOperacion__year=year_filter)
-                for registro in registros_totales:
-                    if len(registro.vendedorOperacion) > 0:
-                        if registro.vendedorOperacion[0] == str(id_vendedor):
+                codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
+                abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
+                abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
+                abonos_totales = abonos_totales.filter(abono_comisionable='1')
+                abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
+                for abono in abonos_totales:
+                    if len(abono.codigo_vendedor) > 0:
+                        if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
                             try:
-                                if clients.objects.get(id=registro.clienteOperacion[0]).habilitado_comisiones == '1':
-                                    registros_vendedor.append(registro)
+                                if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
+                                    abonos_vendedor.append(abono)
                             except:
                                 pass
-                for registro in registros_vendedor:
-                    if registro.monedaOperacion == 'DOLARES':
-                        factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
-                        tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
-                        dato_sumar = float(registro.montoOperacion)*(tipo_Cambio)
-                    if registro.monedaOperacion == 'SOLES':
-                        dato_sumar = float(registro.montoOperacion)
-                    monto_total = monto_total + dato_sumar
-                monto_total = (monto_total / 1.18)
-                monto_comision = monto_total*0.01
+                for abono in abonos_vendedor:
+                    if not (abono.codigo_comprobante in codigos_ventas):
+                        datos_excel = ['','','','','','','']
+                        codigos_ventas.append(abono.codigo_comprobante)
+                        datos_excel[0] = abono.fechaAbono
+                        datos_excel[1] = abono.codigo_comprobante
+                        datos_excel[2] = abono.datos_cliente[1]
+                        datos_excel[3] = abono.nro_operacion
+                        datos_excel[4] = abono.nro_operacion_2
+                        info_abonos.append(datos_excel)
+                    else:
+                        pass
+                counter_abonos = 0
+                for codigo in codigos_ventas:
+                    if codigo[:4] == 'F001':
+                        comprobante = facturas.objects.get(codigoFactura=codigo)
+                        info_abonos[counter_abonos][5] = comprobante.monedaFactura
+                    if codigo[:4] == 'B001':
+                        comprobante = boletas.objects.get(codigoBoleta=codigo)
+                        info_abonos[counter_abonos][5] = comprobante.monedaBoleta
+                    #Calculo del dato_sumar - Valor de la factura - Productos
+                    total_soles = Decimal(0.0000)
+                    for producto in comprobante.productos:
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_soles = Decimal(total_soles) + Decimal(v_producto)
+                    for servicio in comprobante.servicios:
+                        if servicio[3] == 'DOLARES':
+                            v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        if servicio[3] == 'SOLES':
+                            v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        total_soles = Decimal(total_soles) + Decimal(v_servicio)
+                    #Final del calculo de productos
+                    info_abonos[counter_abonos][6] = str(round(float(total_soles),2))
+                    monto_total = Decimal(monto_total) + Decimal(total_soles)
+                    counter_abonos = counter_abonos + 1
+                monto_comision = Decimal(monto_total)*Decimal(0.01)
                 monto_total = "{:.2f}".format(round(float(monto_total),2))
                 monto_comision = "{:.2f}".format(round(float(monto_comision),2))
-            #Metodo a efectuar con el arreglo registro vendedor y exportar sus registros en excel
-            info_registro = []
-            print(registros_vendedor)
-            for registro in registros_vendedor:
-                if registro.monedaOperacion == 'DOLARES':
-                    factura_seleccionada = facturas.objects.filter(codigoFactura=registro.comprobanteOperacion[0]).first()
-                    tipo_Cambio = float(factura_seleccionada.tipoCambio[1])
-                    monto_convertido = round(float(registro.montoOperacion)*(tipo_Cambio),2)
-                    tipo_Cambio = str(round(float(tipo_Cambio),2))
-                else:
-                    monto_convertido =round(float(registro.montoOperacion),2)
-                    tipo_Cambio = str(1.00)
-                monto_convertido = str(monto_convertido)
-                monto_sinigv = str(round(float(monto_convertido)/1.18,2))
-                info_registro.append([registro.fechaOperacion.strftime('%d/%m/%Y'),registro.detalleOperacion,registro.nroOperacion,registro.vendedorOperacion[2],str(regCuenta.objects.get(id=registro.idCuentaBank).bancoCuenta),registro.monedaOperacion,registro.montoOperacion,tipo_Cambio,monto_convertido,monto_sinigv])            
-            info_registro.append(['','','','','','','','Monto total',str(monto_total)])
-            tabla_excel = pd.DataFrame(info_registro,columns=['Fecha','Descricion','Nro de operacion','Codigo del vendedor','Banco','Moneda','Monto','Tipo de Cambio','Monto (S./)','Monto final'])
+                info_abonos.append(['','','','','','Monto total',str(monto_total)])
+                info_abonos.append(['','','','','','Monto comision',str(monto_comision)])
+            tabla_excel = pd.DataFrame(info_abonos,columns=['Fecha','Codigo','Cliente','Nro operacion','Nro operacion 2','Moneda','Monto sin IGV'])
             tabla_excel.to_excel('info_excel.xlsx',index=False)
             doc_excel = openpyxl.load_workbook("info_excel.xlsx")
             doc_excel.active.column_dimensions['A'].width = 30
             doc_excel.active.column_dimensions['B'].width = 30
             doc_excel.active.column_dimensions['C'].width = 30
             doc_excel.active.column_dimensions['D'].width = 30
-            doc_excel.active.column_dimensions['E'].width = 30
-            doc_excel.active.column_dimensions['F'].width = 30
-            doc_excel.active.column_dimensions['G'].width = 30
-            doc_excel.active.column_dimensions['H'].width = 30
-            doc_excel.active.column_dimensions['I'].width = 30
-            doc_excel.active.column_dimensions['I'].width = 30
+            doc_excel.active.column_dimensions['B'].width = 30
+            doc_excel.active.column_dimensions['C'].width = 30
+            doc_excel.active.column_dimensions['D'].width = 30
             doc_excel.save("info_excel.xlsx")
             response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
             response['Content-Disposition'] = nombre
             return response
-            #Fin del metodo de exportacion
     return render(request,'sistema_2/comisiones.html',{
         'usuariosInfo':userProfile.objects.all().order_by('id'),
-        'operacionesVendedor':registros_vendedor,
+        'operacionesVendedor':abonos_vendedor,
         'month_filter':month_filter,
         'year_filter':year_filter,
         'id_vendedor':codigoVendedor,
@@ -8447,6 +8471,11 @@ def registro_abonos(request):
         codigo_coti = request.POST.get('cotiSeleccionada')
         codigo_vendedor = request.POST.get('vendedorSeleccionado')
         facturaCancelada = request.POST.get('facturaCancelada')
+        abono_habilitado_comisiones = request.POST.get('abonoComisiones')
+        if abono_habilitado_comisiones == 'on':
+            abono_habilitado_comisiones = '1'
+        else:
+            abono_habilitado_comisiones = '0'
         datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
         datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
         print(id_banco)
@@ -8477,7 +8506,17 @@ def registro_abonos(request):
             for abono in abonos_totales:
                 abono.comprobanteCancelado = 'CANCELADO'
                 abono.save()
-        abonosOperacion(nro_operacion_2=nro_operacion_2,fechaAbono=fecha_registro,comprobanteCancelado=abonoEstado,datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
+        if abono_habilitado_comisiones == '1':
+            abonos_totales = abonosOperacion.objects.all().filter(codigo_comprobante=codigo_comprobante)
+            for abono in abonos_totales:
+                abono.abono_comisionable = '1'
+                abono.save()
+        if abono_habilitado_comisiones == '0':
+            abonos_totales = abonosOperacion.objects.all().filter(codigo_comprobante=codigo_comprobante)
+            for abono in abonos_totales:
+                abono.abono_comisionable = '0'
+                abono.save()
+        abonosOperacion(abono_comisionable=abono_habilitado_comisiones,nro_operacion_2=nro_operacion_2,fechaAbono=fecha_registro,comprobanteCancelado=abonoEstado,datos_banco=datos_banco,datos_cliente=datos_cliente,nro_operacion=nro_operacion,codigo_comprobante=codigo_comprobante,codigo_guia=codigo_guia,codigo_coti=codigo_coti,codigo_vendedor=codigo_vendedor).save()
         return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
     return render(request,'sistema_2/registro_abonos.html',{
         'bancos_totales':regCuenta.objects.all().order_by('id'),
@@ -8566,10 +8605,26 @@ def actualizar_abono(request,ind):
         nro_operacion = request.POST.get('nroOperacionAbono')
         nro_operacion_2 = request.POST.get('nroOperacion2Abono')
         factura_cancelada = request.POST.get('facturaCancelada')
+        abono_habilitado_comisiones = request.POST.get('abonoComisiones')
+        if abono_habilitado_comisiones == 'on':
+            abono_habilitado_comisiones = '1'
+        else:
+            abono_habilitado_comisiones = '0'
         datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
         abonoActualizar.datos_banco = datos_banco
         abonoActualizar.nro_operacion = nro_operacion
         abonoActualizar.nro_operacion_2 = nro_operacion_2
+        abonoActualizar.abono_comisionable = abono_habilitado_comisiones
+        if abono_habilitado_comisiones == '1':
+            abonos_totales = abonosOperacion.objects.all().filter(codigo_comprobante=abonoActualizar.codigo_comprobante)
+            for abono in abonos_totales:
+                abono.abono_comisionable = '1'
+                abono.save()
+        if abono_habilitado_comisiones == '0':
+            abonos_totales = abonosOperacion.objects.all().filter(codigo_comprobante=abonoActualizar.codigo_comprobante)
+            for abono in abonos_totales:
+                abono.abono_comisionable = '0'
+                abono.save()
         #Desenlazar abono:
         if abonoActualizar.conectado == '1':
             regBanc = regOperacion.objects.get(id=abonoActualizar.idRegistroOp)

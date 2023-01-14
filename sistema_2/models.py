@@ -289,6 +289,7 @@ class abonosOperacion(models.Model):
     idRegistroOp = models.CharField(max_length=64,default='0')
     comprobanteCancelado = models.CharField(max_length=64,default='PENDIENTE')
     fechaAbono = models.DateField(default=datetime.date.today)
+    abono_comisionable = models.CharField(max_length=12,default='1')
 
 class inventariosProductos(models.Model):
     fechaInventario = models.DateField(default=timezone.now)
