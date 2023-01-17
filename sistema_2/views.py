@@ -1833,7 +1833,8 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,producto[1],factura.monedaFactura,'%.2f'%v_producto,producto[8]])
+                        #info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     for servicio in factura.servicios:
                         if factura.monedaFactura == 'SOLES':
                             if servicio[3] == 'DOLARES':
@@ -1857,25 +1858,28 @@ def fact(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
-                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                        #info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,servicio[1],factura.monedaFactura,'%.2f'%v_producto,'1'])
+                    #info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
-                for elemento in info_facturas:
-                    suma_total = suma_total + float(elemento[8])
-                suma_total = round(suma_total,2)
-                info_facturas.append(['','','','','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
+                #for elemento in info_facturas:
+                #    suma_total = suma_total + float(elemento[8])
+                #suma_total = round(suma_total,2)
+                #info_facturas.append(['','','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','RUC','Estado','Vendedor','Guias','Item','Moneda','PU (SIN IGV) S/','Cantidad'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
-                doc_excel.active.column_dimensions['A'].width = 30
-                doc_excel.active.column_dimensions['B'].width = 30
-                doc_excel.active.column_dimensions['C'].width = 30
-                doc_excel.active.column_dimensions['D'].width = 30
-                doc_excel.active.column_dimensions['E'].width = 30
-                doc_excel.active.column_dimensions['F'].width = 30
-                doc_excel.active.column_dimensions['G'].width = 30
-                doc_excel.active.column_dimensions['H'].width = 30
-                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.active.column_dimensions['A'].width = 15
+                doc_excel.active.column_dimensions['B'].width = 15
+                doc_excel.active.column_dimensions['C'].width = 40
+                doc_excel.active.column_dimensions['D'].width = 15
+                doc_excel.active.column_dimensions['E'].width = 15
+                doc_excel.active.column_dimensions['F'].width = 15
+                doc_excel.active.column_dimensions['G'].width = 20
+                doc_excel.active.column_dimensions['H'].width = 40
+                doc_excel.active.column_dimensions['I'].width = 15
+                doc_excel.active.column_dimensions['J'].width = 15
+                doc_excel.active.column_dimensions['K'].width = 15
                 doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
@@ -1910,7 +1914,8 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,producto[1],factura.monedaFactura,'%.2f'%v_producto,producto[8]])
+                        #info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     for servicio in factura.servicios:
                         if factura.monedaFactura == 'SOLES':
                             if servicio[3] == 'DOLARES':
@@ -1934,25 +1939,28 @@ def fact(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
-                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,servicio[1],factura.monedaFactura,'%.2f'%v_producto,'1'])
+                        #info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
+                    #info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
-                for elemento in info_facturas:
-                    suma_total = suma_total + float(elemento[7])
-                suma_total = round(suma_total,2)
-                info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
-                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
+                #for elemento in info_facturas:
+                #    suma_total = suma_total + float(elemento[7])
+                #suma_total = round(suma_total,2)
+                #info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente','RUC','Estado','Vendedor','Guias','Item','Moneda','PU (SIN IGV) S/','Cantidad'])
                 tabla_excel.to_excel('info_excel.xlsx',index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
-                doc_excel.active.column_dimensions['A'].width = 30
-                doc_excel.active.column_dimensions['B'].width = 30
-                doc_excel.active.column_dimensions['C'].width = 30
-                doc_excel.active.column_dimensions['D'].width = 30
-                doc_excel.active.column_dimensions['E'].width = 30
-                doc_excel.active.column_dimensions['F'].width = 30
-                doc_excel.active.column_dimensions['G'].width = 30
-                doc_excel.active.column_dimensions['H'].width = 30
-                doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.active.column_dimensions['A'].width = 15
+                doc_excel.active.column_dimensions['B'].width = 15
+                doc_excel.active.column_dimensions['C'].width = 40
+                doc_excel.active.column_dimensions['D'].width = 15
+                doc_excel.active.column_dimensions['E'].width = 15
+                doc_excel.active.column_dimensions['F'].width = 15
+                doc_excel.active.column_dimensions['G'].width = 20
+                doc_excel.active.column_dimensions['H'].width = 40
+                doc_excel.active.column_dimensions['I'].width = 15
+                doc_excel.active.column_dimensions['J'].width = 15
+                doc_excel.active.column_dimensions['K'].width = 15
                 doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
