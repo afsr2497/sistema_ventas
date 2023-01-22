@@ -79,7 +79,7 @@ addEventListener('DOMContentLoaded',()=>{
                                     },})
             cliente_info=await res.json()
             console.log(cliente_info)
-            if(cliente_info.tipoCliente == 'Empresa')
+            if(cliente_info.tipoCliente === 'Empresa')
             {
                 for(var i = 0; i < cliente_info.facturas.length; i++)
                 {
@@ -91,7 +91,19 @@ addEventListener('DOMContentLoaded',()=>{
                 }
                 $('.selectpicker').selectpicker('refresh')
             }
-                                }
+            if(cliente_info.tipoCliente === 'Persona')
+            {
+                for(var i = 0; i < cliente_info.boletas.length; i++)
+                {
+                    console.log('Se ingreso al bucle')
+                    var opcionCreada = document.createElement('option')
+                    opcionCreada.value = cliente_info.boletas[i]
+                    opcionCreada.text = cliente_info.boletas[i]
+                    facturas_cliente.add(opcionCreada)
+                }
+                $('.selectpicker').selectpicker('refresh')
+            }
+        }
         get_data()
     }
 

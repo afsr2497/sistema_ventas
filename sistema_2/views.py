@@ -4327,8 +4327,8 @@ def armar_json_guia(guia_info):
             producto_b = products.objects.get(id=producto_info.producto_B[0])
             arreglo_producto_a = [
                 str(producto_a.id),
-                str(producto_a.codigo),
                 str(producto_a.nombre),
+                str(producto_a.codigo),
                 str(producto_a.unidad_med),
                 str(producto[4]),
                 str(producto_a.moneda),
@@ -4340,8 +4340,8 @@ def armar_json_guia(guia_info):
                 str(producto_a.pesoProducto)]
             arreglo_producto_b = [
                 str(producto_b.id),
-                str(producto_b.codigo),
                 str(producto_b.nombre),
+                str(producto_b.codigo),
                 str(producto_b.unidad_med),
                 str(producto[4]),
                 str(producto_b.moneda),
@@ -4578,8 +4578,8 @@ def armar_json_factura(factura_info):
             producto_a = products.objects.get(id=producto_info.producto_A[0])
             arreglo_producto_a = [
                 str(producto_a.id),
-                str(producto_a.codigo),
                 str(producto_a.nombre),
+                str(producto_a.codigo),
                 str(producto_a.unidad_med),
                 str(producto[4]),
                 str(producto_a.moneda),
@@ -7218,7 +7218,7 @@ def obtener_facturas_cotizaciones_cliente(request,ind):
             print(ind)
             cliente_info = clients.objects.get(id=ind)
             facturas_info = facturas.objects.all().filter(facturaPagada='0')
-            boletas_info = boletas.objects.all()
+            boletas_info = boletas.objects.all().filter(boletaPagada='0')
             cotis_info = cotizaciones.objects.all()
             facturas_seleccionadas = list()
             boletas_seleccionadas = list()
@@ -7264,14 +7264,24 @@ def obtener_guias_factura(request,ind):
     if is_ajax:
         if request.method == 'GET':
             if(ind != 'SinSeleccion'):
-                facturas_info = facturas.objects.get(codigoFactura=ind)
-                print(facturas_info.codigosGuias)
-                return JsonResponse(
-                    {
-                        'guias': facturas_info.codigosGuias,
-                        'proformas':facturas_info.codigosCotis,
-                        'vendedor':facturas_info.vendedor[2]
-                    })
+                if(ind[:4] == 'F001'):
+                    facturas_info = facturas.objects.get(codigoFactura=ind)
+                    print(facturas_info.codigosGuias)
+                    return JsonResponse(
+                        {
+                            'guias': facturas_info.codigosGuias,
+                            'proformas':facturas_info.codigosCotis,
+                            'vendedor':facturas_info.vendedor[2]
+                        })
+                if(ind[:4] == 'B001'):
+                    facturas_info = boletas.objects.get(codigoBoleta=ind)
+                    print(facturas_info.codigosGuias)
+                    return JsonResponse(
+                        {
+                            'guias': facturas_info.codigosGuias,
+                            'proformas':facturas_info.codigosCotis,
+                            'vendedor':facturas_info.vendedor[2]
+                        })
             else:
                 return JsonResponse(
                     {
@@ -8507,9 +8517,14 @@ def registro_abonos(request):
         fecha_registro = parse(abono_fecha)
         if facturaCancelada == 'on':
             abonoEstado = 'CANCELADO'
-            comprobante_abono = facturas.objects.get(codigoFactura=codigo_comprobante)
-            comprobante_abono.facturaPagada = '1'
-            comprobante_abono.save()
+            if codigo_comprobante[:4] == 'F001':
+                comprobante_abono = facturas.objects.get(codigoFactura=codigo_comprobante)
+                comprobante_abono.facturaPagada = '1'
+                comprobante_abono.save()
+            if codigo_comprobante[:4] == 'B001':
+                comprobante_abono = boletas.objects.get(codigoBoleta=codigo_comprobante)
+                comprobante_abono.boletaPagada = '1'
+                comprobante_abono.save()
             abonos_totales = abonosOperacion.objects.all().filter(codigo_comprobante=codigo_comprobante)
             for abono in abonos_totales:
                 abono.comprobanteCancelado = 'CANCELADO'
@@ -8600,9 +8615,14 @@ def eliminar_abono(request,ind):
         for abono in abonos_asociados:
             abono.comprobanteCancelado = 'PENDIENTE'
             abono.save()
-        factura_abono = facturas.objects.get(codigoFactura=abono_eliminar.codigo_comprobante)
-        factura_abono.facturaPagada = '0'
-        factura_abono.save()
+        if abono_eliminar.codigo_comprobante[:4] == 'F001':
+            factura_abono = facturas.objects.get(codigoFactura=abono_eliminar.codigo_comprobante)
+            factura_abono.facturaPagada = '0'
+            factura_abono.save()
+        if abono_eliminar.codigo_comprobante[:4] == 'B001':
+            factura_abono = boletas.objects.get(codigoBoleta=abono_eliminar.codigo_comprobante)
+            factura_abono.boletaPagada = '0'
+            factura_abono.save()
     abono_eliminar.delete()
     return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
 
@@ -9501,7 +9521,7 @@ def armar_json_nota_factura(factura_info):
     valor_total = 0
     if factura_info.monedaNota == 'SOLES':
         moneda = "PEN"
-        if factura_info.tipoComprobante == 'Productos':
+        if factura_info.tipoItemsNota == 'Productos':
             i=1
             for producto in factura_info.productos:
                 if producto[5] == 'SOLES':
@@ -9527,7 +9547,7 @@ def armar_json_nota_factura(factura_info):
                 }
                 productos.append(info_pro)
                 i=i+1
-        if factura_info.tipoComprobante == 'Servicios':
+        if factura_info.tipoItemsNota == 'Servicios':
             i = 1
             for servicio in factura_info.servicios:
                 if servicio[3] == 'SOLES':
@@ -9553,7 +9573,7 @@ def armar_json_nota_factura(factura_info):
                 i=i+1
     if factura_info.monedaNota == 'DOLARES':
         moneda = "USD"
-        if factura_info.tipoComprobante == 'Productos':
+        if factura_info.tipoItemsNota == 'Productos':
             i = 1
             for producto in factura_info.productos:
                 if producto[5] == 'DOLARES':
@@ -9579,7 +9599,7 @@ def armar_json_nota_factura(factura_info):
                 }
                 productos.append(info_pro)
                 i=i+1
-        if factura_info.tipoComprobante == 'Servicios':
+        if factura_info.tipoItemsNota == 'Servicios':
             i = 1
             for servicio in factura_info.servicios:
                 if servicio[3] == 'DOLARES':
@@ -9612,16 +9632,16 @@ def armar_json_nota_factura(factura_info):
         }, 
         "comprobanteAjustado":{
             "serie":'F001',
-            "numero":177,
+            "numero":310,
             "tipoDocumento":"FACTURA",
-            "fechaEmision":"24-10-2022",
+            "fechaEmision":"2023-01-05",
         },
         "datosDocumento":
         {
             "serie":factura_info.serieNota,
             "numero":int(factura_info.nroNota),
             "moneda":moneda,
-            "fechaEmision":"07-11-2022",
+            "fechaEmision":"2023-01-19",
             "horaEmision":null,
             "fechaVencimiento":null,
             "formaPago":"CONTADO",
@@ -9629,7 +9649,7 @@ def armar_json_nota_factura(factura_info):
             "condicionPago": null,
             "ordencompra":null,
             "puntoEmisor":null,
-            "glosa":"Anulacion"
+            "glosa":"Anulacion",
         },
         "detalleDocumento":productos,
         "emisor":
