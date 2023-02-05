@@ -1,3 +1,12 @@
+function deshabilitarVerificacion()
+{
+    console.log('Hola a todos')
+    document.querySelectorAll('.verificacionInfo').forEach(elemento => {
+        elemento.disabled = true
+    })
+}
+
+
 function getCookie(name) 
 {
     let cookieValue = null;

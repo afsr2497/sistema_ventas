@@ -1833,7 +1833,7 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,producto[1],factura.monedaFactura,'%.2f'%v_producto,producto[8]])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoSunat,factura.vendedor[2],factura.codigosGuias,producto[1],factura.monedaFactura,'%.2f'%v_producto,producto[8]])
                         #info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     for servicio in factura.servicios:
                         if factura.monedaFactura == 'SOLES':
@@ -1859,7 +1859,7 @@ def fact(request):
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
                         #info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,servicio[1],factura.monedaFactura,'%.2f'%v_producto,'1'])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoSunat,factura.vendedor[2],factura.codigosGuias,servicio[1],factura.monedaFactura,'%.2f'%v_producto,'1'])
                     #info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 #for elemento in info_facturas:
@@ -1914,7 +1914,7 @@ def fact(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,producto[1],factura.monedaFactura,'%.2f'%v_producto,producto[8]])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoSunat,factura.vendedor[2],factura.codigosGuias,producto[1],factura.monedaFactura,'%.2f'%v_producto,producto[8]])
                         #info_facturas.append([factura.fechaFactura,factura.codigoFactura,producto[1],producto[2],'','',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     for servicio in factura.servicios:
                         if factura.monedaFactura == 'SOLES':
@@ -1939,7 +1939,7 @@ def fact(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,servicio[1],factura.monedaFactura,'%.2f'%v_producto,'1'])
+                        info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.cliente[5],factura.estadoSunat,factura.vendedor[2],factura.codigosGuias,servicio[1],factura.monedaFactura,'%.2f'%v_producto,'1'])
                         #info_facturas.append([factura.fechaFactura,factura.codigoFactura,servicio[1],servicio[2],'',factura.monedaFactura,'%.2f'%v_producto,'0.00'])
                     #info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
@@ -4058,23 +4058,27 @@ def descargar_boleta(request,ind):
 @login_required(login_url='/sistema_2')
 def enviar_boleta(request,ind):
     boleta_info = boletas.objects.get(id=ind)
-    token_info = config_docs.objects.get(id=1)
-    print(boleta_info.cliente)
-    print(boleta_info.productos)
     info_data = armar_json_boleta(boleta_info)
 
-    headers_info={"X-Auth-Token":token_info.tokenDoc,"Content-Type":"application/json"}
-    url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/boleta'
-    r = requests.put(url_pedido,headers=headers_info,json=info_data)
-    print(r)
-    print(r.content)
-    if((r.status_code == 200) or (r.status_code == 409)):
-        boleta_info.estadoBoleta = 'Enviada'
-    if(r.status_code == 401):
-        boleta_info.estadoBoleta = 'Generada'
-    if(r.status_code == 403):
-        boleta_info.estadoBoleta = 'Generada'
-    boleta_info.save()
+    if entorno_sistema == '1':
+        print(info_data)
+        token_info = config_docs.objects.get(id=1)
+        headers_info={"X-Auth-Token":token_info.tokenDoc,"Content-Type":"application/json"}
+        url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/boleta'
+        r = requests.put(url_pedido,headers=headers_info,json=info_data)
+        nueva_boleta = boletas.objects.get(id=ind)
+        if((r.status_code == 200) or (r.status_code == 409)):
+            nueva_boleta.estadoBoleta = 'Enviada'
+        if(r.status_code == 401):
+            nueva_boleta.estadoBoleta = 'Generada'
+        if(r.status_code == 403):
+            nueva_boleta.estadoBoleta = 'Generada'
+        nueva_boleta.save()
+    if entorno_sistema == '0':
+        print(info_data)
+        nueva_boleta = boletas.objects.get(id=ind)
+        nueva_boleta.estadoBoleta = 'Enviada'
+        nueva_boleta.save()
     return HttpResponseRedirect(reverse('sistema_2:bole'))
 
 
@@ -4094,7 +4098,28 @@ def armar_json_boleta(boleta_info):
             guias_json = null
     else:
         guias_json = null
-    print(guias_json)
+    producto_extra = []
+    for producto in boleta_info.productos:
+        producto_info = products.objects.get(id=producto[0])
+        if producto_info.producto_kit == '1':
+            producto_a = products.objects.get(id=producto_info.producto_A[0])
+            arreglo_producto_a = [
+                str(producto_a.id),
+                str(producto_a.nombre),
+                str(producto_a.codigo),
+                str(producto_a.unidad_med),
+                str(producto[4]),
+                str(producto_a.moneda),
+                str(producto[6]),
+                str(producto[7]),
+                str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                '1',
+                str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                str(producto_a.pesoProducto)
+            ]
+            producto_extra.append(arreglo_producto_a)
+            boleta_info.productos.remove(producto)
+    boleta_info.productos = boleta_info.productos + producto_extra
     productos = []
     valor_total = 0
     if boleta_info.monedaBoleta == 'SOLES':
@@ -4108,7 +4133,6 @@ def armar_json_boleta(boleta_info):
                 if producto[5] == 'DOLARES':
                     precio_pro = Decimal(producto[6])*Decimal(boleta_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
-                print(precio_pro)
                 valor_total = valor_total + precio_pro*round(float(producto[8]),2)
                 info_pro = {
                     "codigoProducto":producto[2],
@@ -4116,7 +4140,7 @@ def armar_json_boleta(boleta_info):
                     "descripcion":producto[1],
                     "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
                     "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":producto[8],
+                    "cantidad":str(int(float(producto[8]))),
                     "valorVentaUnitarioItem":precio_pro,
                     "descuento":{
                         "monto":'0',
@@ -4135,7 +4159,6 @@ def armar_json_boleta(boleta_info):
                 if servicio[3] == 'DOLARES':
                     precio_pro = Decimal(servicio[4])*Decimal(boleta_info.tipoCambio[1])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                     precio_pro = float('%.2f' % precio_pro)
-                print(precio_pro)
                 valor_total = valor_total + precio_pro
                 info_pro = {
                     "codigoProducto":servicio[0],
@@ -4165,14 +4188,13 @@ def armar_json_boleta(boleta_info):
                     precio_pro = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
                 valor_total = valor_total + precio_pro*round(float(producto[8]),2)
-                print(precio_pro)
                 info_pro = {
                     "codigoProducto":producto[2],
                     "codigoProductoSunat":"",
                     "descripcion":producto[1],
                     "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
                     "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":producto[8],
+                    "cantidad":str(int(float(producto[8]))),
                     "valorVentaUnitarioItem":precio_pro,
                     "descuento":{
                         "monto":'0',
@@ -4191,7 +4213,6 @@ def armar_json_boleta(boleta_info):
                 if servicio[3] == 'SOLES':
                     precio_pro = (Decimal(servicio[4])/Decimal(boleta_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                     precio_pro = float('%.2f' % precio_pro)
-                print(precio_pro)
                 valor_total = valor_total + precio_pro
                 info_pro = {
                     "codigoProducto":servicio[0],
@@ -4209,7 +4230,6 @@ def armar_json_boleta(boleta_info):
                 }
                 productos.append(info_pro)
                 i=i+1
-    print(productos)
     param_data = {
         "close2u":
         {
@@ -4271,7 +4291,7 @@ def armar_json_boleta(boleta_info):
             "nombreComercial": null,
             "nombreLegal": str(boleta_info.cliente[1] + ' ' + boleta_info.cliente[2]),
             "numeroDocumentoIdentidad": boleta_info.cliente[4],
-            "tipoDocumentoIdentidad": "DOC_NACIONAL_DE_IDENTIDAD"
+            "tipoDocumentoIdentidad": "RUC"
         },
         'referencias':{
             "documentoReferenciaList":guias_json,
@@ -4334,9 +4354,9 @@ def armar_json_guia(guia_info):
                 str(producto_a.moneda),
                 '0.00',
                 '0',
-                str(producto_info.producto_A[2]),
+                str(round(float(producto_info.producto_A[2])*float(producto[8]),2)),
                 '1',
-                str(producto_info.producto_A[2]),
+                str(round(float(producto_info.producto_A[2])*float(producto[8]),2)),
                 str(producto_a.pesoProducto)]
             arreglo_producto_b = [
                 str(producto_b.id),
@@ -4347,9 +4367,9 @@ def armar_json_guia(guia_info):
                 str(producto_b.moneda),
                 '0.00',
                 '0',
-                str(producto_info.producto_B[2]),
+                str(round(float(producto_info.producto_B[2])*float(producto[8]),2)),
                 '1',
-                str(producto_info.producto_B[2]),
+                str(round(float(producto_info.producto_B[2])*float(producto[8]),2)),
                 str(producto_b.pesoProducto)]
             productos_extras.append(arreglo_producto_a)
             productos_extras.append(arreglo_producto_b)
@@ -4585,9 +4605,9 @@ def armar_json_factura(factura_info):
                 str(producto_a.moneda),
                 str(producto[6]),
                 str(producto[7]),
-                str(producto[8]),
+                str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
                 '1',
-                str(producto[8]),
+                str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
                 str(producto_a.pesoProducto)
             ]
             producto_extra.append(arreglo_producto_a)
@@ -4614,7 +4634,7 @@ def armar_json_factura(factura_info):
                     "descripcion":producto[1],
                     "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
                     "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":producto[8],
+                    "cantidad":str(int(float(producto[8]))),
                     "valorVentaUnitarioItem":precio_pro,
                     "descuento":{
                         "monto":'0',
@@ -4670,7 +4690,7 @@ def armar_json_factura(factura_info):
                     "descripcion":producto[1],
                     "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
                     "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":producto[8],
+                    "cantidad":str(int(float(producto[8]))),
                     "valorVentaUnitarioItem":precio_pro,
                     "descuento":{
                         "monto":'0',
@@ -5622,7 +5642,7 @@ def gen_boleta_guia(request,ind):
     if entorno_sistema == '1':
         boleta_estado = 'Generada'
     if entorno_sistema == '0':
-        boleta_estado = 'Enviada'
+        boleta_estado = 'Generada'
     boleta_dscto = '1'
     nro_Guia = str(guia_obtener.nroGuia)
     if len(nro_Guia) < 4:
@@ -6015,8 +6035,8 @@ def download_guia(request,ind):
 
 @login_required(login_url='/sistema_2')
 def verificar_factura_teFacturo(request,ind):
+    factura_verificar = facturas.objects.get(id=ind)
     if entorno_sistema == '1':
-        factura_verificar = facturas.objects.get(id=ind)
         info_data = {
             'emisor':'20541628631',
             'numero':str(factura_verificar.nroFactura),
@@ -6026,14 +6046,81 @@ def verificar_factura_teFacturo(request,ind):
         headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
         url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
         r = requests.put(url_pedido,headers=headers_info,json=info_data)
-        print(r)
-        print(r.content)
         factura_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
         factura_verificar.save()
-        if ((factura_verificar.estadoSunat == 'Aceptado') or (factura_verificar.estadoSunat == 'Aceptado con Obs.')) and factura_verificar.stockAct == '0':
-            factura_verificar.stockAct = '1'
-            factura_verificar.save()
-            for producto in factura_verificar.productos:
+    if entorno_sistema == '0':
+        factura_verificar.estadoSunat = 'Anulado'
+        factura_verificar.save()
+
+    if((factura_verificar.estadoSunat == 'Aceptado') or (factura_verificar.estadoSunat == 'Aceptado con Obs.')) and factura_verificar.stockAct == '0':
+        factura_verificar.stockAct = '1'
+        factura_verificar.save()
+        for producto in factura_verificar.productos:
+            if producto[2][0] == 'K':
+                kit_info = products.objects.get(codigo=producto[2])
+                prod_a = products.objects.get(id=kit_info.producto_A[0])
+                stock_pasado = prod_a.stockTotal
+                stknow = float(prod_a.stockTotal)
+                stkact = stknow - float(producto[8])*float(kit_info.producto_A[2])
+                stkact = str(round(stkact,2))
+                prod_a.stockTotal = stkact
+                prod_a.save()
+                for almacen in prod_a.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - (float(producto[8])*float(kit_info.producto_A[2])),2))
+                        prod_a.save()
+                prod_a.save()
+                stock_nuevo = prod_a.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Egreso Factura'
+                refFactura = factura_verificar.codigoFactura
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_a.id),producto_nombre=str(prod_a.nombre),producto_codigo=str(prod_a.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_A[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para A
+                prod_b = products.objects.get(id=kit_info.producto_B[0])
+                stock_pasado = prod_b.stockTotal
+                stknow = float(prod_b.stockTotal)
+                stkact = stknow - float(producto[8])*float(kit_info.producto_B[2])
+                stkact = str(round(stkact,2))
+                prod_b.stockTotal = stkact
+                prod_b.save()
+                for almacen in prod_b.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - (float(producto[8])*float(kit_info.producto_B[2])),2))
+                        prod_b.save()
+                prod_b.save()
+                stock_nuevo = prod_b.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Egreso Factura'
+                refFactura = factura_verificar.codigoFactura
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_b.id),producto_nombre=str(prod_b.nombre),producto_codigo=str(prod_b.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_B[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para B
+            else:
                 prod_mod = products.objects.get(codigo=producto[2])
                 stock_pasado = prod_mod.stockTotal
                 stknow = float(prod_mod.stockTotal)
@@ -6064,11 +6151,75 @@ def verificar_factura_teFacturo(request,ind):
                 operacion = 'Egreso Factura'
                 refFactura = factura_verificar.codigoFactura
                 egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
-               
-        if factura_verificar.estadoSunat == 'Anulado' and factura_verificar.stockAct == '1':
-            factura_verificar.stockAct = '0'
-            factura_verificar.save()
-            for producto in factura_verificar.productos:
+    if factura_verificar.estadoSunat == 'Anulado' and factura_verificar.stockAct == '1':
+        factura_verificar.stockAct = '0'
+        factura_verificar.save()
+        for producto in factura_verificar.productos:
+            if producto[2][0] == 'K':
+                kit_info = products.objects.get(codigo=producto[2])
+                prod_a = products.objects.get(id=kit_info.producto_A[0])
+                stock_pasado = prod_a.stockTotal
+                stknow = float(prod_a.stockTotal)
+                stkact = stknow + float(producto[8])*float(kit_info.producto_A[2])
+                stkact = str(round(stkact,2))
+                prod_a.stockTotal = stkact
+                prod_a.save()
+                for almacen in prod_a.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) + (float(producto[8])*float(kit_info.producto_A[2])),2))
+                        prod_a.save()
+                prod_a.save()
+                stock_nuevo = prod_a.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Anulacion Factura'
+                refFactura = factura_verificar.codigoFactura
+                ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_a.id),producto_nombre=str(prod_a.nombre),producto_codigo=str(prod_a.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_A[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para A
+                prod_b = products.objects.get(id=kit_info.producto_B[0])
+                stock_pasado = prod_b.stockTotal
+                stknow = float(prod_b.stockTotal)
+                stkact = stknow + float(producto[8])*float(kit_info.producto_B[2])
+                stkact = str(round(stkact,2))
+                prod_b.stockTotal = stkact
+                prod_b.save()
+                for almacen in prod_b.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) + (float(producto[8])*float(kit_info.producto_B[2])),2))
+                        prod_b.save()
+                prod_b.save()
+                stock_nuevo = prod_b.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Anulacion Factura'
+                refFactura = factura_verificar.codigoFactura
+                ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_b.id),producto_nombre=str(prod_b.nombre),producto_codigo=str(prod_b.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_B[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para B
+            else:
                 prod_mod = products.objects.get(codigo=producto[2])
                 stock_pasado = prod_mod.stockTotal
                 stknow = float(prod_mod.stockTotal)
@@ -6099,26 +6250,45 @@ def verificar_factura_teFacturo(request,ind):
                 operacion = 'Anulacion Factura'
                 refFactura = factura_verificar.codigoFactura
                 ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+    return HttpResponseRedirect(reverse('sistema_2:fact'))
+
+@login_required(login_url='/sistema_2')
+def verificar_boleta_teFacturo(request,ind):
+    boleta_verificar = boletas.objects.get(id=ind)
+    if entorno_sistema == '1':
+        info_data = {
+            'emisor':'20541628631',
+            'numero':str(boleta_verificar.nroBoleta),
+            'serie':str(boleta_verificar.serieBoleta),
+            'tipoComprobante':'03'
+        }
+        headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
+        url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
+        r = requests.put(url_pedido,headers=headers_info,json=info_data)
+        boleta_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
+        boleta_verificar.save()
     if entorno_sistema == '0':
-        factura_verificar = facturas.objects.get(id=ind)
-        factura_verificar.stockAct = '1'
-        factura_verificar.estadoSunat = 'Aceptada'
-        factura_verificar.save()
-        if factura_verificar.stockAct == '0':
-            for producto in factura_verificar.productos:
-                prod_mod = products.objects.get(codigo=producto[2])
-                stock_pasado = prod_mod.stockTotal
-                stknow = float(prod_mod.stockTotal)
-                stkact = stknow - float(producto[8])
+        boleta_verificar.estadoSunat = 'Anulado'
+        boleta_verificar.save()
+    if((boleta_verificar.estadoSunat == 'Aceptado') or (boleta_verificar.estadoSunat == 'Aceptado con Obs.')) and boleta_verificar.stockAct == '0':
+        boleta_verificar.stockAct = '1'
+        boleta_verificar.save()
+        for producto in boleta_verificar.productos:
+            if producto[2][0] == 'K':
+                kit_info = products.objects.get(codigo=producto[2])
+                prod_a = products.objects.get(id=kit_info.producto_A[0])
+                stock_pasado = prod_a.stockTotal
+                stknow = float(prod_a.stockTotal)
+                stkact = stknow - float(producto[8])*float(kit_info.producto_A[2])
                 stkact = str(round(stkact,2))
-                prod_mod.stockTotal = stkact
-                prod_mod.save()
-                for almacen in prod_mod.stock:
+                prod_a.stockTotal = stkact
+                prod_a.save()
+                for almacen in prod_a.stock:
                     if almacen[0] == producto[4]:
-                        almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
-                        prod_mod.save()
-                prod_mod.save()
-                stock_nuevo = prod_mod.stockTotal
+                        almacen[1] = str(round(float(almacen[1]) - (float(producto[8])*float(kit_info.producto_A[2])),2))
+                        prod_a.save()
+                prod_a.save()
+                stock_nuevo = prod_a.stockTotal
                 usuario_logued = User.objects.get(username=request.user.username)
                 user_logued = userProfile.objects.get(usuario=usuario_logued)
                 usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
@@ -6133,32 +6303,42 @@ def verificar_factura_teFacturo(request,ind):
                 producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
                 datos_fecha = producto_fecha.split('-')
                 producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
-                operacion = 'Egreso Factura'
-                refFactura = factura_verificar.codigoFactura
-                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
-    return HttpResponseRedirect(reverse('sistema_2:fact'))
-
-@login_required(login_url='/sistema_2')
-def verificar_boleta_teFacturo(request,ind):
-    if entorno_sistema == '1':
-        boleta_verificar = boletas.objects.get(id=ind)
-        info_data = {
-            'emisor':'20541628631',
-            'numero':str(boleta_verificar.nroBoleta),
-            'serie':str(boleta_verificar.serieBoleta),
-            'tipoComprobante':'03'
-        }
-        headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
-        url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
-        r = requests.put(url_pedido,headers=headers_info,json=info_data)
-        print(r)
-        print(r.content)
-        boleta_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
-        boleta_verificar.save()
-        if ((boleta_verificar.estadoSunat == 'Aceptado') or (boleta_verificar.estadoSunat == 'Aceptado con Obs.')) and boleta_verificar.stockAct == '0':
-            boleta_verificar.stockAct = '1'
-            boleta_verificar.save()
-            for producto in boleta_verificar.productos:
+                operacion = 'Egreso boleta'
+                refFactura = boleta_verificar.codigoBoleta
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_a.id),producto_nombre=str(prod_a.nombre),producto_codigo=str(prod_a.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_A[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para A
+                prod_b = products.objects.get(id=kit_info.producto_B[0])
+                stock_pasado = prod_b.stockTotal
+                stknow = float(prod_b.stockTotal)
+                stkact = stknow - float(producto[8])*float(kit_info.producto_B[2])
+                stkact = str(round(stkact,2))
+                prod_b.stockTotal = stkact
+                prod_b.save()
+                for almacen in prod_b.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - (float(producto[8])*float(kit_info.producto_B[2])),2))
+                        prod_b.save()
+                prod_b.save()
+                stock_nuevo = prod_b.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Egreso Boleta'
+                refFactura = boleta_verificar.codigoBoleta
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_b.id),producto_nombre=str(prod_b.nombre),producto_codigo=str(prod_b.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_B[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para B
+            else:
                 prod_mod = products.objects.get(codigo=producto[2])
                 stock_pasado = prod_mod.stockTotal
                 stknow = float(prod_mod.stockTotal)
@@ -6189,11 +6369,75 @@ def verificar_boleta_teFacturo(request,ind):
                 operacion = 'Egreso Boleta'
                 refFactura = boleta_verificar.codigoBoleta
                 egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
-               
-        if boleta_verificar.estadoSunat == 'Anulado' and boleta_verificar.stockAct == '1':
-            boleta_verificar.stockAct = '0'
-            boleta_verificar.save()
-            for producto in boleta_verificar.productos:
+    if boleta_verificar.estadoSunat == 'Anulado' and boleta_verificar.stockAct == '1':
+        boleta_verificar.stockAct = '0'
+        boleta_verificar.save()
+        for producto in boleta_verificar.productos:
+            if producto[2][0] == 'K':
+                kit_info = products.objects.get(codigo=producto[2])
+                prod_a = products.objects.get(id=kit_info.producto_A[0])
+                stock_pasado = prod_a.stockTotal
+                stknow = float(prod_a.stockTotal)
+                stkact = stknow + float(producto[8])*float(kit_info.producto_A[2])
+                stkact = str(round(stkact,2))
+                prod_a.stockTotal = stkact
+                prod_a.save()
+                for almacen in prod_a.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) + (float(producto[8])*float(kit_info.producto_A[2])),2))
+                        prod_a.save()
+                prod_a.save()
+                stock_nuevo = prod_a.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Anulacion Boleta'
+                refFactura = boleta_verificar.codigoBoleta
+                ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_a.id),producto_nombre=str(prod_a.nombre),producto_codigo=str(prod_a.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_A[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para A
+                prod_b = products.objects.get(id=kit_info.producto_B[0])
+                stock_pasado = prod_b.stockTotal
+                stknow = float(prod_b.stockTotal)
+                stkact = stknow + float(producto[8])*float(kit_info.producto_B[2])
+                stkact = str(round(stkact,2))
+                prod_b.stockTotal = stkact
+                prod_b.save()
+                for almacen in prod_b.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) + (float(producto[8])*float(kit_info.producto_B[2])),2))
+                        prod_b.save()
+                prod_b.save()
+                stock_nuevo = prod_b.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Anulacion Boleta'
+                refFactura = boleta_verificar.codigoBoleta
+                ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_b.id),producto_nombre=str(prod_b.nombre),producto_codigo=str(prod_b.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_B[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para B
+            else:
                 prod_mod = products.objects.get(codigo=producto[2])
                 stock_pasado = prod_mod.stockTotal
                 stknow = float(prod_mod.stockTotal)
@@ -6224,43 +6468,6 @@ def verificar_boleta_teFacturo(request,ind):
                 operacion = 'Anulacion Boleta'
                 refFactura = boleta_verificar.codigoBoleta
                 ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
-    if entorno_sistema == '0':
-        boleta_verificar = boletas.objects.get(id=ind)
-        boleta_verificar.stockAct = '1'
-        boleta_verificar.estadoSunat = 'Aceptada'
-        boleta_verificar.save()
-        if boleta_verificar.stockAct == '0':
-            for producto in boleta_verificar.productos:
-                prod_mod = products.objects.get(codigo=producto[2])
-                stock_pasado = prod_mod.stockTotal
-                stknow = float(prod_mod.stockTotal)
-                stkact = stknow - float(producto[8])
-                stkact = str(round(stkact,2))
-                prod_mod.stockTotal = stkact
-                prod_mod.save()
-                for almacen in prod_mod.stock:
-                    if almacen[0] == producto[4]:
-                        almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
-                        prod_mod.save()
-                prod_mod.save()
-                stock_nuevo = prod_mod.stockTotal
-                usuario_logued = User.objects.get(username=request.user.username)
-                user_logued = userProfile.objects.get(usuario=usuario_logued)
-                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
-                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
-                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
-                else:
-                    mes = str((datetime.now()-timedelta(hours=5)).month)
-                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
-                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
-                else:
-                    dia = str((datetime.now()-timedelta(hours=5)).day)
-                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
-                datos_fecha = producto_fecha.split('-')
-                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
-                operacion = 'Egreso Boleta'
-                refFactura = boleta_verificar.codigoBoleta
-                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
     return HttpResponseRedirect(reverse('sistema_2:bole'))
 
 @login_required(login_url='/sistema_2')
@@ -8495,14 +8702,10 @@ def registro_abonos(request):
         else:
             abono_habilitado_comisiones = '0'
         datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
-        datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
-        print(id_banco)
-        print(nro_operacion)
-        print(id_cliente)
-        print(codigo_comprobante)
-        print(codigo_guia)
-        print(codigo_coti)
-        print(codigo_vendedor)
+        if codigo_comprobante[:4] == 'F001':
+            datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
+        if codigo_comprobante[:4] == 'B001':
+            datos_cliente = [clients.objects.get(id=id_cliente).id,str(clients.objects.get(id=id_cliente).nombre) + ' ' + str(clients.objects.get(id=id_cliente).apellido),clients.objects.get(id=id_cliente).dni]
         abonoEstado = 'PENDIENTE'
         if(int((datetime.now()-timedelta(hours=5)).month) < 10):
             mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
@@ -9497,26 +9700,50 @@ def emitir_nota_credito_factura(request,ind):
 def enviar_nota_credito(request,ind):
     nota_info = notaCredito.objects.get(id=ind)
     token_info = config_docs.objects.get(id=1)
-    print(nota_info.cliente)
-    print(nota_info.productos)
     info_data = armar_json_nota_factura(nota_info)
-
-    headers_info={"X-Auth-Token":token_info.tokenDoc,"Content-Type":"application/json"}
-    url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/nota-credito'
-    r = requests.put(url_pedido,headers=headers_info,json=info_data)
-    print(info_data)
-    print(r)
-    print(r.content)
-    if((r.status_code == 200) or (r.status_code == 409)):
-        nota_info.estadoNotaCredito = 'Enviada'
-    if(r.status_code == 401):
-        nota_info.estadoNotaCredito = 'Generada'
-    if(r.status_code == 403):
-        nota_info.estadoNotaCredito = 'Generada'
-    nota_info.save()
+    if entorno_sistema == '1':
+        print(info_data)
+        headers_info={"X-Auth-Token":token_info.tokenDoc,"Content-Type":"application/json"}
+        url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/nota-credito'
+        r = requests.put(url_pedido,headers=headers_info,json=info_data)
+        nueva_nota = notaCredito.objects.get(id=ind)
+        if((r.status_code == 200) or (r.status_code == 409)):
+            nueva_nota.estadoNotaCredito = 'Enviada'
+        if(r.status_code == 401):
+            nueva_nota.estadoNotaCredito = 'Generada'
+        if(r.status_code == 403):
+            nueva_nota.estadoNotaCredito = 'Generada'
+        nueva_nota.save()
+    if entorno_sistema == '0':
+        print(info_data)
+        nueva_nota = notaCredito.objects.get(id=ind)
+        nueva_nota.estadoNotaCredito = 'Enviada'
+        nueva_nota.save()
     return HttpResponseRedirect(reverse('sistema_2:notas_credito'))
 
 def armar_json_nota_factura(factura_info):
+    producto_extra = []
+    for producto in factura_info.productos:
+        producto_info = products.objects.get(id=producto[0])
+        if producto_info.producto_kit == '1':
+            producto_a = products.objects.get(id=producto_info.producto_A[0])
+            arreglo_producto_a = [
+                str(producto_a.id),
+                str(producto_a.nombre),
+                str(producto_a.codigo),
+                str(producto_a.unidad_med),
+                str(producto[4]),
+                str(producto_a.moneda),
+                str(producto[6]),
+                str(producto[7]),
+                str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                '1',
+                str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                str(producto_a.pesoProducto)
+            ]
+            producto_extra.append(arreglo_producto_a)
+            factura_info.productos.remove(producto)
+    factura_info.productos = factura_info.productos + producto_extra
     productos = []
     valor_total = 0
     if factura_info.monedaNota == 'SOLES':
@@ -9530,14 +9757,14 @@ def armar_json_nota_factura(factura_info):
                 if producto[5] == 'DOLARES':
                     precio_pro = Decimal(producto[6])*Decimal(factura_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
-                valor_total = valor_total + precio_pro*int(producto[8])
+                valor_total = valor_total + precio_pro*int(float(producto[8]))
                 info_pro = {
                     "codigoProducto":producto[2],
                     "codigoProductoSunat":"",
                     "descripcion":producto[1],
                     "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
                     "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":producto[8],
+                    "cantidad":str(int(float(producto[8]))),
                     "valorVentaUnitarioItem":precio_pro,
                     "descuento":{
                         "monto":'0',
@@ -9582,14 +9809,14 @@ def armar_json_nota_factura(factura_info):
                 if producto[5] == 'SOLES':
                     precio_pro = (Decimal(producto[6])/Decimal(factura_info.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
-                valor_total = valor_total + precio_pro*int(producto[8])
+                valor_total = valor_total + precio_pro*int(float(producto[8]))
                 info_pro = {
                     "codigoProducto":producto[2],
                     "codigoProductoSunat":"",
                     "descripcion":producto[1],
                     "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
                     "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":producto[8],
+                    "cantidad":str(int(float(producto[8]))),
                     "valorVentaUnitarioItem":precio_pro,
                     "descuento":{
                         "monto":'0',
@@ -9631,17 +9858,17 @@ def armar_json_nota_factura(factura_info):
             "tipoRegistro":"PRECIOS_SIN_IGV"
         }, 
         "comprobanteAjustado":{
-            "serie":'F001',
-            "numero":310,
+            "serie":str(factura_info.serieComprobante),
+            "numero":int(factura_info.nroComprobante),
             "tipoDocumento":"FACTURA",
-            "fechaEmision":"2023-01-05",
+            "fechaEmision":str(facturas.objects.get(codigoFactura=factura_info.codigoComprobante).fecha_emision.strftime("%Y-%m-%d")),
         },
         "datosDocumento":
         {
             "serie":factura_info.serieNota,
             "numero":int(factura_info.nroNota),
             "moneda":moneda,
-            "fechaEmision":"2023-01-19",
+            "fechaEmision":str(factura_info.fechaEmision.strftime("%Y-%m-%d")),
             "horaEmision":null,
             "fechaVencimiento":null,
             "formaPago":"CONTADO",
@@ -9766,7 +9993,7 @@ def crear_nota_credito(request):
         if entorno_sistema == '1':
             nota_estado = 'Generada'
         if entorno_sistema == '0':
-            nota_estado = 'Enviada'
+            nota_estado = 'Generada'
         datos_doc = config_docs.objects.get(id=1)
         nota_serie = datos_doc.notaFactSerie
         nota_nro = datos_doc.notaFactNro
@@ -9786,7 +10013,6 @@ def crear_nota_credito(request):
         except:
             id_last = 0
         id_nuevo = id_last + 1
-        factura_info.estadoSunat = 'NotaEmitida'
         factura_info.save()
         notaCredito(id=id_nuevo,modoNota=modo_nota,cliente=nota_cliente,productos=nota_productos,servicios=nota_servicios,vendedor=nota_vendedor,tipoComprobante=nota_tipo,serieComprobante=serie_comprobante,nroComprobante=nro_comprobante,fechaComprobante=fecha_comprobante,fechaEmision=nota_fecha,codigoComprobante=nota_codigoFact,codigoNotaCredito=nota_codigo,estadoNotaCredito=nota_estado,serieNota=nota_serie,nroNota=nota_nro,tipoCambio=nota_cambio,monedaNota=nota_moneda,tipoItemsNota=nota_tipo_items).save()
     if tipoNota == 'Parcial':
@@ -9821,7 +10047,7 @@ def crear_nota_credito(request):
         if entorno_sistema == '1':
             nota_estado = 'Generada'
         if entorno_sistema == '0':
-            nota_estado = 'Enviada'
+            nota_estado = 'Generada'
         datos_doc = config_docs.objects.get(id=1)
         nota_serie = datos_doc.notaFactSerie
         nota_nro = datos_doc.notaFactNro
@@ -9841,7 +10067,6 @@ def crear_nota_credito(request):
         except:
             id_last = 0
         id_nuevo = id_last + 1
-        factura_info.estadoSunat = 'NotaEmitida'
         factura_info.save()
         notaCredito(id=id_nuevo,modoNota=modo_nota,cliente=nota_cliente,productos=nota_productos,servicios=nota_servicios,vendedor=nota_vendedor,tipoComprobante=nota_tipo,serieComprobante=serie_comprobante,nroComprobante=nro_comprobante,fechaComprobante=fecha_comprobante,fechaEmision=nota_fecha,codigoComprobante=nota_codigoFact,codigoNotaCredito=nota_codigo,estadoNotaCredito=nota_estado,serieNota=nota_serie,nroNota=nota_nro,tipoCambio=nota_cambio,monedaNota=nota_moneda,tipoItemsNota=nota_tipo_items).save()
     return JsonResponse({
@@ -9973,11 +10198,15 @@ def exportarKardex(request,ind):
     informacion_kardex = []
     for ingreso in ingresos_totales:
         if producto_info.codigo == ingreso.producto_codigo:
-            informacion_kardex.append([dt.date(int(ingreso.fechaIngreso.split('-')[2].lstrip('0')),int(ingreso.fechaIngreso.split('-')[1].lstrip('0')),int(ingreso.fechaIngreso.split('-')[0].lstrip('0'))),ingreso.referencia,ingreso.almacen,ingreso.stock_anterior,ingreso.nuevo_stock,ingreso.cantidad,''])
+            if len(ingreso.fechaIngreso.split('-')[2]) == 4:
+                informacion_kardex.append([dt.datetime.strptime(ingreso.fechaIngreso,"%d-%m-%Y"),ingreso.referencia,ingreso.almacen,ingreso.stock_anterior,ingreso.nuevo_stock,ingreso.cantidad,''])
+                #informacion_kardex.append([dt.date(int(ingreso.fechaIngreso.split('-')[2]),int(ingreso.fechaIngreso.split('-')[1]),int(ingreso.fechaIngreso.split('-')[0][2:])),ingreso.referencia,ingreso.almacen,ingreso.stock_anterior,ingreso.nuevo_stock,ingreso.cantidad,''])
     
     for egreso in egresos_totales:
         if producto_info.codigo == egreso.producto_codigo:
-            informacion_kardex.append([dt.date(int(egreso.fechaIngreso.split('-')[2].lstrip('0')),int(egreso.fechaIngreso.split('-')[1].lstrip('0')),int(egreso.fechaIngreso.split('-')[0].lstrip('0'))),egreso.referencia,egreso.almacen,egreso.stock_anterior,egreso.nuevo_stock,'',egreso.cantidad])
+            if len(egreso.fechaIngreso.split('-')[2]) == 4:
+                informacion_kardex.append([dt.datetime.strptime(egreso.fechaIngreso,"%d-%m-%Y"),egreso.referencia,egreso.almacen,egreso.stock_anterior,egreso.nuevo_stock,'',egreso.cantidad])
+                #informacion_kardex.append([dt.date(int(egreso.fechaIngreso.split('-')[2]),int(egreso.fechaIngreso.split('-')[1]),int(egreso.fechaIngreso.split('-')[0][2:])),egreso.referencia,egreso.almacen,egreso.stock_anterior,egreso.nuevo_stock,'',egreso.cantidad])
     informacion_kardex = sorted(informacion_kardex, key=lambda info:info[0])
     
     tabla_excel = pd.DataFrame(informacion_kardex,columns=['Fecha','Referencia','Almacen','Stock anterior','Nuevo Stock','Cantidad de ingreso','Cantidad de egreso'])
@@ -10445,3 +10674,224 @@ def editarOrden(request,ind):
         'orden':orden_editar,
         'pro':pro,
     })
+
+@login_required(login_url='/sistema_2')
+def verificar_nota_teFacturo(request,ind):
+    nota_verificar = notaCredito.objects.get(id=ind)
+    if entorno_sistema == '1':   
+        info_data = {
+            'emisor':'20541628631',
+            'numero':str(nota_verificar.nroNota),
+            'serie':str(nota_verificar.serieNota),
+            'tipoComprobante':'07'
+        }
+        headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
+        url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
+        r = requests.put(url_pedido,headers=headers_info,json=info_data)
+        print(r)
+        print(r.content)
+        nota_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
+        nota_verificar.save()
+    if entorno_sistema == '0':
+        nota_verificar.estadoSunat = 'Anulado'
+        nota_verificar.save()
+
+    if((nota_verificar.estadoSunat == 'Aceptado') or (nota_verificar.estadoSunat == 'Aceptado con Obs.')) and nota_verificar.stockAct == '0':
+        nota_verificar.stockAct = '1'
+        nota_verificar.save()
+        for producto in nota_verificar.productos:
+            if producto[2][0] == 'K':
+                kit_info = products.objects.get(codigo=producto[2])
+                prod_a = products.objects.get(id=kit_info.producto_A[0])
+                stock_pasado = prod_a.stockTotal
+                stknow = float(prod_a.stockTotal)
+                stkact = stknow + float(producto[8])*float(kit_info.producto_A[2])
+                stkact = str(round(stkact,2))
+                prod_a.stockTotal = stkact
+                prod_a.save()
+                for almacen in prod_a.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) + (float(producto[8])*float(kit_info.producto_A[2])),2))
+                        prod_a.save()
+                prod_a.save()
+                stock_nuevo = prod_a.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Retorno Nota'
+                refFactura = nota_verificar.codigoNotaCredito
+                ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_a.id),producto_nombre=str(prod_a.nombre),producto_codigo=str(prod_a.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_A[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para A
+                prod_b = products.objects.get(id=kit_info.producto_B[0])
+                stock_pasado = prod_b.stockTotal
+                stknow = float(prod_b.stockTotal)
+                stkact = stknow + float(producto[8])*float(kit_info.producto_B[2])
+                stkact = str(round(stkact,2))
+                prod_b.stockTotal = stkact
+                prod_b.save()
+                for almacen in prod_b.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) + (float(producto[8])*float(kit_info.producto_B[2])),2))
+                        prod_b.save()
+                prod_b.save()
+                stock_nuevo = prod_b.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Retorno Nota'
+                refFactura = nota_verificar.codigoNotaCredito
+                ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_b.id),producto_nombre=str(prod_b.nombre),producto_codigo=str(prod_b.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_B[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para B
+            else:
+                prod_mod = products.objects.get(codigo=producto[2])
+                stock_pasado = prod_mod.stockTotal
+                stknow = float(prod_mod.stockTotal)
+                stkact = stknow + float(producto[8])
+                stkact = str(round(stkact,2))
+                prod_mod.stockTotal = stkact
+                prod_mod.save()
+                for almacen in prod_mod.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) + float(producto[8]),2))
+                        prod_mod.save()
+                prod_mod.save()
+                stock_nuevo = prod_mod.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Retorno Nota'
+                refFactura = nota_verificar.codigoNotaCredito
+                ingresos_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+    if nota_verificar.estadoSunat == 'Anulado' and nota_verificar.stockAct == '1':
+        nota_verificar.stockAct = '1'
+        nota_verificar.save()
+        for producto in nota_verificar.productos:
+            if producto[2][0] == 'K':
+                kit_info = products.objects.get(codigo=producto[2])
+                prod_a = products.objects.get(id=kit_info.producto_A[0])
+                stock_pasado = prod_a.stockTotal
+                stknow = float(prod_a.stockTotal)
+                stkact = stknow - float(producto[8])*float(kit_info.producto_A[2])
+                stkact = str(round(stkact,2))
+                prod_a.stockTotal = stkact
+                prod_a.save()
+                for almacen in prod_a.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - (float(producto[8])*float(kit_info.producto_A[2])),2))
+                        prod_a.save()
+                prod_a.save()
+                stock_nuevo = prod_a.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Anulacion Nota'
+                refFactura = nota_verificar.codigoNotaCredito
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_a.id),producto_nombre=str(prod_a.nombre),producto_codigo=str(prod_a.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_A[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para A
+                prod_b = products.objects.get(id=kit_info.producto_B[0])
+                stock_pasado = prod_b.stockTotal
+                stknow = float(prod_b.stockTotal)
+                stkact = stknow - float(producto[8])*float(kit_info.producto_B[2])
+                stkact = str(round(stkact,2))
+                prod_b.stockTotal = stkact
+                prod_b.save()
+                for almacen in prod_b.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - (float(producto[8])*float(kit_info.producto_B[2])),2))
+                        prod_b.save()
+                prod_b.save()
+                stock_nuevo = prod_b.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Anulacion Nota'
+                refFactura = nota_verificar.codigoNotaCredito
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=str(prod_b.id),producto_nombre=str(prod_b.nombre),producto_codigo=str(prod_b.codigo),almacen=producto[4],cantidad=str(int(float(producto[8])*float(kit_info.producto_B[2]))),fechaIngreso=producto_fecha).save()
+                #Secuencia de descuento para B
+            else:
+                prod_mod = products.objects.get(codigo=producto[2])
+                stock_pasado = prod_mod.stockTotal
+                stknow = float(prod_mod.stockTotal)
+                stkact = stknow - float(producto[8])
+                stkact = str(round(stkact,2))
+                prod_mod.stockTotal = stkact
+                prod_mod.save()
+                for almacen in prod_mod.stock:
+                    if almacen[0] == producto[4]:
+                        almacen[1] = str(round(float(almacen[1]) - float(producto[8]),2))
+                        prod_mod.save()
+                prod_mod.save()
+                stock_nuevo = prod_mod.stockTotal
+                usuario_logued = User.objects.get(username=request.user.username)
+                user_logued = userProfile.objects.get(usuario=usuario_logued)
+                usuario_info = [user_logued.id,user_logued.usuario.username,user_logued.codigo,user_logued.tipo,user_logued.celular]
+                if(int((datetime.now()-timedelta(hours=5)).month) < 10):
+                    mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
+                else:
+                    mes = str((datetime.now()-timedelta(hours=5)).month)
+                if(int((datetime.now()-timedelta(hours=5)).day) < 10):
+                    dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
+                else:
+                    dia = str((datetime.now()-timedelta(hours=5)).day)
+                producto_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
+                datos_fecha = producto_fecha.split('-')
+                producto_fecha = datos_fecha[2] + '-' + datos_fecha[1] + '-' + datos_fecha[0]
+                operacion = 'Anulacion Nota'
+                refFactura = nota_verificar.codigoNotaCredito
+                egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
+    return HttpResponseRedirect(reverse('sistema_2:notas_credito'))

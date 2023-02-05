@@ -26,6 +26,8 @@
               <th scope="col">Estado del documento</th>
               <th scope="col">Descargar nota de credito</th>
               <th scope="col">Enviar nota de credito</th>
+              <th scope="col">Estado sunat</th>
+              <th scope="col">Verificar estado</th>
           </tr>
       </thead>
       <tbody>
@@ -52,6 +54,12 @@
                 <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:enviar_nota_credito' notaCred.id %}"><i class="fas fa-arrow-right"></i></a></td>
               {% else %}
                 <td></td>
+              {% endif %}
+              <td>{{ notaCred.estadoSunat }}</td>
+              {% if notaCred.estadoNotaCredito == 'Enviada' %}
+              <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:verificar_nota_teFacturo' notaCred.id %}"><i class="fa fa-check"></i></a></td>
+              {% else %}
+              <td></td>
               {% endif %}
           </tr>
         {% endfor %}

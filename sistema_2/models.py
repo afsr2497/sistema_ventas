@@ -245,6 +245,8 @@ class notaCredito(models.Model):
     imprimirDescuento = models.CharField(max_length=20,null=True)
     tipoItemsNota = models.CharField(max_length=32,null=True)
     modoNota = models.CharField(max_length=64,default='DEVOLUCION_TOTAL')
+    estadoSunat = models.CharField(max_length=32,default='SinComprobar')
+    stockAct = models.CharField(max_length=32,default="0")
 
 class regCuenta(models.Model):
     bancoCuenta = models.CharField(max_length=256,default='')

@@ -113,7 +113,7 @@
                 {% endif %}
               </td>
               {% if factura.estadoFactura == 'Enviada' %}
-              <td style="text-align: center;"><a class="btn btn-success" href="{% url 'sistema_2:verificar_factura_teFacturo' factura.id %}"><i class="fa fa-check"></i></a></td>
+              <td style="text-align: center;"><button class="btn btn-success verificacionInfo" style="padding: 0 0 0 0;" onclick="deshabilitarVerificacion()"><a class="btn btn-success" href="{% url 'sistema_2:verificar_factura_teFacturo' factura.id %}"><i class="fa fa-check"></i></a></button></td>
               {% else %}
               <td></td>
               {% endif %}
