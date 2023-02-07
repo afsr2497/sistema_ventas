@@ -8697,37 +8697,44 @@ def registro_abonos(request):
         codigo_vendedor = request.POST.get('vendedorSeleccionado')
         facturaCancelada = request.POST.get('facturaCancelada')
         abono_habilitado_comisiones = request.POST.get('abonoComisiones')
+        abono_fecha = request.POST.get('fechaAbonoRegistro')
+        fecha_registro = datetime.strptime(abono_fecha,"%Y-%m-%d")
         if abono_habilitado_comisiones == 'on':
             abono_habilitado_comisiones = '1'
         else:
             abono_habilitado_comisiones = '0'
         datos_banco = [regCuenta.objects.get(id=id_banco).id,regCuenta.objects.get(id=id_banco).bancoCuenta,regCuenta.objects.get(id=id_banco).monedaCuenta]
-        if codigo_comprobante[:4] == 'F001':
-            datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
-        if codigo_comprobante[:4] == 'B001':
-            datos_cliente = [clients.objects.get(id=id_cliente).id,str(clients.objects.get(id=id_cliente).nombre) + ' ' + str(clients.objects.get(id=id_cliente).apellido),clients.objects.get(id=id_cliente).dni]
+        if entorno_sistema == '1':
+            if codigo_comprobante[:4] == 'F001':
+                datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
+            if codigo_comprobante[:4] == 'B001':
+                datos_cliente = [clients.objects.get(id=id_cliente).id,str(clients.objects.get(id=id_cliente).nombre) + ' ' + str(clients.objects.get(id=id_cliente).apellido),clients.objects.get(id=id_cliente).dni]
+        else:
+            if codigo_comprobante[:4] == 'FP02':
+                datos_cliente = [clients.objects.get(id=id_cliente).id,clients.objects.get(id=id_cliente).razon_social,clients.objects.get(id=id_cliente).ruc]
+            if codigo_comprobante[:4] == 'BP02':
+                datos_cliente = [clients.objects.get(id=id_cliente).id,str(clients.objects.get(id=id_cliente).nombre) + ' ' + str(clients.objects.get(id=id_cliente).apellido),clients.objects.get(id=id_cliente).dni]
         abonoEstado = 'PENDIENTE'
-        if(int((datetime.now()-timedelta(hours=5)).month) < 10):
-            mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
-        else:
-            mes = str((datetime.now()-timedelta(hours=5)).month)
-        
-        if(int((datetime.now()-timedelta(hours=5)).day) < 10):
-            dia = '0' + str((datetime.now()-timedelta(hours=5)).day)
-        else:
-            dia = str((datetime.now()-timedelta(hours=5)).day)
-        abono_fecha = str((datetime.now()-timedelta(hours=5)).year) + '-' + mes + '-' + dia
-        fecha_registro = parse(abono_fecha)
         if facturaCancelada == 'on':
             abonoEstado = 'CANCELADO'
-            if codigo_comprobante[:4] == 'F001':
-                comprobante_abono = facturas.objects.get(codigoFactura=codigo_comprobante)
-                comprobante_abono.facturaPagada = '1'
-                comprobante_abono.save()
-            if codigo_comprobante[:4] == 'B001':
-                comprobante_abono = boletas.objects.get(codigoBoleta=codigo_comprobante)
-                comprobante_abono.boletaPagada = '1'
-                comprobante_abono.save()
+            if entorno_sistema == '1':
+                if codigo_comprobante[:4] == 'F001':
+                    comprobante_abono = facturas.objects.get(codigoFactura=codigo_comprobante)
+                    comprobante_abono.facturaPagada = '1'
+                    comprobante_abono.save()
+                if codigo_comprobante[:4] == 'B001':
+                    comprobante_abono = boletas.objects.get(codigoBoleta=codigo_comprobante)
+                    comprobante_abono.boletaPagada = '1'
+                    comprobante_abono.save()
+            if entorno_sistema == '0':
+                if codigo_comprobante[:4] == 'FP02':
+                    comprobante_abono = facturas.objects.get(codigoFactura=codigo_comprobante)
+                    comprobante_abono.facturaPagada = '1'
+                    comprobante_abono.save()
+                if codigo_comprobante[:4] == 'BP02':
+                    comprobante_abono = boletas.objects.get(codigoBoleta=codigo_comprobante)
+                    comprobante_abono.boletaPagada = '1'
+                    comprobante_abono.save()
             abonos_totales = abonosOperacion.objects.all().filter(codigo_comprobante=codigo_comprobante)
             for abono in abonos_totales:
                 abono.comprobanteCancelado = 'CANCELADO'
@@ -8837,6 +8844,8 @@ def actualizar_abono(request,ind):
         nro_operacion_2 = request.POST.get('nroOperacion2Abono')
         factura_cancelada = request.POST.get('facturaCancelada')
         abono_habilitado_comisiones = request.POST.get('abonoComisiones')
+        abono_fecha = request.POST.get('fechaAbonoRegistro')
+        fecha_registro = datetime.strptime(abono_fecha,"%Y-%m-%d")
         if abono_habilitado_comisiones == 'on':
             abono_habilitado_comisiones = '1'
         else:
@@ -8846,6 +8855,7 @@ def actualizar_abono(request,ind):
         abonoActualizar.nro_operacion = nro_operacion
         abonoActualizar.nro_operacion_2 = nro_operacion_2
         abonoActualizar.abono_comisionable = abono_habilitado_comisiones
+        abonoActualizar.fechaAbono = fecha_registro
         if abono_habilitado_comisiones == '1':
             abonos_totales = abonosOperacion.objects.all().filter(codigo_comprobante=abonoActualizar.codigo_comprobante)
             for abono in abonos_totales:

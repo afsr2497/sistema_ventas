@@ -143,6 +143,10 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
+                            <label>Fecha de registro</label>
+                            <input type="date" class="form-control" name="fechaAbonoRegistro" required>
+                        </div>
+                        <div class="col-md-6">
                             <br>
                             <input class="form-check-input" type="checkbox" name="abonoComisiones" checked>
                             <label>Habilitado para comisiones</label>
@@ -251,6 +255,10 @@
                         </div>
                     </div>
                     <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label>Fecha de registro</label>
+                            <input type="date" name="fechaAbonoRegistro" class="form-control" value="{{ abono.fechaAbono|date:'Y-m-d' }}" required>
+                        </div>
                         <div class="col-md-6">
                             <br>
                             {% if abono.abono_comisionable == '1' %}
