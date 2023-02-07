@@ -8930,7 +8930,7 @@ def get_clients_statistics(request):
     facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
     for factura in facturas_info:
         datos_clientes.append(factura.cliente[5])
-        total_precio_soles = 0.00
+        total_precio_soles = Decimal(0.00)
         for producto in factura.productos:
             if producto[5] == 'DOLARES':
                 v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
@@ -8954,8 +8954,6 @@ def get_clients_statistics(request):
         clientes_mas_ventas.append(str(info_ventas['Clientes'].iloc[counter]))
         consumo_clientes.append(info_ventas['Ventas'].iloc[counter])
         counter = counter + 1
-
-
 
     for cliente in clientes_mas_ventas:
         cliente_info = clients.objects.filter(ruc=cliente).first()
