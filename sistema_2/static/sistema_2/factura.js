@@ -1,6 +1,5 @@
 function deshabilitarVerificacion()
 {
-    console.log('Hola a todos')
     document.querySelectorAll('.verificacionInfo').forEach(elemento => {
         elemento.disabled = true
     })

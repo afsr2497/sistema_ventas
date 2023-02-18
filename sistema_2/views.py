@@ -8681,6 +8681,7 @@ def descargar_proforma_dolares(request,ind):
     response['Content-Disposition'] = nombre
     return response
 
+@csrf_exempt
 def registro_abonos(request):
     usr = userProfile.objects.all()
     usuario_logued = User.objects.get(username=request.user.username)
@@ -8699,6 +8700,13 @@ def registro_abonos(request):
         abono_habilitado_comisiones = request.POST.get('abonoComisiones')
         abono_fecha = request.POST.get('fechaAbonoRegistro')
         fecha_registro = datetime.strptime(abono_fecha,"%Y-%m-%d")
+
+        while len(nro_operacion) < 8:
+            nro_operacion = '0' + nro_operacion
+        
+        while len(nro_operacion_2) < 8:
+            nro_operacion_2 = '0' + nro_operacion_2
+
         if abono_habilitado_comisiones == 'on':
             abono_habilitado_comisiones = '1'
         else:
@@ -8762,6 +8770,82 @@ def comprobar_abonos(request):
     registros_bancos = regOperacion.objects.filter(tipoOperacion='INGRESO').order_by('id')
     registros_abonos = abonosOperacion.objects.all().order_by('id')
     for registro in registros_abonos:
+        total_precio = Decimal(0.0000)
+        if entorno_sistema == '1':
+            if registro.codigo_comprobante[:4] == 'F001':
+                comprobanteInfo = facturas.objects.get(codigoFactura=registro.codigo_comprobante)
+                for producto in comprobanteInfo.productos:
+                    if comprobanteInfo.monedaFactura == 'SOLES':
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(comprobanteInfo.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if comprobanteInfo.monedaFactura == 'DOLARES':
+                        if producto[5] == 'SOLES':
+                            v_producto = (Decimal(producto[6])/Decimal(comprobanteInfo.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio = Decimal(total_precio) + Decimal(v_producto)
+            if registro.codigo_comprobante[:4] == 'B001':
+                comprobanteInfo = boletas.objects.get(codigoBoleta=registro.codigo_comprobante)
+                for producto in comprobanteInfo.productos:
+                    if comprobanteInfo.monedaBoleta == 'SOLES':
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(comprobanteInfo.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if comprobanteInfo.monedaBoleta == 'DOLARES':
+                        if producto[5] == 'SOLES':
+                            v_producto = (Decimal(producto[6])/Decimal(comprobanteInfo.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio = Decimal(total_precio) + Decimal(v_producto)
+        if entorno_sistema == '0':
+            if registro.codigo_comprobante[:4] == 'FP02':
+                comprobanteInfo = facturas.objects.get(codigoFactura=registro.codigo_comprobante)
+                for producto in comprobanteInfo.productos:
+                    if comprobanteInfo.monedaFactura == 'SOLES':
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(comprobanteInfo.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if comprobanteInfo.monedaFactura == 'DOLARES':
+                        if producto[5] == 'SOLES':
+                            v_producto = (Decimal(producto[6])/Decimal(comprobanteInfo.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio = Decimal(total_precio) + Decimal(v_producto)
+            if registro.codigo_comprobante[:4] == 'BP02':
+                comprobanteInfo = boletas.objects.get(codigoBoleta=registro.codigo_comprobante)
+                for producto in comprobanteInfo.productos:
+                    if comprobanteInfo.monedaBoleta == 'SOLES':
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(comprobanteInfo.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if comprobanteInfo.monedaBoleta == 'DOLARES':
+                        if producto[5] == 'SOLES':
+                            v_producto = (Decimal(producto[6])/Decimal(comprobanteInfo.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio = Decimal(total_precio) + Decimal(v_producto)
+        montoComprobante = str(round(float(total_precio),2))
         if registro.comprobanteCancelado == 'CANCELADO':
             for reg in registros_bancos:
                 if(registro.nro_operacion == reg.nroOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
@@ -8778,7 +8862,21 @@ def comprobar_abonos(request):
                     registro.conectado = '1'
                     registro.idRegistroOp = str(reg.id)
                     registro.save()
-                elif(registro.nro_operacion_2 == reg.nroOperacion_2) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
+                elif(registro.nro_operacion_2 == reg.nroOperacion) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
+                    reg.conectado_abono = '1'
+                    reg.comprobanteOperacion = [registro.codigo_comprobante]
+                    reg.guiaOperacion = [registro.codigo_guia]
+                    reg.cotizacionOperacion = [registro.codigo_coti]
+                    usuario_info = userProfile.objects.get(codigo=registro.codigo_vendedor)
+                    reg.vendedorOperacion = [str(usuario_info.id),str(usuario_info.usuario.username),str(usuario_info.codigo)]
+                    reg.estadoOperacion = 'COMPLETO'
+                    clienteReg = clients.objects.get(id=str(registro.datos_cliente[0]))
+                    reg.clienteOperacion = [clienteReg.id,clienteReg.nombre,clienteReg.apellido,clienteReg.razon_social,clienteReg.dni,clienteReg.ruc]
+                    reg.save()
+                    registro.conectado = '1'
+                    registro.idRegistroOp = str(reg.id)
+                    registro.save()
+                elif(montoComprobante == str(round(float(reg.montoOperacion),2))) and (str(registro.datos_banco[0]) == str(reg.idCuentaBank)) and (registro.conectado == '0') and (reg.conectado_abono == '0'):
                     reg.conectado_abono = '1'
                     reg.comprobanteOperacion = [registro.codigo_comprobante]
                     reg.guiaOperacion = [registro.codigo_guia]
@@ -8808,6 +8906,26 @@ def comprobar_abonos(request):
                     registro.save()
     return HttpResponseRedirect(reverse('sistema_2:registros_bancarios'))
 
+def getDatosAbono(request):
+    abonoID = request.GET.get('ind')
+    infoAbono = abonosOperacion.objects.get(id=abonoID)
+    print(infoAbono)
+    return JsonResponse({
+        'datos_banco':infoAbono.datos_banco,
+        'datos_cliente':infoAbono.datos_cliente,
+        'nro_operacion':infoAbono.nro_operacion,
+        'nro_operacion_2':infoAbono.nro_operacion_2,
+        'codigo_comprobante':infoAbono.codigo_comprobante,
+        'codigo_guia':infoAbono.codigo_guia,
+        'codigo_coti':infoAbono.codigo_coti,
+        'codigo_vendedor':infoAbono.codigo_vendedor,
+        'conectado':infoAbono.conectado,
+        'idRegistroOp':infoAbono.idRegistroOp,
+        'comprobanteCancelado':infoAbono.comprobanteCancelado,
+        'fechaAbono':infoAbono.fechaAbono,
+        'abono_comisionable':infoAbono.abono_comisionable,
+    })
+
 def eliminar_abono(request,ind):
     abono_eliminar = abonosOperacion.objects.get(id=ind)
     if abono_eliminar.conectado == '1':
@@ -8836,6 +8954,7 @@ def eliminar_abono(request,ind):
     abono_eliminar.delete()
     return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
 
+@csrf_exempt
 def actualizar_abono(request,ind):
     if request.method == 'POST':
         abonoActualizar = abonosOperacion.objects.get(id=ind)
@@ -8846,6 +8965,13 @@ def actualizar_abono(request,ind):
         abono_habilitado_comisiones = request.POST.get('abonoComisiones')
         abono_fecha = request.POST.get('fechaAbonoRegistro')
         fecha_registro = datetime.strptime(abono_fecha,"%Y-%m-%d")
+
+        while len(nro_operacion) < 8:
+            nro_operacion = '0' + nro_operacion
+
+        while len(nro_operacion_2) < 8:
+            nro_operacion_2 = '0' + nro_operacion_2
+
         if abono_habilitado_comisiones == 'on':
             abono_habilitado_comisiones = '1'
         else:
@@ -10903,3 +11029,1826 @@ def verificar_nota_teFacturo(request,ind):
                 refFactura = nota_verificar.codigoNotaCredito
                 egreso_stock(referencia=refFactura,operacionIngreso=operacion,stock_anterior=stock_pasado,nuevo_stock=stock_nuevo,vendedorStock=usuario_info,producto_id=producto[0],producto_nombre=producto[1],producto_codigo=producto[2],almacen=producto[4],cantidad=producto[8],fechaIngreso=producto_fecha).save()
     return HttpResponseRedirect(reverse('sistema_2:notas_credito'))
+
+def nuevoFormatoSoles(request,ind):
+    #Se proceden a generar las paginas del documento
+    #Generacion del documento
+    pdf_name = 'coti_generada.pdf'
+    can = canvas.Canvas(pdf_name,pagesize=A4)
+
+    #Obtencion de la informacion
+    proforma_info = cotizaciones.objects.get(id=ind)
+    proforma_info.monedaProforma = 'SOLES'
+
+    if proforma_info.tipoProforma == 'Productos':
+        #Primero definimos la cantidad de páginas y los grupos a obtener
+        grupos_productos = [proforma_info.productos[x:x+18] for x in range(0,len(proforma_info.productos),18)]
+        #Luego de la definicion de productos se calcula la cantidad de grupos
+        cant_grupos = len(grupos_productos)
+        contador_grupos = 0
+
+        total_precio = Decimal(0.0000)
+
+        while contador_grupos < cant_grupos:
+            #Generacion del membrete superior derecho
+            can.setStrokeColorRGB(0,0,1)
+            lista_x = [410,570]
+            lista_y = [750,810]
+            can.grid(lista_x,lista_y)
+            can.setFillColorRGB(0,0,0)
+            can.setFont('Helvetica',12)
+            can.drawString(440,790,'RUC: 20541628631')
+            can.setFont('Helvetica-Bold',12)
+            can.drawString(455,775,'COTIZACION')
+            can.setFont('Helvetica',12)
+            numImp = str(proforma_info.nroCotizacion)
+            if len(numImp) < 4:
+                while(len(numImp) < 4):
+                    numImp = '0' + numImp
+            else:
+                pass
+            can.drawString(460,760,str(proforma_info.serieCotizacion) + ' - ' + numImp)
+
+            #Generacion del logo
+            can.drawImage('./sistema_2/static/images/logo.png',10,705,width=120,height=120)
+
+            #Informacion del remitente
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(25,730,'METALPROTEC S.A.C')
+            can.drawString(25,720,'RUC: 20541628631')
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,700,'OFICINA :')
+            can.drawString(25,690,'LOCAL COMERCIAL :')
+            can.drawString(25,680,'TELÉFONO :')
+            can.drawString(450,680,f'FECHA : {datetime.strptime(proforma_info.fechaProforma, "%Y-%m-%d").strftime("%d-%m-%Y")}')
+            can.setFont('Helvetica',7)
+            can.drawString(60,700,'LT 39 MZ. J4 URB. PASEO DEL MAR - ÁNCASH SANTA NUEVO CHIMBOTE')
+            can.drawString(100,690,'AV. JOSE PARDO 2721 URB. MIRAFLORES ALTO - CHIMBOTE')
+            can.drawString(70,680,'(043) 282752')
+
+            dato_imprimir = 'Pagina ' + str(contador_grupos + 1) + ' de ' + str(cant_grupos)
+            can.drawString(25,815,dato_imprimir)
+
+            #Generacion de la linea de separacion
+            can.line(25,670,580,670)
+
+            #Generacion de los datos del cliente
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,660,'SEÑORES :')
+            can.setFont('Helvetica',7)
+            if proforma_info.cliente[1] == '':
+                can.drawString(120,660,str(proforma_info.cliente[3]))
+            else:
+                can.drawString(120,660,str(proforma_info.cliente[1]) + ' ' + str(proforma_info.cliente[2]))
+            
+            if proforma_info.cliente[1] == '':
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(25,650,'RUC :')
+                can.setFont('Helvetica',7)
+                can.drawString(120,650,str(proforma_info.cliente[5]))
+            else:
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(25,650,'DNI :')
+                can.setFont('Helvetica',7)
+                can.drawString(120,650,str(proforma_info.cliente[4]))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,640,'DIRECCIÓN :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,640,str(proforma_info.cliente[9]))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,630,'FORMA DE PAGO :')
+            can.setFont('Helvetica',7)
+            if proforma_info.pagoProforma == 'CONTADO':
+                can.drawString(120,630,str(proforma_info.pagoProforma))
+            if proforma_info.pagoProforma == 'CREDITO':
+                can.drawString(120,630,str(proforma_info.pagoProforma) + ' ' + str(proforma_info.cred_dias))
+            
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,620,'VALIDEZ :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,620,str(proforma_info.validez_dias))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,610,'ENTREGA :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,610,"SEGUN STOCK")
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,600,'MONEDA :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,600,str(proforma_info.monedaProforma))
+
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,590,'PESO APROX :')
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,580,'DOCUMENTO :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,580,str(proforma_info.nroDocumento))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,570,'OBRA :')
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,560,'OBSERVACIONES :')
+            can.setFont('Helvetica',6)
+            can.drawString(120,560,str(proforma_info.observacionesCot))
+
+            #Linea de separacion con los datos del vendedor
+            can.line(25,550,580,550)
+
+            #Datos del vendedor
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,540,'VENDEDOR :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,540,str(proforma_info.vendedor[1]))
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,530,'CELULAR :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,530,str(proforma_info.vendedor[3]))
+
+            #Obtener el email del vendedor
+            vendedor_info = userProfile.objects.get(id=proforma_info.vendedor[0])
+            email_vendedor = vendedor_info.usuario.email
+            vendedor_info.save()
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,520,'EMAIL:')
+            can.setFont('Helvetica',7)
+            can.drawString(120,520,str(email_vendedor))
+
+            #Aqui se ponen las cabeceras
+
+            can.setStrokeColorRGB(0,0,1)
+            can.setFillColorRGB(0,0,0)
+            #Campos en cabecera
+            lista_x = [25,580]
+            lista_y = [500,515]
+            can.setFillColorRGB(0,0,1)
+            can.rect(25,500,555,15,fill=1)
+
+            #Valores iniciales
+            lista_x = [25,50,100,310,360,410,460,530]
+            lista_y = [500,515]
+            #Ingreso de campo cantidad
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[0] + 5, lista_y[0] + 3,'Cant.')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                can.drawRightString(lista_x[0] + 20,lista_y[0] + 3,str("{:.2f}".format(round(float(producto[8]),2))))
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de código de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[1] + 5, lista_y[0] + 3,'Código')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                can.drawString(lista_x[1] + 5,lista_y[0] + 3,producto[2])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            condicion_nueva = str(proforma_info.mostrarCabos) + str(proforma_info.mostrarPanhos)
+            lista_agregada = [120,150]
+            if condicion_nueva == '00':
+                lista_x[2] = 120
+
+            if condicion_nueva == '01':
+                lista_x[2] = 150
+                lista_agregada[1] = 120
+            
+            if condicion_nueva == '10':
+                lista_x[2] = 150
+                lista_agregada[0] = 120
+
+            if condicion_nueva == '11':
+                lista_x[2] = 180
+                lista_agregada[0] = 120
+                lista_agregada[1] = 150
+
+            lista_y = [500,515]
+            if proforma_info.mostrarCabos == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_agregada[0], lista_y[0] + 3,proforma_info.nombresColumnas[0])
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_agregada[0] + 20,lista_y[0] + 3,str(producto[11]))
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+            
+            lista_y = [500,515]
+            if proforma_info.mostrarPanhos == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_agregada[1], lista_y[0] + 3,proforma_info.nombresColumnas[1])
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_agregada[1] + 20,lista_y[0] + 3,str(producto[12]))
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de descripcion de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[2] + 5, lista_y[0] + 3,'Descripción')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                can.drawString(lista_x[2] + 5,lista_y[0] + 3,producto[1])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de unidad de medida de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[3] + 5, lista_y[0] + 3,'Und')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                can.drawString(lista_x[3] + 5,lista_y[0] + 3,producto[3])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+
+            condicion_imprimir = proforma_info.imprimirVU + proforma_info.imprimirPU + proforma_info.imprimirDescuento
+            if condicion_imprimir == '100':
+                lista_x[4] = 360
+            
+            if condicion_imprimir == '010':
+                lista_x[5] = 360
+
+            if condicion_imprimir == '001':
+                lista_x[6] = 360
+            
+            if condicion_imprimir == '110':
+                lista_x[4] = 360
+                lista_x[5] = 420
+
+            if condicion_imprimir == '101':
+                lista_x[4] = 360
+                lista_x[6] = 420
+            
+            if condicion_imprimir == '011':
+                lista_x[5] = 360
+                lista_x[6] = 420
+            
+            if condicion_imprimir == '111':
+                lista_x[4] = 360
+                lista_x[5] = 420
+                lista_x[6] = 480
+            
+            
+
+            if proforma_info.imprimirVU == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de unidad de medida de producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[4] - 5, lista_y[0] + 3,'V.U sin IGV')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    if proforma_info.monedaProforma == 'SOLES':
+                        if producto[5] == 'DOLARES':
+                            vu_producto = Decimal(producto[6])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        if producto[5] == 'SOLES':
+                            vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    if proforma_info.monedaProforma == 'DOLARES':
+                        if producto[5] == 'SOLES':
+                            vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        if producto[5] == 'DOLARES':
+                            vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+
+            if proforma_info.imprimirPU == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo del precio con IGV de producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[5] - 5, lista_y[0]+3,'P.U con IGV')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    if proforma_info.monedaProforma == 'SOLES':
+                        if producto[5] == 'DOLARES':
+                            vu_producto = Decimal(producto[6])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        if producto[5] == 'SOLES':
+                            vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    if proforma_info.monedaProforma == 'DOLARES':
+                        if producto[5] == 'SOLES':
+                            vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        if producto[5] == 'DOLARES':
+                            vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % (vu_producto*Decimal(1.18)))))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            if proforma_info.imprimirDescuento == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[6], lista_y[0] + 3,'Dscto')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_x[6] + 20,lista_y[0] + 3,str(producto[7]) + ' %')
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de valor de venta del producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[7] + 5, lista_y[0] + 3,'Valor Venta')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                if proforma_info.monedaProforma == 'SOLES':
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'SOLES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if proforma_info.monedaProforma == 'DOLARES':
+                    if producto[5] == 'SOLES':
+                        v_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                #v_producto = round(v_producto,2)
+                can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(v_producto))))
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                total_precio = Decimal(total_precio) + Decimal(v_producto)
+
+            #Linea de separacion con los datos finales
+            can.line(25,lista_y[1],580,lista_y[1])
+            #Prueba de impresion
+
+            #Logo de las empresas
+            can.drawImage('./sistema_2/static/images/mega.png',20,60,width=90,height=60,mask='auto')
+            can.drawImage('./sistema_2/static/images/sgs.png',240,65,width=100,height=50,mask='auto')
+            can.drawImage('./sistema_2/static/images/hodelpe.png',470,65,width=100,height=50,mask='auto')
+
+            #Linea inicio de separacion
+            can.line(25,60,580,60)
+
+            #Impresion de los datos bancarios
+            #Scotiabank
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(25,50,'Banco Scotiabank')
+            can.setFont('Helvetica',8)
+            can.drawString(25,40,'Cta Cte Soles: 000 9496505')
+            can.drawString(25,30,'Cta Cte Dolares: 000 5151261')
+
+            #BCP
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(230,50,'Banco de Crédito del Perú')
+            can.setFont('Helvetica',8)
+            can.drawString(230,40,'Cta Cte Soles: 310 9888337 0 02')
+            can.drawString(230,30,'Cta Cte Dolares: 310 9865292 1 35')
+
+            #BBVA
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(420,50,'Banco Continental BBVA')
+            can.setFont('Helvetica',8)
+            can.drawString(420,40,'Cta Cte Soles: 0011 0250 0200615638 80')
+            can.drawString(420,30,'Cta Cte Dolares: 0011 0250 0200653947 88')
+
+            #Linea final de separacion
+            can.line(25,25,580,25)
+            contador_grupos = contador_grupos + 1
+            if cant_grupos > contador_grupos:
+                can.showPage()
+
+        #Esta seccion solo va en la hoja final de los productos
+        #Impresion de total venta
+        can.drawRightString(480,lista_y[0]+4,'Total Venta Grabada')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % total_precio)))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Impresion de total IGV
+        igv_precio = Decimal('%.2f' % total_precio)*Decimal(0.18)
+        can.drawRightString(480,lista_y[0]+4,'Total IGV')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % igv_precio)))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Impresion de importe total
+        precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+        can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(precio_final))))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Calculo de la proforma en dolares
+        total_dolares = Decimal(0.0000)
+        for producto in proforma_info.productos:
+            if producto[5] == 'SOLES':
+                v_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_dolares = Decimal(total_dolares) + Decimal(v_producto)
+        final_dolares = Decimal('%.2f' % total_dolares)*Decimal(1.18)
+
+        #Impresion de importe en otra moneda
+        precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+        can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'$')
+            can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(final_dolares))))
+        else:
+            can.drawRightString(490,lista_y[0]+4,'S/')
+            can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(proforma_info.tipoCambio[1])))))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion con los datos finales
+        can.line(25,lista_y[1],580,lista_y[1])
+        can.save()
+    
+    if proforma_info.tipoProforma == 'Servicios':
+        #Primero definimos la cantidad de páginas y los grupos a obtener
+        grupos_servicios = [proforma_info.servicios[x:x+18] for x in range(0,len(proforma_info.servicios),18)]
+        #Luego de la definicion de productos se calcula la cantidad de grupos
+        cant_servicios = len(grupos_servicios)
+        contador_servicios = 0
+
+        total_precio = Decimal(0.0000)
+
+        while contador_servicios < cant_servicios:
+            #Generacion del membrete superior derecho
+            can.setStrokeColorRGB(0,0,1)
+            lista_x = [410,570]
+            lista_y = [750,810]
+            can.grid(lista_x,lista_y)
+            can.setFillColorRGB(0,0,0)
+            can.setFont('Helvetica',12)
+            can.drawString(440,790,'RUC: 20541628631')
+            can.setFont('Helvetica-Bold',12)
+            can.drawString(455,775,'COTIZACION')
+            can.setFont('Helvetica',12)
+            numImp = str(proforma_info.nroCotizacion)
+            if len(numImp) < 4:
+                while(len(numImp) < 4):
+                    numImp = '0' + numImp
+            else:
+                pass
+            can.drawString(460,760,str(proforma_info.serieCotizacion) + ' - ' + numImp)
+
+            #Generacion del logo
+            can.drawImage('./sistema_2/static/images/logo.png',10,705,width=120,height=120)
+
+            #Informacion del remitente
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(25,730,'METALPROTEC S.A.C')
+            can.drawString(25,720,'RUC: 20541628631')
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,700,'OFICINA :')
+            can.drawString(25,690,'LOCAL COMERCIAL :')
+            can.drawString(25,680,'TELÉFONO :')
+            can.drawString(450,680,f'FECHA : {datetime.strptime(proforma_info.fechaProforma, "%Y-%m-%d").strftime("%d-%m-%Y")}')
+            can.setFont('Helvetica',7)
+            can.drawString(60,700,'LT 39 MZ. J4 URB. PASEO DEL MAR - ÁNCASH SANTA NUEVO CHIMBOTE')
+            can.drawString(100,690,'AV. JOSE PARDO 2721 URB. MIRAFLORES ALTO - CHIMBOTE')
+            can.drawString(70,680,'(043) 282752')
+
+            dato_imprimir = 'Pagina ' + str(contador_servicios + 1) + ' de ' + str(cant_servicios)
+            can.drawString(25,815,dato_imprimir)
+
+            #Generacion de la linea de separacion
+            can.line(25,670,580,670)
+
+            #Generacion de los datos del cliente
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,660,'SEÑORES :')
+            can.setFont('Helvetica',7)
+            if proforma_info.cliente[1] == '':
+                can.drawString(120,660,str(proforma_info.cliente[3]))
+            else:
+                can.drawString(120,660,str(proforma_info.cliente[1]) + ' ' + str(proforma_info.cliente[2]))
+            
+            if proforma_info.cliente[1] == '':
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(25,650,'RUC :')
+                can.setFont('Helvetica',7)
+                can.drawString(120,650,str(proforma_info.cliente[5]))
+            else:
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(25,650,'DNI :')
+                can.setFont('Helvetica',7)
+                can.drawString(120,650,str(proforma_info.cliente[4]))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,640,'DIRECCIÓN :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,640,str(proforma_info.cliente[9]))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,630,'FORMA DE PAGO :')
+            can.setFont('Helvetica',7)
+            if proforma_info.pagoProforma == 'CONTADO':
+                can.drawString(120,630,str(proforma_info.pagoProforma))
+            if proforma_info.pagoProforma == 'CREDITO':
+                can.drawString(120,630,str(proforma_info.pagoProforma) + ' ' + str(proforma_info.cred_dias))
+            
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,620,'VALIDEZ :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,620,str(proforma_info.validez_dias))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,610,'ENTREGA :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,610,"SEGUN STOCK")
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,600,'MONEDA :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,600,str(proforma_info.monedaProforma))
+
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,590,'PESO APROX :')
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,580,'DOCUMENTO :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,580,str(proforma_info.nroDocumento))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,570,'OBRA :')
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,560,'OBSERVACIONES :')
+            can.setFont('Helvetica',6)
+            can.drawString(120,560,str(proforma_info.observacionesCot))
+
+            #Linea de separacion con los datos del vendedor
+            can.line(25,550,580,550)
+
+            #Datos del vendedor
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,540,'VENDEDOR :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,540,str(proforma_info.vendedor[1]))
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,530,'CELULAR :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,530,str(proforma_info.vendedor[3]))
+
+            #Obtener el email del vendedor
+            vendedor_info = userProfile.objects.get(id=proforma_info.vendedor[0])
+            email_vendedor = vendedor_info.usuario.email
+            vendedor_info.save()
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,520,'EMAIL:')
+            can.setFont('Helvetica',7)
+            can.drawString(120,520,str(email_vendedor))
+
+            #Aqui se ponen las cabeceras
+
+            can.setStrokeColorRGB(0,0,1)
+            can.setFillColorRGB(0,0,0)
+            #Campos en cabecera
+            lista_x = [25,580]
+            lista_y = [500,515]
+            can.setFillColorRGB(0,0,1)
+            can.rect(25,500,555,15,fill=1)
+
+            #Valores iniciales
+            lista_x = [25,50,100,310,360,410,460,530]
+            lista_y = [500,515]
+
+            #Ingreso de campo cantidad
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[0] + 5, lista_y[0] + 3,'Item.')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                can.drawRightString(lista_x[0] + 20,lista_y[0] + 3,str("1"))
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de código de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[1] + 5, lista_y[0] + 3,'Código')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                can.drawString(lista_x[1] + 5,lista_y[0] + 3,'Servicio')
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de descripcion de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[2] + 5, lista_y[0] + 3,'Descripción')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                can.drawString(lista_x[2] + 5,lista_y[0] + 3,servicio[1])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de unidad de medida de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[3] + 5, lista_y[0] + 3,'Und')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                can.drawString(lista_x[3] + 5,lista_y[0] + 3,servicio[2])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            condicion_imprimir = proforma_info.imprimirVU + proforma_info.imprimirPU + proforma_info.imprimirDescuento
+            if condicion_imprimir == '100':
+                lista_x[4] = 360
+            
+            if condicion_imprimir == '010':
+                lista_x[5] = 360
+
+            if condicion_imprimir == '001':
+                lista_x[6] = 360
+            
+            if condicion_imprimir == '110':
+                lista_x[4] = 360
+                lista_x[5] = 420
+
+            if condicion_imprimir == '101':
+                lista_x[4] = 360
+                lista_x[6] = 420
+            
+            if condicion_imprimir == '011':
+                lista_x[5] = 360
+                lista_x[6] = 420
+            
+            if condicion_imprimir == '111':
+                lista_x[4] = 360
+                lista_x[5] = 420
+                lista_x[6] = 480
+
+            if proforma_info.imprimirVU == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de unidad de medida de producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[4] - 5, lista_y[0] + 3,'V.U sin IGV')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for servicio in grupos_servicios[contador_servicios]:
+                    if proforma_info.monedaProforma == 'SOLES':
+                        if servicio[3] == 'DOLARES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        if servicio[3] == 'SOLES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                    if proforma_info.monedaProforma == 'DOLARES':
+                        if servicio[3] == 'SOLES':
+                            vu_servicio = (Decimal(servicio[4])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        if servicio[3] == 'DOLARES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_servicio)))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+
+            if proforma_info.imprimirPU == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo del precio con IGV de producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[5] - 5, lista_y[0]+3,'P.U con IGV')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for servicio in grupos_servicios[contador_servicios]:
+                    if proforma_info.monedaProforma == 'SOLES':
+                        if servicio[3] == 'DOLARES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        if servicio[3] == 'SOLES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                    if proforma_info.monedaProforma == 'DOLARES':
+                        if servicio[3] == 'SOLES':
+                            vu_servicio = (Decimal(servicio[4])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        if servicio[3] == 'DOLARES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                    can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % (vu_servicio*Decimal(1.18)))))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            if proforma_info.imprimirDescuento == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[6], lista_y[0] + 3,'Dscto')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for servicio in grupos_servicios[contador_servicios]:
+                    can.drawRightString(lista_x[6] + 20,lista_y[0] + 3,str(servicio[5]) + ' %')
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de valor de venta del producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[7] + 5, lista_y[0] + 3,'Valor Venta')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                if proforma_info.monedaProforma == 'SOLES':
+                    if servicio[3] == 'DOLARES':
+                        vu_servicio = Decimal(servicio[4])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                    if servicio[3] == 'SOLES':
+                        vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                if proforma_info.monedaProforma == 'DOLARES':
+                    if servicio[3] == 'SOLES':
+                        vu_servicio = (Decimal(servicio[4])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                    if servicio[3] == 'DOLARES':
+                        vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                #v_producto = round(v_producto,2)
+                can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(vu_servicio))))
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                total_precio = Decimal(total_precio) + Decimal(vu_servicio)
+
+            #Linea de separacion con los datos finales
+            can.line(25,lista_y[1],580,lista_y[1])
+            #Prueba de impresion
+
+            #Logo de las empresas
+            can.drawImage('./sistema_2/static/images/mega.png',20,60,width=90,height=60,mask='auto')
+            can.drawImage('./sistema_2/static/images/sgs.png',240,65,width=100,height=50,mask='auto')
+            can.drawImage('./sistema_2/static/images/hodelpe.png',470,65,width=100,height=50,mask='auto')
+
+            #Linea inicio de separacion
+            can.line(25,60,580,60)
+
+            #Impresion de los datos bancarios
+            #Scotiabank
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(25,50,'Banco Scotiabank')
+            can.setFont('Helvetica',8)
+            can.drawString(25,40,'Cta Cte Soles: 000 9496505')
+            can.drawString(25,30,'Cta Cte Dolares: 000 5151261')
+
+            #BCP
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(230,50,'Banco de Crédito del Perú')
+            can.setFont('Helvetica',8)
+            can.drawString(230,40,'Cta Cte Soles: 310 9888337 0 02')
+            can.drawString(230,30,'Cta Cte Dolares: 310 9865292 1 35')
+
+            #BBVA
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(420,50,'Banco Continental BBVA')
+            can.setFont('Helvetica',8)
+            can.drawString(420,40,'Cta Cte Soles: 0011 0250 0200615638 80')
+            can.drawString(420,30,'Cta Cte Dolares: 0011 0250 0200653947 88')
+
+            #Linea final de separacion
+            can.line(25,25,580,25)
+            contador_servicios = contador_servicios + 1
+            if cant_servicios > contador_servicios:
+                can.showPage()
+
+        #Esta seccion solo va en la hoja final de los productos
+        #Impresion de total venta
+        can.drawRightString(480,lista_y[0]+4,'Total Venta Grabada')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % total_precio)))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Impresion de total IGV
+        igv_precio = Decimal('%.2f' % total_precio)*Decimal(0.18)
+        can.drawRightString(480,lista_y[0]+4,'Total IGV')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % igv_precio)))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Impresion de importe total
+        precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+        can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(precio_final))))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Calculo de la proforma en dolares
+        total_dolares = Decimal(0.0000)
+        for servicio in proforma_info.servicios:
+            if servicio[3] == 'SOLES':
+                v_servicio = (Decimal(servicio[4])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+            if servicio[3] == 'DOLARES':
+                v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+            total_dolares = Decimal(total_dolares) + Decimal(v_servicio)
+        final_dolares = Decimal('%.2f' % total_dolares)*Decimal(1.18)
+
+        #Impresion de importe en otra moneda
+        precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+        can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'$')
+            can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(final_dolares))))
+        else:
+            can.drawRightString(490,lista_y[0]+4,'S/')
+            can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)*Decimal(proforma_info.tipoCambio[1])))))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion con los datos finales
+        can.line(25,lista_y[1],580,lista_y[1])
+        can.save() 
+
+    nombre_doc = str(proforma_info.codigoProforma) + '.pdf'
+    response = HttpResponse(open('coti_generada.pdf','rb'),content_type='application/pdf')
+    nombre = 'attachment; ' + 'filename=' + nombre_doc
+    response['Content-Disposition'] = nombre
+    return response
+
+def nuevoFormatoDolares(request,ind):
+    #Generacion del documento
+    pdf_name = 'coti_generada.pdf'
+    can = canvas.Canvas(pdf_name,pagesize=A4)
+
+    #Obtencion de la informacion
+    proforma_info = cotizaciones.objects.get(id=ind)
+    proforma_info.monedaProforma = 'DOLARES'
+
+    if proforma_info.tipoProforma == 'Productos':
+        #Primero definimos la cantidad de páginas y los grupos a obtener
+        grupos_productos = [proforma_info.productos[x:x+18] for x in range(0,len(proforma_info.productos),18)]
+        #Luego de la definicion de productos se calcula la cantidad de grupos
+        cant_grupos = len(grupos_productos)
+        contador_grupos = 0
+
+        total_precio = Decimal(0.0000)
+
+        while contador_grupos < cant_grupos:
+            #Generacion del membrete superior derecho
+            can.setStrokeColorRGB(0,0,1)
+            lista_x = [410,570]
+            lista_y = [750,810]
+            can.grid(lista_x,lista_y)
+            can.setFillColorRGB(0,0,0)
+            can.setFont('Helvetica',12)
+            can.drawString(440,790,'RUC: 20541628631')
+            can.setFont('Helvetica-Bold',12)
+            can.drawString(455,775,'COTIZACION')
+            can.setFont('Helvetica',12)
+            numImp = str(proforma_info.nroCotizacion)
+            if len(numImp) < 4:
+                while(len(numImp) < 4):
+                    numImp = '0' + numImp
+            else:
+                pass
+            can.drawString(460,760,str(proforma_info.serieCotizacion) + ' - ' + numImp)
+
+            #Generacion del logo
+            can.drawImage('./sistema_2/static/images/logo.png',10,705,width=120,height=120)
+            
+            
+            #Informacion del remitente
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(25,730,'METALPROTEC S.A.C')
+            can.drawString(25,720,'RUC: 20541628631')
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,700,'OFICINA :')
+            can.drawString(25,690,'LOCAL COMERCIAL :')
+            can.drawString(25,680,'TELÉFONO :')
+            can.drawString(450,680,f'FECHA : {datetime.strptime(proforma_info.fechaProforma, "%Y-%m-%d").strftime("%d-%m-%Y")}')
+            can.setFont('Helvetica',7)
+            can.drawString(60,700,'LT 39 MZ. J4 URB. PASEO DEL MAR - ÁNCASH SANTA NUEVO CHIMBOTE')
+            can.drawString(100,690,'AV. JOSE PARDO 2721 URB. MIRAFLORES ALTO - CHIMBOTE')
+            can.drawString(70,680,'(043) 282752')
+
+
+            dato_imprimir = 'Pagina ' + str(contador_grupos + 1) + ' de ' + str(cant_grupos)
+            can.drawString(25,815,dato_imprimir)
+            
+            #Generacion de la linea de separacion
+            can.line(25,670,580,670)
+
+            #Generacion de los datos del cliente
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,660,'SEÑORES :')
+            can.setFont('Helvetica',7)
+            if proforma_info.cliente[1] == '':
+                can.drawString(120,660,str(proforma_info.cliente[3]))
+            else:
+                can.drawString(120,660,str(proforma_info.cliente[1]) + ' ' + str(proforma_info.cliente[2]))
+            
+            if proforma_info.cliente[1] == '':
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(25,650,'RUC :')
+                can.setFont('Helvetica',7)
+                can.drawString(120,650,str(proforma_info.cliente[5]))
+            else:
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(25,650,'DNI :')
+                can.setFont('Helvetica',7)
+                can.drawString(120,650,str(proforma_info.cliente[4]))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,640,'DIRECCIÓN :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,640,str(proforma_info.cliente[9]))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,630,'FORMA DE PAGO :')
+            can.setFont('Helvetica',7)
+            if proforma_info.pagoProforma == 'CONTADO':
+                can.drawString(120,630,str(proforma_info.pagoProforma))
+            if proforma_info.pagoProforma == 'CREDITO':
+                can.drawString(120,630,str(proforma_info.pagoProforma) + ' ' + str(proforma_info.cred_dias))
+            
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,620,'VALIDEZ :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,620,str(proforma_info.validez_dias))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,610,'ENTREGA :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,610,"SEGUN STOCK")
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,600,'MONEDA :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,600,str(proforma_info.monedaProforma))
+
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,590,'PESO APROX :')
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,580,'DOCUMENTO :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,580,str(proforma_info.nroDocumento))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,570,'OBRA :')
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,560,'OBSERVACIONES :')
+            can.setFont('Helvetica',6)
+            can.drawString(120,560,str(proforma_info.observacionesCot))
+
+            #Linea de separacion con los datos del vendedor
+            can.line(25,550,580,550)
+
+            #Datos del vendedor
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,540,'VENDEDOR :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,540,str(proforma_info.vendedor[1]))
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,530,'CELULAR :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,530,str(proforma_info.vendedor[3]))
+
+            #Obtener el email del vendedor
+            vendedor_info = userProfile.objects.get(id=proforma_info.vendedor[0])
+            email_vendedor = vendedor_info.usuario.email
+            vendedor_info.save()
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,520,'EMAIL:')
+            can.setFont('Helvetica',7)
+            can.drawString(120,520,str(email_vendedor))
+
+            #Campos en cabecera
+            lista_x = [25,580]
+            lista_y = [500,515]
+            can.setFillColorRGB(0,0,1)
+            can.rect(25,500,555,15,fill=1)
+
+            #Valores iniciales
+            lista_x = [25,50,100,310,360,410,460,530]
+            lista_y = [500,515]
+            #Ingreso de campo cantidad
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[0] + 5, lista_y[0] + 3,'Cant.')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                can.drawRightString(lista_x[0] + 20,lista_y[0] + 3,str("{:.2f}".format(round(float(producto[8]),2))))
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de código de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[1] + 5, lista_y[0] + 3,'Código')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                can.drawString(lista_x[1] + 5,lista_y[0] + 3,producto[2])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            condicion_nueva = str(proforma_info.mostrarCabos) + str(proforma_info.mostrarPanhos)
+            lista_agregada = [120,150]
+            if condicion_nueva == '00':
+                lista_x[2] = 120
+
+            if condicion_nueva == '01':
+                lista_x[2] = 150
+                lista_agregada[1] = 120
+            
+            if condicion_nueva == '10':
+                lista_x[2] = 150
+                lista_agregada[0] = 120
+
+            if condicion_nueva == '11':
+                lista_x[2] = 180
+                lista_agregada[0] = 120
+                lista_agregada[1] = 150
+
+            lista_y = [500,515]
+            if proforma_info.mostrarCabos == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_agregada[0], lista_y[0] + 3,proforma_info.nombresColumnas[0])
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_agregada[0] + 20,lista_y[0] + 3,str(producto[11]))
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+            
+            lista_y = [500,515]
+            if proforma_info.mostrarPanhos == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_agregada[1], lista_y[0] + 3,proforma_info.nombresColumnas[1])
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_agregada[1] + 20,lista_y[0] + 3,str(producto[12]))
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de descripcion de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[2] + 5, lista_y[0] + 3,'Descripción')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                can.drawString(lista_x[2] + 5,lista_y[0] + 3,producto[1])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de unidad de medida de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[3] + 5, lista_y[0] + 3,'Und')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                can.drawString(lista_x[3] + 5,lista_y[0] + 3,producto[3])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            condicion_imprimir = proforma_info.imprimirVU + proforma_info.imprimirPU + proforma_info.imprimirDescuento
+            if condicion_imprimir == '100':
+                lista_x[4] = 360
+            
+            if condicion_imprimir == '010':
+                lista_x[5] = 360
+
+            if condicion_imprimir == '001':
+                lista_x[6] = 360
+            
+            if condicion_imprimir == '110':
+                lista_x[4] = 360
+                lista_x[5] = 420
+
+            if condicion_imprimir == '101':
+                lista_x[4] = 360
+                lista_x[6] = 420
+            
+            if condicion_imprimir == '011':
+                lista_x[5] = 360
+                lista_x[6] = 420
+            
+            if condicion_imprimir == '111':
+                lista_x[4] = 360
+                lista_x[5] = 420
+                lista_x[6] = 480
+
+            if proforma_info.imprimirVU == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de unidad de medida de producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[4] - 5, lista_y[0] + 3,'V.U sin IGV')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    if proforma_info.monedaProforma == 'SOLES':
+                        if producto[5] == 'DOLARES':
+                            vu_producto = Decimal(producto[6])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        if producto[5] == 'SOLES':
+                            vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    if proforma_info.monedaProforma == 'DOLARES':
+                        if producto[5] == 'SOLES':
+                            vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        if producto[5] == 'DOLARES':
+                            vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+
+            if proforma_info.imprimirPU == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo del precio con IGV de producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[5] - 5, lista_y[0]+3,'P.U con IGV')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    if proforma_info.monedaProforma == 'SOLES':
+                        if producto[5] == 'DOLARES':
+                            vu_producto = Decimal(producto[6])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        if producto[5] == 'SOLES':
+                            vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    if proforma_info.monedaProforma == 'DOLARES':
+                        if producto[5] == 'SOLES':
+                            vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        if producto[5] == 'DOLARES':
+                            vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % (vu_producto*Decimal(1.18)))))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            if proforma_info.imprimirDescuento == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[6], lista_y[0] + 3,'Dscto')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for producto in grupos_productos[contador_grupos]:
+                    can.drawRightString(lista_x[6] + 20,lista_y[0] + 3,str(producto[7]) + ' %')
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de valor de venta del producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[7] + 5, lista_y[0] + 3,'Valor Venta')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for producto in grupos_productos[contador_grupos]:
+                if proforma_info.monedaProforma == 'SOLES':
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'SOLES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if proforma_info.monedaProforma == 'DOLARES':
+                    if producto[5] == 'SOLES':
+                        v_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                #v_producto = round(v_producto,2)
+                can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(v_producto))))
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                total_precio = Decimal(total_precio) + Decimal(v_producto)
+
+            #Linea de separacion con los datos finales
+            can.line(25,lista_y[1],580,lista_y[1])
+
+            #Logo de las empresas
+            can.drawImage('./sistema_2/static/images/mega.png',20,60,width=90,height=60,mask='auto')
+            can.drawImage('./sistema_2/static/images/sgs.png',240,65,width=100,height=50,mask='auto')
+            can.drawImage('./sistema_2/static/images/hodelpe.png',470,65,width=100,height=50,mask='auto')
+
+            #Linea inicio de separacion
+            can.line(25,60,580,60)
+
+            #Impresion de los datos bancarios
+            #Scotiabank
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(25,50,'Banco Scotiabank')
+            can.setFont('Helvetica',8)
+            can.drawString(25,40,'Cta Cte Soles: 000 9496505')
+            can.drawString(25,30,'Cta Cte Dolares: 000 5151261')
+
+            #BCP
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(230,50,'Banco de Crédito del Perú')
+            can.setFont('Helvetica',8)
+            can.drawString(230,40,'Cta Cte Soles: 310 9888337 0 02')
+            can.drawString(230,30,'Cta Cte Dolares: 310 9865292 1 35')
+
+            #BBVA
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(420,50,'Banco Continental BBVA')
+            can.setFont('Helvetica',8)
+            can.drawString(420,40,'Cta Cte Soles: 0011 0250 0200615638 80')
+            can.drawString(420,30,'Cta Cte Dolares: 0011 0250 0200653947 88')
+
+            #Linea final de separacion
+            can.line(25,25,580,25)
+
+            contador_grupos = contador_grupos + 1
+            if cant_grupos > contador_grupos:
+                can.showPage()
+
+        #Impresion de total venta
+        can.drawRightString(480,lista_y[0]+4,'Total Venta Grabada')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % total_precio)))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Impresion de total IGV
+        igv_precio = Decimal('%.2f' % total_precio)*Decimal(0.18)
+        can.drawRightString(480,lista_y[0]+4,'Total IGV')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % igv_precio)))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Impresion de importe total
+        precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+        can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(precio_final))))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Calculo del valor en soles
+        total_soles = Decimal(0.0000)
+        for producto in proforma_info.productos:
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'SOLES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_soles = Decimal(total_soles) + Decimal(v_producto)
+        final_soles = Decimal('%.2f' % total_soles)*Decimal(1.18)
+
+
+        #Impresion de importe en otra moneda
+        precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+        can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'$')
+            can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(precio_final)/Decimal(proforma_info.tipoCambio[0])))))
+        else:
+            can.drawRightString(490,lista_y[0]+4,'S/')
+            can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(final_soles))))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion con los datos finales
+        can.line(25,lista_y[1],580,lista_y[1])
+        can.save()
+    
+    if proforma_info.tipoProforma == 'Servicios':
+        #Primero definimos la cantidad de páginas y los grupos a obtener
+        grupos_servicios = [proforma_info.servicios[x:x+24] for x in range(0,len(proforma_info.servicios),24)]
+        #Luego de la definicion de productos se calcula la cantidad de grupos
+        cant_servicios = len(grupos_servicios)
+        contador_servicios = 0
+
+        total_precio = Decimal(0.0000)
+
+        while contador_servicios < cant_servicios:
+            #Generacion del membrete superior derecho
+            can.setStrokeColorRGB(0,0,1)
+            lista_x = [410,570]
+            lista_y = [750,810]
+            can.grid(lista_x,lista_y)
+            can.setFillColorRGB(0,0,0)
+            can.setFont('Helvetica',12)
+            can.drawString(440,790,'RUC: 20541628631')
+            can.setFont('Helvetica-Bold',12)
+            can.drawString(455,775,'COTIZACION')
+            can.setFont('Helvetica',12)
+            numImp = str(proforma_info.nroCotizacion)
+            if len(numImp) < 4:
+                while(len(numImp) < 4):
+                    numImp = '0' + numImp
+            else:
+                pass
+            can.drawString(460,760,str(proforma_info.serieCotizacion) + ' - ' + numImp)
+
+            #Generacion del logo
+            can.drawImage('./sistema_2/static/images/logo.png',10,705,width=120,height=120)
+
+            #Informacion del remitente
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(25,730,'METALPROTEC S.A.C')
+            can.drawString(25,720,'RUC: 20541628631')
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,700,'OFICINA :')
+            can.drawString(25,690,'LOCAL COMERCIAL :')
+            can.drawString(25,680,'TELÉFONO :')
+            can.drawString(450,680,f'FECHA : {datetime.strptime(proforma_info.fechaProforma, "%Y-%m-%d").strftime("%d-%m-%Y")}')
+            can.setFont('Helvetica',7)
+            can.drawString(60,700,'LT 39 MZ. J4 URB. PASEO DEL MAR - ÁNCASH SANTA NUEVO CHIMBOTE')
+            can.drawString(100,690,'AV. JOSE PARDO 2721 URB. MIRAFLORES ALTO - CHIMBOTE')
+            can.drawString(70,680,'(043) 282752')
+
+            dato_imprimir = 'Pagina ' + str(contador_servicios + 1) + ' de ' + str(cant_servicios)
+            can.drawString(25,815,dato_imprimir)
+
+            #Generacion de la linea de separacion
+            can.line(25,670,580,670)
+
+            #Generacion de los datos del cliente
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,660,'SEÑORES :')
+            can.setFont('Helvetica',7)
+            if proforma_info.cliente[1] == '':
+                can.drawString(120,660,str(proforma_info.cliente[3]))
+            else:
+                can.drawString(120,660,str(proforma_info.cliente[1]) + ' ' + str(proforma_info.cliente[2]))
+            
+            if proforma_info.cliente[1] == '':
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(25,650,'RUC :')
+                can.setFont('Helvetica',7)
+                can.drawString(120,650,str(proforma_info.cliente[5]))
+            else:
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(25,650,'DNI :')
+                can.setFont('Helvetica',7)
+                can.drawString(120,650,str(proforma_info.cliente[4]))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,640,'DIRECCIÓN :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,640,str(proforma_info.cliente[9]))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,630,'FORMA DE PAGO :')
+            can.setFont('Helvetica',7)
+            if proforma_info.pagoProforma == 'CONTADO':
+                can.drawString(120,630,str(proforma_info.pagoProforma))
+            if proforma_info.pagoProforma == 'CREDITO':
+                can.drawString(120,630,str(proforma_info.pagoProforma) + ' ' + str(proforma_info.cred_dias))
+            
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,620,'VALIDEZ :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,620,str(proforma_info.validez_dias))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,610,'ENTREGA :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,610,"SEGUN STOCK")
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,600,'MONEDA :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,600,str(proforma_info.monedaProforma))
+
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,590,'PESO APROX :')
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,580,'DOCUMENTO :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,580,str(proforma_info.nroDocumento))
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,570,'OBRA :')
+
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,560,'OBSERVACIONES :')
+            can.setFont('Helvetica',6)
+            can.drawString(120,560,str(proforma_info.observacionesCot))
+
+            #Linea de separacion con los datos del vendedor
+            can.line(25,550,580,550)
+
+            #Datos del vendedor
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,540,'VENDEDOR :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,540,str(proforma_info.vendedor[1]))
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,530,'CELULAR :')
+            can.setFont('Helvetica',7)
+            can.drawString(120,530,str(proforma_info.vendedor[3]))
+
+            #Obtener el email del vendedor
+            vendedor_info = userProfile.objects.get(id=proforma_info.vendedor[0])
+            email_vendedor = vendedor_info.usuario.email
+            vendedor_info.save()
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(25,520,'EMAIL:')
+            can.setFont('Helvetica',7)
+            can.drawString(120,520,str(email_vendedor))
+
+            #Aqui se ponen las cabeceras
+
+            can.setStrokeColorRGB(0,0,1)
+            can.setFillColorRGB(0,0,0)
+            #Campos en cabecera
+            lista_x = [25,580]
+            lista_y = [500,515]
+            can.setFillColorRGB(0,0,1)
+            can.rect(25,500,555,15,fill=1)
+
+            #Valores iniciales
+            lista_x = [25,50,100,310,360,410,460,530]
+            lista_y = [500,515]
+
+            #Ingreso de campo cantidad
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[0] + 5, lista_y[0] + 3,'Item.')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                can.drawRightString(lista_x[0] + 20,lista_y[0] + 3,str("1"))
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de código de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[1] + 5, lista_y[0] + 3,'Código')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                can.drawString(lista_x[1] + 5,lista_y[0] + 3,'Servicio')
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de descripcion de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[2] + 5, lista_y[0] + 3,'Descripción')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                can.drawString(lista_x[2] + 5,lista_y[0] + 3,servicio[1])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de unidad de medida de producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[3] + 5, lista_y[0] + 3,'Und')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                can.drawString(lista_x[3] + 5,lista_y[0] + 3,servicio[2])
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            condicion_imprimir = proforma_info.imprimirVU + proforma_info.imprimirPU + proforma_info.imprimirDescuento
+            if condicion_imprimir == '100':
+                lista_x[4] = 360
+            
+            if condicion_imprimir == '010':
+                lista_x[5] = 360
+
+            if condicion_imprimir == '001':
+                lista_x[6] = 360
+            
+            if condicion_imprimir == '110':
+                lista_x[4] = 360
+                lista_x[5] = 420
+
+            if condicion_imprimir == '101':
+                lista_x[4] = 360
+                lista_x[6] = 420
+            
+            if condicion_imprimir == '011':
+                lista_x[5] = 360
+                lista_x[6] = 420
+            
+            if condicion_imprimir == '111':
+                lista_x[4] = 360
+                lista_x[5] = 420
+                lista_x[6] = 480
+
+            if proforma_info.imprimirVU == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de unidad de medida de producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[4] - 5, lista_y[0] + 3,'V.U sin IGV')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for servicio in grupos_servicios[contador_servicios]:
+                    if proforma_info.monedaProforma == 'SOLES':
+                        if servicio[3] == 'DOLARES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        if servicio[3] == 'SOLES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                    if proforma_info.monedaProforma == 'DOLARES':
+                        if servicio[3] == 'SOLES':
+                            vu_servicio = (Decimal(servicio[4])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        if servicio[3] == 'DOLARES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                    can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_servicio)))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+
+            if proforma_info.imprimirPU == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo del precio con IGV de producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[5] - 5, lista_y[0]+3,'P.U con IGV')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for servicio in grupos_servicios[contador_servicios]:
+                    if proforma_info.monedaProforma == 'SOLES':
+                        if servicio[3] == 'DOLARES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        if servicio[3] == 'SOLES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                    if proforma_info.monedaProforma == 'DOLARES':
+                        if servicio[3] == 'SOLES':
+                            vu_servicio = (Decimal(servicio[4])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        if servicio[3] == 'DOLARES':
+                            vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                    can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % (vu_servicio*Decimal(1.18)))))
+                    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            
+            if proforma_info.imprimirDescuento == '1':
+                #Valores iniciales
+                lista_y = [500,515]
+                #Ingreso de campo de descuento del producto
+                can.setFillColorRGB(1,1,1)
+                can.setFont('Helvetica-Bold',7)
+                can.drawString(lista_x[6], lista_y[0] + 3,'Dscto')
+                can.setFont('Helvetica',7)
+                can.setFillColorRGB(0,0,0)
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                for servicio in grupos_servicios[contador_servicios]:
+                    can.drawRightString(lista_x[6] + 20,lista_y[0] + 3,str(servicio[5]) + ' %')
+                    lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+            #Valores iniciales
+            lista_y = [500,515]
+            #Ingreso de campo de valor de venta del producto
+            can.setFillColorRGB(1,1,1)
+            can.setFont('Helvetica-Bold',7)
+            can.drawString(lista_x[7] + 5, lista_y[0] + 3,'Valor Venta')
+            can.setFont('Helvetica',7)
+            can.setFillColorRGB(0,0,0)
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+            for servicio in grupos_servicios[contador_servicios]:
+                if proforma_info.monedaProforma == 'SOLES':
+                    if servicio[3] == 'DOLARES':
+                        vu_servicio = Decimal(servicio[4])*Decimal(proforma_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                    if servicio[3] == 'SOLES':
+                        vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                if proforma_info.monedaProforma == 'DOLARES':
+                    if servicio[3] == 'SOLES':
+                        vu_servicio = (Decimal(servicio[4])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                    if servicio[3] == 'DOLARES':
+                        vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                #v_producto = round(v_producto,2)
+                can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(vu_servicio))))
+                lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+                total_precio = Decimal(total_precio) + Decimal(vu_servicio)
+
+            #Linea de separacion con los datos finales
+            can.line(25,lista_y[1],580,lista_y[1])
+            #Prueba de impresion
+
+            #Logo de las empresas
+            can.drawImage('./sistema_2/static/images/mega.png',20,60,width=90,height=60,mask='auto')
+            can.drawImage('./sistema_2/static/images/sgs.png',240,65,width=100,height=50,mask='auto')
+            can.drawImage('./sistema_2/static/images/hodelpe.png',470,65,width=100,height=50,mask='auto')
+
+            #Linea inicio de separacion
+            can.line(25,60,580,60)
+
+            #Impresion de los datos bancarios
+            #Scotiabank
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(25,50,'Banco Scotiabank')
+            can.setFont('Helvetica',8)
+            can.drawString(25,40,'Cta Cte Soles: 000 9496505')
+            can.drawString(25,30,'Cta Cte Dolares: 000 5151261')
+
+            #BCP
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(230,50,'Banco de Crédito del Perú')
+            can.setFont('Helvetica',8)
+            can.drawString(230,40,'Cta Cte Soles: 310 9888337 0 02')
+            can.drawString(230,30,'Cta Cte Dolares: 310 9865292 1 35')
+
+            #BBVA
+            can.setFont('Helvetica-Bold',8)
+            can.drawString(420,50,'Banco Continental BBVA')
+            can.setFont('Helvetica',8)
+            can.drawString(420,40,'Cta Cte Soles: 0011 0250 0200615638 80')
+            can.drawString(420,30,'Cta Cte Dolares: 0011 0250 0200653947 88')
+
+            #Linea final de separacion
+            can.line(25,25,580,25)
+            contador_servicios = contador_servicios + 1
+            if cant_servicios > contador_servicios:
+                can.showPage()
+
+        #Esta seccion solo va en la hoja final de los productos
+        #Impresion de total venta
+        can.drawRightString(480,lista_y[0]+4,'Total Venta Grabada')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % total_precio)))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Impresion de total IGV
+        igv_precio = Decimal('%.2f' % total_precio)*Decimal(0.18)
+        can.drawRightString(480,lista_y[0]+4,'Total IGV')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % igv_precio)))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Impresion de importe total
+        precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+        can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'S/')
+        else:
+            can.drawRightString(490,lista_y[0]+4,'$')
+        can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(precio_final))))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion
+        can.line(480,lista_y[1],580,lista_y[1])
+
+        #Calculo de la proforma en dolares
+        total_soles = Decimal(0.0000)
+        for servicio in proforma_info.servicios:
+            if servicio[3] == 'DOLARES':
+                v_servicio = (Decimal(servicio[4])*Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+            if servicio[3] == 'SOLES':
+                v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+            total_soles = Decimal(total_soles) + Decimal(v_servicio)
+        final_soles = Decimal('%.2f' % total_soles)*Decimal(1.18)
+
+        #Impresion de importe en otra moneda
+        precio_final = Decimal('%.2f' % total_precio)*Decimal(1.18)
+        can.drawRightString(480,lista_y[0]+4,'Importe Total de la Venta')
+        if proforma_info.monedaProforma == 'SOLES':
+            can.drawRightString(490,lista_y[0]+4,'$')
+            can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % Decimal(precio_final))))
+        else:
+            can.drawRightString(490,lista_y[0]+4,'S/')
+            can.drawRightString(lista_x[7]+45,lista_y[0]+4,"{:,}".format(Decimal('%.2f' % (Decimal(final_soles)))))
+        lista_y = [lista_y[0] - 15,lista_y[1] - 15]
+
+        #Linea de separacion con los datos finales
+        can.line(25,lista_y[1],580,lista_y[1])
+        can.save()
+
+    nombre_doc = str(proforma_info.codigoProforma) + '.pdf'
+    response = HttpResponse(open('coti_generada.pdf','rb'),content_type='application/pdf')
+    nombre = 'attachment; ' + 'filename=' + nombre_doc
+    response['Content-Disposition'] = nombre
+    return response

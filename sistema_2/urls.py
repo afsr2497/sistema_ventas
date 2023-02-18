@@ -143,4 +143,7 @@ urlpatterns = [
     path('descargar_orden/<str:ind>',views.descargarOrden,name='descargarOrden'),
     path('editarOrden/<str:ind>',views.editarOrden,name='editarOrden'),
     path('verificar_nota_teFacturo/<str:ind>',views.verificar_nota_teFacturo,name='verificar_nota_teFacturo'),
+    path('getDatosAbono',views.getDatosAbono,name='getDatosAbono'),
+    path('nuevoFormatoSoles/<str:ind>',views.nuevoFormatoSoles,name='nuevoFormatoSoles'),
+    path('nuevoFormatoDolares/<str:ind>',views.nuevoFormatoDolares,name='nuevoFormatoDolares'),
 ]

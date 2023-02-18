@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded',()=>{
+
+    document.querySelectorAll('.formatoV1').forEach(elemento => {
+        elemento.style.display = 'none'
+    })
+    document.querySelectorAll('.formatoV2').forEach(elemento => {
+        elemento.style.display = 'none'
+    })
+
     $('#proformasTable').DataTable({
         paging: true,
         pageLength: 20,
@@ -28,4 +36,49 @@ document.addEventListener('DOMContentLoaded',()=>{
             }
         }
     })
+
+
+    seleccionarFormato = document.getElementById('seleccionarFormato')
+    seleccionarFormato.onchange = function()
+    {
+        informacionFormato = document.getElementById('seleccionarFormato').value
+
+        if(informacionFormato === '')
+        {
+            document.querySelectorAll('.formatoV1').forEach(elemento => {
+                elemento.style.display = 'none'
+            })
+            document.querySelectorAll('.formatoV2').forEach(elemento => {
+                elemento.style.display = 'none'
+            })
+        }
+
+        if(informacionFormato === 'V1')
+        {
+            document.querySelectorAll('.formatoV1').forEach(elemento => {
+                elemento.style.display = 'none'
+            })
+            document.querySelectorAll('.formatoV2').forEach(elemento => {
+                elemento.style.display = 'none'
+            })
+
+            document.querySelectorAll('.formatoV1').forEach(elemento => {
+                elemento.style.display = ''
+            })
+        }
+
+        if(informacionFormato === 'V2')
+        {
+            document.querySelectorAll('.formatoV1').forEach(elemento => {
+                elemento.style.display = 'none'
+            })
+            document.querySelectorAll('.formatoV2').forEach(elemento => {
+                elemento.style.display = 'none'
+            })
+
+            document.querySelectorAll('.formatoV2').forEach(elemento => {
+                elemento.style.display = ''
+            })   
+        }
+    }
 })

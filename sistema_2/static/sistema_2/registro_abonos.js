@@ -1,3 +1,13 @@
+function actualizarAbono(abonoID)
+{
+    idAbono = abonoID.slice(4)
+    fetch(`/sistema_2/getDatosAbono?ind=${idAbono}`)
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+    })
+}
+
 function nuevoAbonoInfo()
 {
     let facturas_cliente = document.getElementById('facturas_cliente')
