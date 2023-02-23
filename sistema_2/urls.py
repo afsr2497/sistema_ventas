@@ -146,4 +146,5 @@ urlpatterns = [
     path('getDatosAbono',views.getDatosAbono,name='getDatosAbono'),
     path('nuevoFormatoSoles/<str:ind>',views.nuevoFormatoSoles,name='nuevoFormatoSoles'),
     path('nuevoFormatoDolares/<str:ind>',views.nuevoFormatoDolares,name='nuevoFormatoDolares'),
+    path('kits_productos',views.kits_productos,name='kits_productos'),
 ]

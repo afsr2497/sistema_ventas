@@ -678,20 +678,35 @@ def productos(request):
                 id_producto_b = str(request.POST.get('seleccion_producto_b'))
                 codigo_producto_b = str(request.POST.get('codigo_producto_b'))
                 cantidad_producto_b = str(round(float(request.POST.get('cantidad_producto_b')),2))
+                id_producto_c = str(request.POST.get('seleccion_producto_c'))
+                codigo_producto_c = str(request.POST.get('codigo_producto_c'))
+                cantidad_producto_c = str(round(float(request.POST.get('cantidad_producto_c')),2))
+                id_producto_d = str(request.POST.get('seleccion_producto_d'))
+                codigo_producto_d = str(request.POST.get('codigo_producto_d'))
+                cantidad_producto_d = str(round(float(request.POST.get('cantidad_producto_d')),2))
+                id_producto_e = str(request.POST.get('seleccion_producto_e'))
+                codigo_producto_e = str(request.POST.get('codigo_producto_e'))
+                cantidad_producto_e = str(round(float(request.POST.get('cantidad_producto_e')),2))
                 producto_kit = '1'
                 producto_A = [id_producto_a,codigo_producto_a,cantidad_producto_a]
                 producto_B = [id_producto_b,codigo_producto_b,cantidad_producto_b]
+                producto_C = [id_producto_c,codigo_producto_c,cantidad_producto_c]
+                producto_D = [id_producto_d,codigo_producto_d,cantidad_producto_d]
+                producto_E = [id_producto_e,codigo_producto_e,cantidad_producto_e]
             else:
                 print('No se creara el kit')
                 producto_kit = '0'
                 producto_A = []
                 producto_B = []
+                producto_C = []
+                producto_D = []
+                producto_E = []
             try:
                 ultimo_producto = products.objects.latest('id')
                 producto_id = int(ultimo_producto.id) + 1
             except:
                 producto_id = 1
-            products(stockTotal=stock_total,stock=stock_producto,producto_kit=producto_kit,producto_A=producto_A,producto_B=producto_B,pesoProducto=producto_peso,id=producto_id,nombre=producto_nombre,codigo=producto_codigo,categoria=producto_categoria,sub_categoria=producto_subCategoria,unidad_med=producto_unidad,precio_compra_sin_igv=producto_pcsinIGV,precio_compra_con_igv=producto_pcconIGV,precio_venta_sin_igv=producto_pvsinIGV,precio_venta_con_igv=producto_pvconIGV,codigo_sunat=producto_sunat,moneda=producto_moneda).save()
+            products(producto_C=producto_C,producto_D=producto_D,producto_E=producto_E,stockTotal=stock_total,stock=stock_producto,producto_kit=producto_kit,producto_A=producto_A,producto_B=producto_B,pesoProducto=producto_peso,id=producto_id,nombre=producto_nombre,codigo=producto_codigo,categoria=producto_categoria,sub_categoria=producto_subCategoria,unidad_med=producto_unidad,precio_compra_sin_igv=producto_pcsinIGV,precio_compra_con_igv=producto_pcconIGV,precio_venta_sin_igv=producto_pvsinIGV,precio_venta_con_igv=producto_pvconIGV,codigo_sunat=producto_sunat,moneda=producto_moneda).save()
             return HttpResponseRedirect(reverse('sistema_2:productos'))
         elif 'Filtrar' in request.POST:
             filtro_categoria = request.POST.get('filtroCategoria')
@@ -4291,7 +4306,7 @@ def armar_json_boleta(boleta_info):
             "nombreComercial": null,
             "nombreLegal": str(boleta_info.cliente[1] + ' ' + boleta_info.cliente[2]),
             "numeroDocumentoIdentidad": boleta_info.cliente[4],
-            "tipoDocumentoIdentidad": "RUC"
+            "tipoDocumentoIdentidad": "DOC_NACIONAL_DE_IDENTIDAD"
         },
         'referencias':{
             "documentoReferenciaList":guias_json,
@@ -4343,36 +4358,86 @@ def armar_json_guia(guia_info):
     for producto in guia_info.productos:
         producto_info = products.objects.get(id=producto[0])
         if producto_info.producto_kit == '1':
-            producto_a = products.objects.get(id=producto_info.producto_A[0])
-            producto_b = products.objects.get(id=producto_info.producto_B[0])
-            arreglo_producto_a = [
-                str(producto_a.id),
-                str(producto_a.nombre),
-                str(producto_a.codigo),
-                str(producto_a.unidad_med),
-                str(producto[4]),
-                str(producto_a.moneda),
-                '0.00',
-                '0',
-                str(round(float(producto_info.producto_A[2])*float(producto[8]),2)),
-                '1',
-                str(round(float(producto_info.producto_A[2])*float(producto[8]),2)),
-                str(producto_a.pesoProducto)]
-            arreglo_producto_b = [
-                str(producto_b.id),
-                str(producto_b.nombre),
-                str(producto_b.codigo),
-                str(producto_b.unidad_med),
-                str(producto[4]),
-                str(producto_b.moneda),
-                '0.00',
-                '0',
-                str(round(float(producto_info.producto_B[2])*float(producto[8]),2)),
-                '1',
-                str(round(float(producto_info.producto_B[2])*float(producto[8]),2)),
-                str(producto_b.pesoProducto)]
-            productos_extras.append(arreglo_producto_a)
-            productos_extras.append(arreglo_producto_b)
+            if producto_info.producto_A[0].isnumeric():
+                producto_a = products.objects.get(id=producto_info.producto_A[0])
+                arreglo_producto_a = [
+                    str(producto_a.id),
+                    str(producto_a.nombre),
+                    str(producto_a.codigo),
+                    str(producto_a.unidad_med),
+                    str(producto[4]),
+                    str(producto_a.moneda),
+                    '0.00',
+                    '0',
+                    str(round(float(producto_info.producto_A[2])*float(producto[8]),2)),
+                    '1',
+                    str(round(float(producto_info.producto_A[2])*float(producto[8]),2)),
+                    str(producto_a.pesoProducto)]
+                productos_extras.append(arreglo_producto_a)
+            if producto_info.producto_B[0].isnumeric():
+                producto_b = products.objects.get(id=producto_info.producto_B[0])
+                arreglo_producto_b = [
+                    str(producto_b.id),
+                    str(producto_b.nombre),
+                    str(producto_b.codigo),
+                    str(producto_b.unidad_med),
+                    str(producto[4]),
+                    str(producto_b.moneda),
+                    '0.00',
+                    '0',
+                    str(round(float(producto_info.producto_B[2])*float(producto[8]),2)),
+                    '1',
+                    str(round(float(producto_info.producto_B[2])*float(producto[8]),2)),
+                    str(producto_b.pesoProducto)]
+                productos_extras.append(arreglo_producto_b)
+            if producto_info.producto_C[0].isnumeric():
+                producto_c = products.objects.get(id=producto_info.producto_C[0])
+                arreglo_producto_c = [
+                    str(producto_c.id),
+                    str(producto_c.nombre),
+                    str(producto_c.codigo),
+                    str(producto_c.unidad_med),
+                    str(producto[4]),
+                    str(producto_c.moneda),
+                    '0.00',
+                    '0',
+                    str(round(float(producto_info.producto_C[2])*float(producto[8]),2)),
+                    '1',
+                    str(round(float(producto_info.producto_C[2])*float(producto[8]),2)),
+                    str(producto_c.pesoProducto)]
+                productos_extras.append(arreglo_producto_c)
+            if producto_info.producto_D[0].isnumeric():
+                producto_d = products.objects.get(id=producto_info.producto_D[0])
+                arreglo_producto_d = [
+                    str(producto_d.id),
+                    str(producto_d.nombre),
+                    str(producto_d.codigo),
+                    str(producto_d.unidad_med),
+                    str(producto[4]),
+                    str(producto_d.moneda),
+                    '0.00',
+                    '0',
+                    str(round(float(producto_info.producto_D[2])*float(producto[8]),2)),
+                    '1',
+                    str(round(float(producto_info.producto_D[2])*float(producto[8]),2)),
+                    str(producto_d.pesoProducto)]
+                productos_extras.append(arreglo_producto_d)
+            if producto_info.producto_E[0].isnumeric():
+                producto_e = products.objects.get(id=producto_info.producto_E[0])
+                arreglo_producto_e = [
+                    str(producto_e.id),
+                    str(producto_e.nombre),
+                    str(producto_e.codigo),
+                    str(producto_e.unidad_med),
+                    str(producto[4]),
+                    str(producto_e.moneda),
+                    '0.00',
+                    '0',
+                    str(round(float(producto_info.producto_E[2])*float(producto[8]),2)),
+                    '1',
+                    str(round(float(producto_info.producto_E[2])*float(producto[8]),2)),
+                    str(producto_e.pesoProducto)]
+                productos_extras.append(arreglo_producto_e)
             guia_info.productos.remove(producto)
     guia_info.productos = guia_info.productos + productos_extras
     productos = []
@@ -4595,22 +4660,23 @@ def armar_json_factura(factura_info):
     for producto in factura_info.productos:
         producto_info = products.objects.get(id=producto[0])
         if producto_info.producto_kit == '1':
-            producto_a = products.objects.get(id=producto_info.producto_A[0])
-            arreglo_producto_a = [
-                str(producto_a.id),
-                str(producto_a.nombre),
-                str(producto_a.codigo),
-                str(producto_a.unidad_med),
-                str(producto[4]),
-                str(producto_a.moneda),
-                str(producto[6]),
-                str(producto[7]),
-                str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
-                '1',
-                str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
-                str(producto_a.pesoProducto)
-            ]
-            producto_extra.append(arreglo_producto_a)
+            if producto_info.producto_A[0].isnumeri():
+                producto_a = products.objects.get(id=producto_info.producto_A[0])
+                arreglo_producto_a = [
+                    str(producto_a.id),
+                    str(producto_a.nombre),
+                    str(producto_a.codigo),
+                    str(producto_a.unidad_med),
+                    str(producto[4]),
+                    str(producto_a.moneda),
+                    str(producto[6]),
+                    str(producto[7]),
+                    str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                    '1',
+                    str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                    str(producto_a.pesoProducto)
+                ]
+                producto_extra.append(arreglo_producto_a)
             factura_info.productos.remove(producto)
     factura_info.productos = factura_info.productos + producto_extra
     productos = []
@@ -12852,3 +12918,11 @@ def nuevoFormatoDolares(request,ind):
     nombre = 'attachment; ' + 'filename=' + nombre_doc
     response['Content-Disposition'] = nombre
     return response
+
+def kits_productos(request):
+    usr = userProfile.objects.all()
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    return render(request,'sistema_2/kits_productos.html',{
+        'usr_rol': user_logued,
+    })

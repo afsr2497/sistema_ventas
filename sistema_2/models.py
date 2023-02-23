@@ -53,6 +53,12 @@ class products(models.Model):
     producto_kit = models.CharField(max_length=12, default='0')
     producto_A = ArrayField(models.CharField(max_length=64),default=list())
     producto_B = ArrayField(models.CharField(max_length=64),default=list())
+    producto_C = ArrayField(models.CharField(max_length=64),default=list())
+    producto_D = ArrayField(models.CharField(max_length=64),default=list())
+    producto_E = ArrayField(models.CharField(max_length=64),default=list())
+
+class kitsProductos(models.Model):
+    productos = models.ManyToManyField(products)
 
 class services(models.Model):
     id = models.AutoField(primary_key=True)
