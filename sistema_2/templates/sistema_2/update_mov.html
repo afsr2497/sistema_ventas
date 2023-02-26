@@ -192,10 +192,8 @@
     <h5 class="modal-title">Actualizar registro</h5>
     <form method="post" action="{% url 'sistema_2:actualizar_mov' operacion.id %}">
     {% csrf_token %}
-        </div>
-            <div class="modal-body">
-            <h6>Campos obligatorios (*)</h6>
-            <br>
+        <h6>Campos obligatorios (*)</h6>
+        <br>
         <div class="row mb-3">
             <div class="col-md-3">
                 <label>Concepto</label>
