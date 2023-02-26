@@ -4660,7 +4660,7 @@ def armar_json_factura(factura_info):
     for producto in factura_info.productos:
         producto_info = products.objects.get(id=producto[0])
         if producto_info.producto_kit == '1':
-            if producto_info.producto_A[0].isnumeri():
+            if producto_info.producto_A[0].isnumeric():
                 producto_a = products.objects.get(id=producto_info.producto_A[0])
                 arreglo_producto_a = [
                     str(producto_a.id),
@@ -12958,6 +12958,66 @@ def exportarReporteVentas(request):
     infoComprobantes = []
 
     for factura in facturasFiltradas:
+        producto_extra = []
+        for producto in factura.productos:
+            try:
+                producto_info = products.objects.get(id=producto[0])
+                if producto_info.producto_kit == '1':
+                    if producto_info.producto_A[0].isnumeric():
+                        producto_a = products.objects.get(id=producto_info.producto_A[0])
+                        arreglo_producto_a = [
+                            str(producto_a.id),
+                            str(producto_a.nombre),
+                            str(producto_a.codigo),
+                            str(producto_a.unidad_med),
+                            str(producto[4]),
+                            str(producto_a.moneda),
+                            str(producto[6]),
+                            str(producto[7]),
+                            str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                            '1',
+                            str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                            str(producto_a.pesoProducto)
+                        ]
+                        producto_extra.append(arreglo_producto_a)
+                    factura.productos.remove(producto)
+            except:
+                pass
+        factura.productos = factura.productos + producto_extra
+
+        #Calculo del total
+        total_precio = Decimal(0.0000)
+        for producto in factura.productos:
+            if factura.monedaFactura == 'SOLES':
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'SOLES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if factura.monedaFactura == 'DOLARES':
+                if producto[5] == 'SOLES':
+                    v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_precio = Decimal(total_precio) + Decimal(v_producto)
+
+        for servicio in factura.servicios:
+            if factura.monedaFactura == 'SOLES':
+                if servicio[3] == 'DOLARES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                if servicio[3] == 'SOLES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+            if factura.monedaFactura == 'DOLARES':
+                if servicio[3] == 'SOLES':
+                    vu_servicio = (Decimal(servicio[4])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                if servicio[3] == 'DOLARES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+            total_precio = Decimal(total_precio) + Decimal(vu_servicio)
+
+
         monedaDoc = '0'
         tipoPago = '0'
         if factura.pagoFactura == 'CONTADO':
@@ -12974,16 +13034,16 @@ def exportarReporteVentas(request):
                                 str(factura.fecha_emision.strftime("%Y-%m-%d")),
                                 str(factura.cliente[5]),
                                 str(factura.cliente[3]),
-                                'AFECTO',
+                                str(round(float(total_precio),2)),
                                 '0,00',
                                 '0,00',
-                                'NETO',
-                                'IGV',
+                                str(round(float(total_precio*Decimal(1.18)),2)),
+                                str(round(float(total_precio*Decimal(0.18)),2)),
                                 '0,00',
                                 '0,00',
                                 '0,00',
                                 '0,00',
-                                'TOTAL',
+                                str(round(float(total_precio*Decimal(1.18)),2)),
                                 '0,00',
                                 str(factura.estadoSunat),
                                 '0',
@@ -12999,6 +13059,204 @@ def exportarReporteVentas(request):
                                 'EN EL COMPROBANTE',
                                 '7012',
                                 f'VENTA DE {factura.tipoFactura}',
+                                str(monedaDoc)])
+    
+    for boleta in boletasFiltradas:
+        producto_extra = []
+        for producto in boleta.productos:
+            producto_info = products.objects.get(id=producto[0])
+            if producto_info.producto_kit == '1':
+                if producto_info.producto_A[0].isnumeric():
+                    producto_a = products.objects.get(id=producto_info.producto_A[0])
+                    arreglo_producto_a = [
+                        str(producto_a.id),
+                        str(producto_a.nombre),
+                        str(producto_a.codigo),
+                        str(producto_a.unidad_med),
+                        str(producto[4]),
+                        str(producto_a.moneda),
+                        str(producto[6]),
+                        str(producto[7]),
+                        str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                        '1',
+                        str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                        str(producto_a.pesoProducto)
+                    ]
+                    producto_extra.append(arreglo_producto_a)
+                boleta.productos.remove(producto)
+        boleta.productos = boleta.productos + producto_extra
+
+        #Calculo del total
+        total_precio = Decimal(0.0000)
+        for producto in boleta.productos:
+            if boleta.monedaBoleta == 'SOLES':
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'SOLES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if boleta.monedaBoleta == 'DOLARES':
+                if producto[5] == 'SOLES':
+                    v_producto = (Decimal(producto[6])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_precio = Decimal(total_precio) + Decimal(v_producto)
+
+        for servicio in boleta.servicios:
+            if boleta.monedaBoleta == 'SOLES':
+                if servicio[3] == 'DOLARES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                if servicio[3] == 'SOLES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+            if boleta.monedaBoleta == 'DOLARES':
+                if servicio[3] == 'SOLES':
+                    vu_servicio = (Decimal(servicio[4])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                if servicio[3] == 'DOLARES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+            total_precio = Decimal(total_precio) + Decimal(vu_servicio)
+
+
+
+        monedaDoc = '0'
+        tipoPago = '0'
+        if boleta.pagoBoleta == 'CONTADO':
+            tipoPago = '1'
+        else:
+            tipoPago = '2'
+        if boleta.monedaBoleta == 'SOLES':
+            monedaDoc = '1'
+        else:
+            monedaDoc = '2'
+        infoComprobantes.append(['03',
+                                str(boleta.serieBoleta),
+                                str(boleta.nroBoleta),
+                                str(boleta.fecha_emision.strftime("%Y-%m-%d")),
+                                str(boleta.cliente[5]),
+                                str(boleta.cliente[3]),
+                                str(round(float(total_precio),2)),
+                                '0,00',
+                                '0,00',
+                                str(round(float(total_precio*Decimal(1.18)),2)),
+                                str(round(float(total_precio*Decimal(0.18)),2)),
+                                '0,00',
+                                '0,00',
+                                '0,00',
+                                '0,00',
+                                str(round(float(total_precio*Decimal(1.18)),2)),
+                                '0,00',
+                                str(boleta.estadoSunat),
+                                '0',
+                                '-',
+                                '-',
+                                '-',
+                                str(tipoPago),
+                                '001',
+                                '0',
+                                'FECHA DETRAC',
+                                'COD BANCO',
+                                'EN EL COMPROBANTE',
+                                'EN EL COMPROBANTE',
+                                '7012',
+                                f'VENTA DE {boleta.tipoBoleta}',
+                                str(monedaDoc)])
+    for nota in notasFiltradas:
+
+        producto_extra = []
+        for producto in nota.productos:
+            producto_info = products.objects.get(id=producto[0])
+            if producto_info.producto_kit == '1':
+                if producto_info.producto_A[0].isnumeric():
+                    producto_a = products.objects.get(id=producto_info.producto_A[0])
+                    arreglo_producto_a = [
+                        str(producto_a.id),
+                        str(producto_a.nombre),
+                        str(producto_a.codigo),
+                        str(producto_a.unidad_med),
+                        str(producto[4]),
+                        str(producto_a.moneda),
+                        str(producto[6]),
+                        str(producto[7]),
+                        str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                        '1',
+                        str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
+                        str(producto_a.pesoProducto)
+                    ]
+                    producto_extra.append(arreglo_producto_a)
+                nota.productos.remove(producto)
+        nota.productos = nota.productos + producto_extra
+
+        #Calculo del total
+        total_precio = Decimal(0.0000)
+        for producto in nota.productos:
+            if nota.monedaNota == 'SOLES':
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(nota.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'SOLES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if nota.monedaNota == 'DOLARES':
+                if producto[5] == 'SOLES':
+                    v_producto = (Decimal(producto[6])/Decimal(nota.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[5] == 'DOLARES':
+                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_precio = Decimal(total_precio) + Decimal(v_producto)
+
+        for servicio in nota.servicios:
+            if nota.monedaNota == 'SOLES':
+                if servicio[3] == 'DOLARES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(nota.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                if servicio[3] == 'SOLES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+            if nota.monedaNota == 'DOLARES':
+                if servicio[3] == 'SOLES':
+                    vu_servicio = (Decimal(servicio[4])/Decimal(nota.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                if servicio[3] == 'DOLARES':
+                    vu_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+            total_precio = Decimal(total_precio) + Decimal(vu_servicio)
+
+        monedaDoc = '0'
+        tipoPago = '1'
+        if nota.monedaNota == 'SOLES':
+            monedaDoc = '1'
+        else:
+            monedaDoc = '2'
+        infoComprobantes.append(['07',
+                                str(nota.serieNota),
+                                str(nota.nroNota),
+                                str(nota.fechaEmision.strftime("%Y-%m-%d")),
+                                str(nota.cliente[5]),
+                                str(nota.cliente[3]),
+                                str(round(float(total_precio),2)),
+                                '0,00',
+                                '0,00',
+                                str(round(float(total_precio*Decimal(1.18)),2)),
+                                str(round(float(total_precio*Decimal(0.18)),2)),
+                                '0,00',
+                                '0,00',
+                                '0,00',
+                                '0,00',
+                                str(round(float(total_precio*Decimal(1.18)),2)),
+                                '0,00',
+                                str(nota.estadoSunat),
+                                '0',
+                                str(nota.tipoComprobante),
+                                str(nota.serieComprobante),
+                                str(nota.nroComprobante),
+                                str(tipoPago),
+                                '001',
+                                '0',
+                                'FECHA DETRAC',
+                                'COD BANCO',
+                                'EN EL COMPROBANTE',
+                                'EN EL COMPROBANTE',
+                                '7012',
+                                'Nota de credito',
                                 str(monedaDoc)])
 
     colDocumento = ['TIPO','SERIE','NUMERO','FECHA','RUC','RAZON SOCIAL','AFECTO','EXONERADO','INAFECTO','NETO','IGV','ArrozPilado','IVAP','ICBPER','OTROS','TOTAL','PERCEPCION','ESTADO','Trans.Gratuita','TIPO Mod','SERIE Mod','NUMERO Mod','CONTADO','SUCURSAL','EXPORTACION','FECHA DETRAC','COD BANCO','NRO DETRAC','IMPORTE DETRAC','CTA NAC','GLOSA','MONEDA']
