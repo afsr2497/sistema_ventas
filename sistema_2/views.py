@@ -12926,3 +12926,121 @@ def kits_productos(request):
     return render(request,'sistema_2/kits_productos.html',{
         'usr_rol': user_logued,
     })
+
+@csrf_exempt
+def exportarReporteVentas(request):
+    mensaje = 'No es un metodo POST'
+    facturasFiltradas = facturas.objects.all().order_by('-id')
+    boletasFiltradas = boletas.objects.all().order_by('-id')
+    notasFiltradas = notaCredito.objects.all().order_by('-id')
+    if request.method == 'POST':
+        mesReporte = str(request.POST.get('mesReporte'))
+        anhoReporte = str(request.POST.get('anhoReporte'))
+        if anhoReporte == '':
+            pass
+        else:
+            if mesReporte == '':
+                fechaInicial = dt.datetime(int(anhoReporte),1,1,0,0,0)
+                fechaFinal = dt.datetime(int(anhoReporte),12,31,23,59,59)
+                facturasFiltradas = facturasFiltradas.filter(fecha_emision__range=[fechaInicial,fechaFinal]).order_by('-id')
+                boletasFiltradas = boletasFiltradas.filter(fecha_emision__range=[fechaInicial,fechaFinal]).order_by('-id')
+                notasFiltradas = notasFiltradas.filter(fechaEmision__range=[fechaInicial,fechaFinal]).order_by('-id')
+            else:
+                fechaInicial = dt.datetime(int(anhoReporte),int(mesReporte),1,0,0,0)
+                if mesReporte == '12':
+                    fechaFinal = dt.datetime(int(anhoReporte)+1,1,1,0,0,0)
+                else:
+                    fechaFinal = dt.datetime(int(anhoReporte),int(mesReporte)+1,1,0,0,0)
+                facturasFiltradas = facturasFiltradas.filter(fecha_emision__range=[fechaInicial,fechaFinal]).order_by('-id')
+                boletasFiltradas = boletasFiltradas.filter(fecha_emision__range=[fechaInicial,fechaFinal]).order_by('-id')
+                notasFiltradas = notasFiltradas.filter(fechaEmision__range=[fechaInicial,fechaFinal]).order_by('-id')
+    
+    infoComprobantes = []
+
+    for factura in facturasFiltradas:
+        monedaDoc = '0'
+        tipoPago = '0'
+        if factura.pagoFactura == 'CONTADO':
+            tipoPago = '1'
+        else:
+            tipoPago = '2'
+        if factura.monedaFactura == 'SOLES':
+            monedaDoc = '1'
+        else:
+            monedaDoc = '2'
+        infoComprobantes.append(['01',
+                                str(factura.serieFactura),
+                                str(factura.nroFactura),
+                                str(factura.fecha_emision.strftime("%Y-%m-%d")),
+                                str(factura.cliente[5]),
+                                str(factura.cliente[3]),
+                                'AFECTO',
+                                '0,00',
+                                '0,00',
+                                'NETO',
+                                'IGV',
+                                '0,00',
+                                '0,00',
+                                '0,00',
+                                '0,00',
+                                'TOTAL',
+                                '0,00',
+                                str(factura.estadoSunat),
+                                '0',
+                                '-',
+                                '-',
+                                '-',
+                                str(tipoPago),
+                                '001',
+                                '0',
+                                'FECHA DETRAC',
+                                'COD BANCO',
+                                'EN EL COMPROBANTE',
+                                'EN EL COMPROBANTE',
+                                '7012',
+                                f'VENTA DE {factura.tipoFactura}',
+                                str(monedaDoc)])
+
+    colDocumento = ['TIPO','SERIE','NUMERO','FECHA','RUC','RAZON SOCIAL','AFECTO','EXONERADO','INAFECTO','NETO','IGV','ArrozPilado','IVAP','ICBPER','OTROS','TOTAL','PERCEPCION','ESTADO','Trans.Gratuita','TIPO Mod','SERIE Mod','NUMERO Mod','CONTADO','SUCURSAL','EXPORTACION','FECHA DETRAC','COD BANCO','NRO DETRAC','IMPORTE DETRAC','CTA NAC','GLOSA','MONEDA']
+    
+    tablaExcel = pd.DataFrame(infoComprobantes,columns=colDocumento)
+    tablaExcel.to_excel('info_excel.xlsx',index=False)
+    doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+    doc_excel.active.column_dimensions['A'].width = 30
+    doc_excel.active.column_dimensions['B'].width = 30
+    doc_excel.active.column_dimensions['C'].width = 30
+    doc_excel.active.column_dimensions['D'].width = 30
+    doc_excel.active.column_dimensions['E'].width = 30
+    doc_excel.active.column_dimensions['F'].width = 30
+    doc_excel.active.column_dimensions['G'].width = 30
+    doc_excel.active.column_dimensions['H'].width = 30
+    doc_excel.active.column_dimensions['I'].width = 30
+    doc_excel.active.column_dimensions['J'].width = 30
+    doc_excel.active.column_dimensions['K'].width = 30
+    doc_excel.active.column_dimensions['L'].width = 30
+    doc_excel.active.column_dimensions['M'].width = 30
+    doc_excel.active.column_dimensions['N'].width = 30
+    doc_excel.active.column_dimensions['O'].width = 30
+    doc_excel.active.column_dimensions['P'].width = 30
+    doc_excel.active.column_dimensions['Q'].width = 30
+    doc_excel.active.column_dimensions['R'].width = 30
+    doc_excel.active.column_dimensions['S'].width = 30
+    doc_excel.active.column_dimensions['T'].width = 30
+    doc_excel.active.column_dimensions['U'].width = 30
+    doc_excel.active.column_dimensions['V'].width = 30
+    doc_excel.active.column_dimensions['W'].width = 30
+    doc_excel.active.column_dimensions['X'].width = 30
+    doc_excel.active.column_dimensions['Y'].width = 30
+    doc_excel.active.column_dimensions['Z'].width = 30
+    doc_excel.active.column_dimensions['U'].width = 30
+    doc_excel.active.column_dimensions['AA'].width = 30
+    doc_excel.active.column_dimensions['AB'].width = 30
+    doc_excel.active.column_dimensions['AC'].width = 30
+    doc_excel.active.column_dimensions['AD'].width = 30
+    doc_excel.active.column_dimensions['AE'].width = 30
+    doc_excel.active.column_dimensions['AF'].width = 30
+    doc_excel.save("info_excel.xlsx")
+    response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+    response['Content-Disposition'] = nombre
+    return response
