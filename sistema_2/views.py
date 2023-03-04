@@ -7152,7 +7152,7 @@ def ver_movimientos(request,ind):
         fecha_inicial = str(request.POST.get('fecha_inicio'))
         fecha_final = str(request.POST.get('fecha_fin'))
         if fecha_inicial != '' and fecha_final != '':
-            movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
+            movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final]).order_by('-fechaOperacion')
             return render(request,'sistema_2/mov_bancarios.html',{
                 'operacionBanco':movimientos_filtrados.order_by('-fechaOperacion'),
                 'fecha_inicial':fecha_inicial,
@@ -7171,7 +7171,7 @@ def ver_movimientos(request,ind):
         nombre_excel = datos_banco.bancoCuenta + ' ' + datos_banco.monedaCuenta
         if datos_banco.bancoCuenta == 'BCP':
             if fecha_inicial != '' and fecha_final != '':
-                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
+                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final]).order_by('-fechaOperacion')
                 info_movimientos=[]
                 for movi_info in movimientos_filtrados:
                     if(len(movi_info.cotizacionOperacion)>0):
@@ -7252,7 +7252,7 @@ def ver_movimientos(request,ind):
                 return response
         if datos_banco.bancoCuenta == 'BBVA':
             if fecha_inicial != '' and fecha_final != '':
-                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
+                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final]).order_by('-fechaOperacion')
                 info_movimientos=[]
                 for movi_info in movimientos_filtrados:
                     if(len(movi_info.cotizacionOperacion)>0):
@@ -7331,7 +7331,7 @@ def ver_movimientos(request,ind):
                 return response
         if datos_banco.bancoCuenta == 'SCOTIA':
             if fecha_inicial != '' and fecha_final != '':
-                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final])
+                movimientos_filtrados = registros_mov.filter(fechaOperacion__range=[fecha_inicial,fecha_final]).order_by('-fechaOperacion')
                 info_movimientos=[]
                 for movi_info in movimientos_filtrados:
                     if(len(movi_info.cotizacionOperacion)>0):
@@ -7409,7 +7409,7 @@ def ver_movimientos(request,ind):
                 response['Content-Disposition'] = nombre
                 return response
     return render(request,'sistema_2/mov_bancarios.html',{
-        'operacionBanco':registros_mov,
+        'operacionBanco':registros_mov.order_by('-fechaOperacion'),
         'nombreBanco': nombreBanco,
         'monedaBanco': monedaBanco,
         'saldoBanco':saldoBanco,
@@ -12929,10 +12929,9 @@ def kits_productos(request):
 
 @csrf_exempt
 def exportarReporteVentas(request):
-    mensaje = 'No es un metodo POST'
-    facturasFiltradas = facturas.objects.all().order_by('-id')
-    boletasFiltradas = boletas.objects.all().order_by('-id')
-    notasFiltradas = notaCredito.objects.all().order_by('-id')
+    facturasFiltradas = facturas.objects.all().filter(estadoFactura='Enviada').order_by('-id')
+    boletasFiltradas = boletas.objects.all().filter(estadoBoleta='Enviada').order_by('-id')
+    notasFiltradas = notaCredito.objects.all().filter(estadoNotaCredito='Enviada').order_by('-id')
     if request.method == 'POST':
         mesReporte = str(request.POST.get('mesReporte'))
         anhoReporte = str(request.POST.get('anhoReporte'))
@@ -12958,6 +12957,19 @@ def exportarReporteVentas(request):
     infoComprobantes = []
 
     for factura in facturasFiltradas:
+        estadoFactura = ''
+        if factura.estadoSunat == 'Rechazado' or factura.estadoSunat == 'Anulado':
+            estadoFactura = 'X'
+        else:
+            estadoFactura = ''
+
+        glosaFactura = ''
+        if factura.tipoFactura == 'Productos':
+            glosaFactura = 'BIENES'
+        else:
+            glosaFactura = 'SERVICIOS'
+
+
         producto_extra = []
         for producto in factura.productos:
             try:
@@ -13019,11 +13031,11 @@ def exportarReporteVentas(request):
 
 
         monedaDoc = '0'
-        tipoPago = '0'
+        tipoPago = ''
         if factura.pagoFactura == 'CONTADO':
             tipoPago = '1'
         else:
-            tipoPago = '2'
+            tipoPago = ''
         if factura.monedaFactura == 'SOLES':
             monedaDoc = '1'
         else:
@@ -13045,7 +13057,7 @@ def exportarReporteVentas(request):
                                 '0,00',
                                 str(round(float(total_precio*Decimal(1.18)),2)),
                                 '0,00',
-                                str(factura.estadoSunat),
+                                str(estadoFactura),
                                 '0',
                                 '-',
                                 '-',
@@ -13053,15 +13065,28 @@ def exportarReporteVentas(request):
                                 str(tipoPago),
                                 '001',
                                 '0',
-                                'FECHA DETRAC',
-                                'COD BANCO',
-                                'EN EL COMPROBANTE',
-                                'EN EL COMPROBANTE',
+                                '',
+                                '',
+                                '',
+                                '',
                                 '7012',
-                                f'VENTA DE {factura.tipoFactura}',
+                                f'VENTA DE {glosaFactura}',
                                 str(monedaDoc)])
     
     for boleta in boletasFiltradas:
+
+        estadoBoleta = ''
+        if boleta.estadoSunat == 'Rechazado' or boleta.estadoSunat == 'Anulado':
+            estadoBoleta = 'X'
+        else:
+            estadoBoleta = ''
+
+        glosaBoleta = ''
+        if boleta.tipoBoleta == 'Productos':
+            glosaBoleta = 'BIENES'
+        else:
+            glosaBoleta = 'SERVICIOS'
+
         producto_extra = []
         for producto in boleta.productos:
             producto_info = products.objects.get(id=producto[0])
@@ -13121,21 +13146,31 @@ def exportarReporteVentas(request):
 
 
         monedaDoc = '0'
-        tipoPago = '0'
+        tipoPago = ''
         if boleta.pagoBoleta == 'CONTADO':
             tipoPago = '1'
         else:
-            tipoPago = '2'
+            tipoPago = ''
         if boleta.monedaBoleta == 'SOLES':
             monedaDoc = '1'
         else:
             monedaDoc = '2'
+
+        if boleta.cliente[3] == '':
+            razonSocial = boleta.cliente[1] + boleta.cliente[2]
+        else:
+            razonSocial = boleta.cliente[3]
+        
+        if boleta.cliente[5] == '':
+            nroIdentificacion = boleta.cliente[4]
+        else:
+            nroIdentificacion = boleta.cliente[5]
         infoComprobantes.append(['03',
                                 str(boleta.serieBoleta),
                                 str(boleta.nroBoleta),
                                 str(boleta.fecha_emision.strftime("%Y-%m-%d")),
-                                str(boleta.cliente[5]),
-                                str(boleta.cliente[3]),
+                                str(nroIdentificacion),
+                                str(razonSocial),
                                 str(round(float(total_precio),2)),
                                 '0,00',
                                 '0,00',
@@ -13147,7 +13182,7 @@ def exportarReporteVentas(request):
                                 '0,00',
                                 str(round(float(total_precio*Decimal(1.18)),2)),
                                 '0,00',
-                                str(boleta.estadoSunat),
+                                str(estadoBoleta),
                                 '0',
                                 '-',
                                 '-',
@@ -13155,14 +13190,21 @@ def exportarReporteVentas(request):
                                 str(tipoPago),
                                 '001',
                                 '0',
-                                'FECHA DETRAC',
-                                'COD BANCO',
-                                'EN EL COMPROBANTE',
-                                'EN EL COMPROBANTE',
+                                '',
+                                '',
+                                '',
+                                '',
                                 '7012',
-                                f'VENTA DE {boleta.tipoBoleta}',
+                                f'VENTA DE {glosaBoleta}',
                                 str(monedaDoc)])
     for nota in notasFiltradas:
+
+        estadoNota = ''
+        if nota.estadoSunat == 'Rechazado' or nota.estadoSunat == 'Anulado':
+            estadoNota = 'X'
+        else:
+            estadoNota = ''
+
 
         producto_extra = []
         for producto in nota.productos:
@@ -13221,7 +13263,7 @@ def exportarReporteVentas(request):
             total_precio = Decimal(total_precio) + Decimal(vu_servicio)
 
         monedaDoc = '0'
-        tipoPago = '1'
+        tipoPago = ''
         if nota.monedaNota == 'SOLES':
             monedaDoc = '1'
         else:
@@ -13243,7 +13285,7 @@ def exportarReporteVentas(request):
                                 '0,00',
                                 str(round(float(total_precio*Decimal(1.18)),2)),
                                 '0,00',
-                                str(nota.estadoSunat),
+                                str(estadoNota),
                                 '0',
                                 str(nota.tipoComprobante),
                                 str(nota.serieComprobante),
@@ -13251,10 +13293,10 @@ def exportarReporteVentas(request):
                                 str(tipoPago),
                                 '001',
                                 '0',
-                                'FECHA DETRAC',
-                                'COD BANCO',
-                                'EN EL COMPROBANTE',
-                                'EN EL COMPROBANTE',
+                                '',
+                                '',
+                                '',
+                                '',
                                 '7012',
                                 'Nota de credito',
                                 str(monedaDoc)])
