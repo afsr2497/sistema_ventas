@@ -2717,6 +2717,8 @@ def descargar_proforma(request,ind):
                             vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         if producto[5] == 'DOLARES':
                             vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    if producto[13] == '1':
+                        vu_producto = Decimal(0.00)
                     can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
 
@@ -2741,6 +2743,8 @@ def descargar_proforma(request,ind):
                             vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         if producto[5] == 'DOLARES':
                             vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    if producto[13] == '1':
+                        vu_producto = Decimal(0.00)
                     can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % (vu_producto*Decimal(1.18)))))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
             
@@ -2783,6 +2787,8 @@ def descargar_proforma(request,ind):
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                 #v_producto = round(v_producto,2)
+                if producto[13] == '1':
+                    v_producto = Decimal(0.00)
                 can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(v_producto))))
                 lista_y = [lista_y[0] - 16,lista_y[1] - 16]
                 total_precio = Decimal(total_precio) + Decimal(v_producto)
@@ -2867,6 +2873,8 @@ def descargar_proforma(request,ind):
             if producto[5] == 'DOLARES':
                 v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[13] == '1':
+                v_producto = Decimal(0.00)
             total_dolares = Decimal(total_dolares) + Decimal(v_producto)
         final_dolares = Decimal('%.2f' % total_dolares)*Decimal(1.18)
 
@@ -4130,7 +4138,8 @@ def armar_json_boleta(boleta_info):
                 str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
                 '1',
                 str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
-                str(producto_a.pesoProducto)
+                str(producto_a.pesoProducto),
+                producto[12]
             ]
             producto_extra.append(arreglo_producto_a)
             boleta_info.productos.remove(producto)
@@ -4149,22 +4158,40 @@ def armar_json_boleta(boleta_info):
                     precio_pro = Decimal(producto[6])*Decimal(boleta_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
                 valor_total = valor_total + precio_pro*round(float(producto[8]),2)
-                info_pro = {
-                    "codigoProducto":producto[2],
-                    "codigoProductoSunat":"",
-                    "descripcion":producto[1],
-                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
-                    "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":str(int(float(producto[8]))),
-                    "valorVentaUnitarioItem":precio_pro,
-                    "descuento":{
-                        "monto":'0',
-                    },
-                    "numeroOrden":i,
-                    "esPorcentaje":True,
-                }
-                productos.append(info_pro)
-                i=i+1
+                if producto[12] == '1':
+                    info_pro = {
+                        "codigoProducto":producto[2],
+                        "codigoProductoSunat":"",
+                        "descripcion":producto[1],
+                        "tipoAfectacion":"EXONERADO_TRASNFERENCIA_GRATUITA",
+                        "unidadMedida":"UNIDAD_BIENES",
+                        "cantidad":str(int(float(producto[8]))),
+                        "valorReferencialUnitarioItem":precio_pro,
+                        "descuento":{
+                            "monto":'0',
+                        },
+                        "numeroOrden":i,
+                        "esPorcentaje":True
+                    }
+                    productos.append(info_pro)
+                    i = i + 1
+                else:
+                    info_pro = {
+                        "codigoProducto":producto[2],
+                        "codigoProductoSunat":"",
+                        "descripcion":producto[1],
+                        "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
+                        "unidadMedida":"UNIDAD_BIENES",
+                        "cantidad":str(int(float(producto[8]))),
+                        "valorVentaUnitarioItem":precio_pro,
+                        "descuento":{
+                            "monto":'0',
+                        },
+                        "numeroOrden":i,
+                        "esPorcentaje":True,
+                    }
+                    productos.append(info_pro)
+                    i=i+1
         if boleta_info.tipoBoleta == 'Servicios':
             i = 1
             for servicio in boleta_info.servicios:
@@ -4674,7 +4701,8 @@ def armar_json_factura(factura_info):
                     str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
                     '1',
                     str(round(float(producto[8])*float(producto_info.producto_A[2]),2)),
-                    str(producto_a.pesoProducto)
+                    str(producto_a.pesoProducto),
+                    producto[12]
                 ]
                 producto_extra.append(arreglo_producto_a)
             factura_info.productos.remove(producto)
@@ -4694,22 +4722,40 @@ def armar_json_factura(factura_info):
                     precio_pro = float('%.2f' % precio_pro)
                 print(precio_pro)
                 valor_total = valor_total + precio_pro*round(float(producto[8]),2)
-                info_pro = {
-                    "codigoProducto":producto[2],
-                    "codigoProductoSunat":"",
-                    "descripcion":producto[1],
-                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
-                    "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":str(int(float(producto[8]))),
-                    "valorVentaUnitarioItem":precio_pro,
-                    "descuento":{
-                        "monto":'0',
-                    },
-                    "numeroOrden":i,
-                    "esPorcentaje":True
-                }
-                productos.append(info_pro)
-                i=i+1
+                if producto[12] == '1':
+                    info_pro = {
+                        "codigoProducto":producto[2],
+                        "codigoProductoSunat":"",
+                        "descripcion":producto[1],
+                        "tipoAfectacion":"EXONERADO_TRASNFERENCIA_GRATUITA",
+                        "unidadMedida":"UNIDAD_BIENES",
+                        "cantidad":str(int(float(producto[8]))),
+                        "valorReferencialUnitarioItem":precio_pro,
+                        "descuento":{
+                            "monto":'0',
+                        },
+                        "numeroOrden":i,
+                        "esPorcentaje":True
+                    }
+                    productos.append(info_pro)
+                    i = i + 1
+                else:
+                    info_pro = {
+                        "codigoProducto":producto[2],
+                        "codigoProductoSunat":"",
+                        "descripcion":producto[1],
+                        "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
+                        "unidadMedida":"UNIDAD_BIENES",
+                        "cantidad":str(int(float(producto[8]))),
+                        "valorVentaUnitarioItem":precio_pro,
+                        "descuento":{
+                            "monto":'0',
+                        },
+                        "numeroOrden":i,
+                        "esPorcentaje":True
+                    }
+                    productos.append(info_pro)
+                    i=i+1
         if factura_info.tipoFactura == 'Servicios':
             i = 1
             for servicio in factura_info.servicios:
@@ -5622,7 +5668,12 @@ def gen_guia_cot(request,ind):
         print(producto[0])
         prod_capturado = products.objects.get(id=producto[0])
         print(prod_capturado.id)
+        producto.pop(11)
+        producto.pop(11)
         producto.append(str(prod_capturado.pesoProducto))
+        temp = producto[11]
+        producto[11] = producto[12]
+        producto[12] = temp
         prod_capturado.save()
     guia_servicios = cot_gen.servicios
     guia_vendedor = cot_gen.vendedor
@@ -8207,6 +8258,8 @@ def descargar_proforma_dolares(request,ind):
                             vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         if producto[5] == 'DOLARES':
                             vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    if producto[13] == '1':
+                        vu_producto = Decimal(0.00)
                     can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
 
@@ -8231,6 +8284,8 @@ def descargar_proforma_dolares(request,ind):
                             vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         if producto[5] == 'DOLARES':
                             vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    if producto[13] == '1':
+                        vu_producto = Decimal(0.00)
                     can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % (vu_producto*Decimal(1.18)))))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
             
@@ -8272,6 +8327,8 @@ def descargar_proforma_dolares(request,ind):
                     if producto[5] == 'DOLARES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                if producto[13] == '1':
+                    v_producto = Decimal(0.00)
                 #v_producto = round(v_producto,2)
                 can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(v_producto))))
                 lista_y = [lista_y[0] - 16,lista_y[1] - 16]
@@ -8356,6 +8413,8 @@ def descargar_proforma_dolares(request,ind):
             if producto[5] == 'SOLES':
                 v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[13] == '1':
+                v_producto = Decimal(0.00)
             total_soles = Decimal(total_soles) + Decimal(v_producto)
         final_soles = Decimal('%.2f' % total_soles)*Decimal(1.18)
 
@@ -11408,6 +11467,8 @@ def nuevoFormatoSoles(request,ind):
                             vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         if producto[5] == 'DOLARES':
                             vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    if producto[13] == '1':
+                        vu_producto = Decimal(0.00)
                     can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
 
@@ -11432,6 +11493,8 @@ def nuevoFormatoSoles(request,ind):
                             vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         if producto[5] == 'DOLARES':
                             vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    if producto[13] == '1':
+                        vu_producto = Decimal(0.00)
                     can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % (vu_producto*Decimal(1.18)))))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
             
@@ -11474,6 +11537,8 @@ def nuevoFormatoSoles(request,ind):
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                 #v_producto = round(v_producto,2)
+                if producto[13] == '1':
+                    v_producto = Decimal(0.00)
                 can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(v_producto))))
                 lista_y = [lista_y[0] - 16,lista_y[1] - 16]
                 total_precio = Decimal(total_precio) + Decimal(v_producto)
@@ -11566,6 +11631,8 @@ def nuevoFormatoSoles(request,ind):
             if producto[5] == 'DOLARES':
                 v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[13] == '1':
+                v_producto = Decimal(0.00)
             total_dolares = Decimal(total_dolares) + Decimal(v_producto)
         final_dolares = Decimal('%.2f' % total_dolares)*Decimal(1.18)
 
@@ -12316,6 +12383,8 @@ def nuevoFormatoDolares(request,ind):
                             vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         if producto[5] == 'DOLARES':
                             vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    if producto[13] == '1':
+                        vu_producto = Decimal(0.00)
                     can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
 
@@ -12340,6 +12409,8 @@ def nuevoFormatoDolares(request,ind):
                             vu_producto = (Decimal(producto[6])/Decimal(proforma_info.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         if producto[5] == 'DOLARES':
                             vu_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                    if producto[13] == '1':
+                        vu_producto = Decimal(0.00)
                     can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % (vu_producto*Decimal(1.18)))))
                     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
             
@@ -12382,6 +12453,8 @@ def nuevoFormatoDolares(request,ind):
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                 #v_producto = round(v_producto,2)
+                if producto[13] == '1':
+                    v_producto = Decimal(0.00)
                 can.drawRightString(lista_x[7] + 45,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % Decimal(v_producto))))
                 lista_y = [lista_y[0] - 16,lista_y[1] - 16]
                 total_precio = Decimal(total_precio) + Decimal(v_producto)
@@ -12473,6 +12546,8 @@ def nuevoFormatoDolares(request,ind):
             if producto[5] == 'SOLES':
                 v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[13] == '1':
+                v_producto = Decimal(0.00)
             total_soles = Decimal(total_soles) + Decimal(v_producto)
         final_soles = Decimal('%.2f' % total_soles)*Decimal(1.18)
 

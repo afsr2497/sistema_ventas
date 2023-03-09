@@ -423,6 +423,7 @@
                         <th>Descuento</th>
                         <th>Cantidad</th>
                         <th>Peso Unitario (Kg)</th>
+                        <th>Producto Gratis</th>
                         <th>Eliminar</th>
                     </thead>
                     <tbody id="proCuerpo">
@@ -438,6 +439,13 @@
                             <td><input class="form-control" style="width:80px;" value="{{ producto.7 }}" disabled></td>
                             <td><input class="form-control" style="width:80px;" value="{{ producto.8 }}" disabled></td>
                             <td><input class="form-control" style="width:80px;" value="{{ producto.11 }}"></td>
+                            <td style="text-align: center;">
+                                {% if producto.12 == '1' %}
+                                    <input type="checkbox" class="form-check-input" checked>
+                                {% else %}
+                                    <input type="checkbox" class="form-check-input">
+                                {% endif %}
+                            </td>
                             <td><input type="button" class="btn btn-secondary" value="Eliminar"></td>
                         </tr>
                         {% endfor %}

@@ -260,6 +260,7 @@
                         <th>PV sin IGV</th>
                         <th>Descuento</th>
                         <th>Cantidad</th>
+                        <th>Producto Gratis</th>
                         <th>Eliminar</th>
                     </thead>
                     <tbody id="proCuerpo">
@@ -284,6 +285,13 @@
                             <td><input class="form-control" style="width:80px;" value="{{ producto.6 }}"></td>
                             <td><input class="form-control" style="width:80px;" value="{{ producto.7 }}"></td>
                             <td><input class="form-control" style="width:80px;" value="{{ producto.8 }}"></td>
+                            <td style="text-align: center;">
+                                {% if producto.13 == '1' %}
+                                    <input type="checkbox" class="form-check-input" checked>
+                                {% else %}
+                                    <input type="checkbox" class="form-check-input">
+                                {% endif %}
+                            </td>
                             <td><input type="button" class="btn btn-secondary" value="Eliminar"></td>
                         </tr>
                         {% endfor %}

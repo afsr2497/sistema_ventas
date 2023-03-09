@@ -252,7 +252,12 @@ addEventListener('DOMContentLoaded',()=>{
             for(var i = 0;i < longitudProductos; i++)
             {
                 let celdas = productosTabla.rows.item(i)
-                let productoArreglo = [celdas.cells.item(0).innerHTML,celdas.cells.item(1).innerHTML,celdas.cells.item(2).innerHTML,celdas.cells.item(3).innerHTML,celdas.cells.item(4).innerHTML,celdas.cells.item(5).innerHTML,celdas.cells.item(6).firstChild.value,celdas.cells.item(7).firstChild.value,celdas.cells.item(8).firstChild.value,'1',celdas.cells.item(8).firstChild.value,celdas.cells.item(9).firstChild.value] 
+                let productoGratis = '0'
+                if(celdas.cells.item(10).firstChild.nextSibling.checked)
+                {
+                    productoGratis = '1'
+                }
+                let productoArreglo = [celdas.cells.item(0).innerHTML,celdas.cells.item(1).innerHTML,celdas.cells.item(2).innerHTML,celdas.cells.item(3).innerHTML,celdas.cells.item(4).innerHTML,celdas.cells.item(5).innerHTML,celdas.cells.item(6).firstChild.value,celdas.cells.item(7).firstChild.value,celdas.cells.item(8).firstChild.value,'1',celdas.cells.item(8).firstChild.value,celdas.cells.item(9).firstChild.value,productoGratis]
                 arregloProductos.push(productoArreglo)
             }
         }

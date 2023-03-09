@@ -206,6 +206,7 @@
                         <th>PV sin IGV</th>
                         <th>Descuento</th>
                         <th>Cantidad</th>
+                        <th>Producto Gratis</th>
                     </thead>
                     <tbody id="proCuerpo">
                         {% for producto in prof.productos %}
@@ -219,6 +220,13 @@
                             <td><input class="form-control" style="width:80px;" value="{{ producto.6 }}"></td>
                             <td><input class="form-control" style="width:80px;" value="{{ producto.7 }}"></td>
                             <td><input class="form-control" style="width:80px;" value="{{ producto.8 }}"></td>
+                            <td style="text-align: center;">
+                                {% if producto.12 == '1' %}
+                                    <input type="checkbox" class="form-check-input" checked>
+                                {% else %}
+                                    <input type="checkbox" class="form-check-input">
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
