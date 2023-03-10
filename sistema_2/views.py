@@ -4157,7 +4157,6 @@ def armar_json_boleta(boleta_info):
                 if producto[5] == 'DOLARES':
                     precio_pro = Decimal(producto[6])*Decimal(boleta_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
-                valor_total = valor_total + precio_pro*round(float(producto[8]),2)
                 if producto[12] == '1':
                     info_pro = {
                         "codigoProducto":producto[2],
@@ -4175,6 +4174,7 @@ def armar_json_boleta(boleta_info):
                     }
                     productos.append(info_pro)
                     i = i + 1
+                    valor_total = valor_total
                 else:
                     info_pro = {
                         "codigoProducto":producto[2],
@@ -4192,6 +4192,7 @@ def armar_json_boleta(boleta_info):
                     }
                     productos.append(info_pro)
                     i=i+1
+                    valor_total = valor_total + precio_pro*round(float(producto[8]),2)
         if boleta_info.tipoBoleta == 'Servicios':
             i = 1
             for servicio in boleta_info.servicios:
@@ -4229,23 +4230,42 @@ def armar_json_boleta(boleta_info):
                 if producto[5] == 'DOLARES':
                     precio_pro = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
-                valor_total = valor_total + precio_pro*round(float(producto[8]),2)
-                info_pro = {
-                    "codigoProducto":producto[2],
-                    "codigoProductoSunat":"",
-                    "descripcion":producto[1],
-                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
-                    "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":str(int(float(producto[8]))),
-                    "valorVentaUnitarioItem":precio_pro,
-                    "descuento":{
-                        "monto":'0',
-                    },
-                    "esPorcentaje": True,
-                    "numeroOrden":i
-                }
-                productos.append(info_pro)
-                i=i+1
+                if producto[12] == '1':
+                    info_pro = {
+                        "codigoProducto":producto[2],
+                        "codigoProductoSunat":"",
+                        "descripcion":producto[1],
+                        "tipoAfectacion":"EXONERADO_TRASNFERENCIA_GRATUITA",
+                        "unidadMedida":"UNIDAD_BIENES",
+                        "cantidad":str(int(float(producto[8]))),
+                        "valorReferencialUnitarioItem":precio_pro,
+                        "descuento":{
+                            "monto":'0',
+                        },
+                        "numeroOrden":i,
+                        "esPorcentaje":True
+                    }
+                    productos.append(info_pro)
+                    i = i + 1
+                    valor_total = valor_total
+                else:
+                    info_pro = {
+                        "codigoProducto":producto[2],
+                        "codigoProductoSunat":"",
+                        "descripcion":producto[1],
+                        "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
+                        "unidadMedida":"UNIDAD_BIENES",
+                        "cantidad":str(int(float(producto[8]))),
+                        "valorVentaUnitarioItem":precio_pro,
+                        "descuento":{
+                            "monto":'0',
+                        },
+                        "esPorcentaje": True,
+                        "numeroOrden":i
+                    }
+                    productos.append(info_pro)
+                    i=i+1
+                    valor_total = valor_total + precio_pro*round(float(producto[8]),2)
         if boleta_info.tipoBoleta == 'Servicios':
             i = 1
             for servicio in boleta_info.servicios:
@@ -4720,8 +4740,6 @@ def armar_json_factura(factura_info):
                 if producto[5] == 'DOLARES':
                     precio_pro = Decimal(producto[6])*Decimal(factura_info.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
-                print(precio_pro)
-                valor_total = valor_total + precio_pro*round(float(producto[8]),2)
                 if producto[12] == '1':
                     info_pro = {
                         "codigoProducto":producto[2],
@@ -4739,6 +4757,7 @@ def armar_json_factura(factura_info):
                     }
                     productos.append(info_pro)
                     i = i + 1
+                    valor_total = valor_total
                 else:
                     info_pro = {
                         "codigoProducto":producto[2],
@@ -4756,6 +4775,7 @@ def armar_json_factura(factura_info):
                     }
                     productos.append(info_pro)
                     i=i+1
+                    valor_total = valor_total + precio_pro*round(float(producto[8]),2)
         if factura_info.tipoFactura == 'Servicios':
             i = 1
             for servicio in factura_info.servicios:
@@ -4794,24 +4814,42 @@ def armar_json_factura(factura_info):
                 if producto[5] == 'DOLARES':
                     precio_pro = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                     precio_pro = float('%.2f' % precio_pro)
-                valor_total = valor_total + precio_pro*round(float(producto[8]),2)
-                print(precio_pro)
-                info_pro = {
-                    "codigoProducto":producto[2],
-                    "codigoProductoSunat":"",
-                    "descripcion":producto[1],
-                    "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
-                    "unidadMedida":"UNIDAD_BIENES",
-                    "cantidad":str(int(float(producto[8]))),
-                    "valorVentaUnitarioItem":precio_pro,
-                    "descuento":{
-                        "monto":'0',
-                    },
-                    "numeroOrden":i,
-                    "esPorcentaje":True
-                }
-                productos.append(info_pro)
-                i=i+1
+                if producto[12] == '1':
+                    info_pro = {
+                        "codigoProducto":producto[2],
+                        "codigoProductoSunat":"",
+                        "descripcion":producto[1],
+                        "tipoAfectacion":"EXONERADO_TRASNFERENCIA_GRATUITA",
+                        "unidadMedida":"UNIDAD_BIENES",
+                        "cantidad":str(int(float(producto[8]))),
+                        "valorReferencialUnitarioItem":precio_pro,
+                        "descuento":{
+                            "monto":'0',
+                        },
+                        "numeroOrden":i,
+                        "esPorcentaje":True
+                    }
+                    productos.append(info_pro)
+                    i = i + 1
+                    valor_total = valor_total
+                else:
+                    info_pro = {
+                        "codigoProducto":producto[2],
+                        "codigoProductoSunat":"",
+                        "descripcion":producto[1],
+                        "tipoAfectacion":"GRAVADO_OPERACION_ONEROSA",
+                        "unidadMedida":"UNIDAD_BIENES",
+                        "cantidad":str(int(float(producto[8]))),
+                        "valorVentaUnitarioItem":precio_pro,
+                        "descuento":{
+                            "monto":'0',
+                        },
+                        "numeroOrden":i,
+                        "esPorcentaje":True
+                    }
+                    productos.append(info_pro)
+                    i=i+1
+                    valor_total = valor_total + precio_pro*round(float(producto[8]),2)
         if factura_info.tipoFactura == 'Servicios':
             i = 1
             for servicio in factura_info.servicios:
@@ -5151,6 +5189,15 @@ def gen_factura_cot(request,ind):
     cot_obtener.estadoProforma = 'Emitida'
     factura_cliente = cot_obtener.cliente
     factura_productos = cot_obtener.productos
+    for producto in factura_productos:
+        prod_capturado = products.objects.get(id=producto[0])
+        producto.pop(11)
+        producto.pop(11)
+        producto.append(str(prod_capturado.pesoProducto))
+        temp = producto[11]
+        producto[11] = producto[12]
+        producto[12] = temp
+        prod_capturado.save()
     factura_servicios = cot_obtener.servicios
     factura_vendedor = cot_obtener.vendedor
     factura_pago = cot_obtener.pagoProforma
@@ -5175,7 +5222,7 @@ def gen_factura_cot(request,ind):
     if entorno_sistema == '1':
         factura_estado = 'Generada'
     if entorno_sistema == '0':
-        factura_estado = 'Enviada'
+        factura_estado = 'Generada'
     factura_dscto = '1'
     factura_obs = cot_obtener.observacionesCot
     factura_cuotas = cot_obtener.cantidadCuotas
@@ -5219,6 +5266,15 @@ def gen_boleta_cot(request,ind):
     cot_obtener.estadoProforma = 'Emitida'
     boleta_cliente = cot_obtener.cliente
     boleta_productos = cot_obtener.productos
+    for producto in boleta_productos:
+        prod_capturado = products.objects.get(id=producto[0])
+        producto.pop(11)
+        producto.pop(11)
+        producto.append(str(prod_capturado.pesoProducto))
+        temp = producto[11]
+        producto[11] = producto[12]
+        producto[12] = temp
+        prod_capturado.save()
     boleta_servicios = cot_obtener.servicios
     boleta_vendedor = cot_obtener.vendedor
     boleta_pago = cot_obtener.pagoProforma

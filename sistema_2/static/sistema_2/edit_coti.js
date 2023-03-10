@@ -213,6 +213,7 @@ addEventListener('DOMContentLoaded',()=>{
                             <td><input class="form-control" style="width:80px;" value="${productoPVsinigv.value}"></td>
                             <td><input class="form-control" style="width:80px;" value="${productoDescuento.value}"></td>
                             <td><input class="form-control" style="width:80px;" value="${productoCantidad.value}"></td>
+                            <td style="text-align: center;"><input class="form-check-input" type="checkbox"></td>
                             <td><input type="button" class="btn btn-secondary" value="Eliminar"></td>
                         </tr>`;
                 productosTabla.innerHTML += nuevaFila
@@ -321,9 +322,19 @@ addEventListener('DOMContentLoaded',()=>{
             {
                 let celdas = productosTabla.rows.item(i)
                 let productoGratis = '0'
-                if(celdas.cells.item(11).firstChild.nextSibling.checked)
+                try
                 {
-                    productoGratis = '1'
+                    if(celdas.cells.item(11).firstChild.nextSibling.checked)
+                    {
+                        productoGratis = '1'
+                    }
+                }
+                catch(e)
+                {
+                    if (celdas.cells.item(11).firstChild.checked)
+                    {
+                        productoGratis = '1'
+                    }
                 }
                 let productoArreglo = [celdas.cells.item(0).innerHTML,celdas.cells.item(1).innerHTML,celdas.cells.item(2).innerHTML,celdas.cells.item(5).innerHTML,celdas.cells.item(6).innerHTML,celdas.cells.item(7).innerHTML,celdas.cells.item(8).firstChild.value,celdas.cells.item(9).firstChild.value,celdas.cells.item(10).firstChild.value,'0',celdas.cells.item(10).firstChild.value,celdas.cells.item(3).firstChild.value,celdas.cells.item(4).firstChild.value,productoGratis]
                 arregloProductos.push(productoArreglo)
