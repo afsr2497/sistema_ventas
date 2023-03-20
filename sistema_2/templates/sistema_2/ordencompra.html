@@ -63,11 +63,11 @@
       <tbody>
           {% for orden in ordenes_totales %}
           <tr>
-              <td>{{ orden.codigo_orden }}</td>
-              <td>{{ orden.usuarioOrden }}</td>
-              <td>{{ orden.fechaOrden }}</td>
-              <td>{{ orden.ruc_proveedor }}</td>
-              <td>{{ orden.proveedorNombre }}</td>
+              <td>{{ orden.codigoOrden }}</td>
+              <td>{{ orden.atencionCliente }}</td>
+              <td>{{ orden.fechaEmision|date:'d-m-Y' }}</td>
+              <td>{{ orden.rucProveedor }}</td>
+              <td>{{ orden.nombreProveedor }}</td>
               <td style="text-align: center;"><a class="btn btn-info" href="{% url 'sistema_2:descargarOrden' orden.id %}"><i class="fas fa-download"></i></a></td>
               <td style="text-align: center;">
                 <a class="btn btn-warning" href="{% url 'sistema_2:editarOrden' orden.id %}"><i class="fa fa-edit"></i></a>

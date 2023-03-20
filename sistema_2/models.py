@@ -325,3 +325,18 @@ class ordenCompra(models.Model):
     ruc_proveedor = models.CharField(max_length=64,default='')
     codigo_orden = models.CharField(max_length=64,default='')
     estado_orden = models.CharField(max_length=64,default='')
+
+class ordenCompraMetalprotec(models.Model):
+    rucProveedor = models.CharField(default='',max_length=32)
+    fechaEmision = models.DateField(default=datetime.date.today)
+    condicionOrden = models.CharField(default='',max_length=32)
+    codigoOrden = models.CharField(default='',max_length=32)
+    direccionProveedor = models.CharField(default='',max_length=128)
+    nombreProveedor = models.CharField(default='',max_length=64)
+    ciudadCliente = models.CharField(default='',max_length=32)
+    destinoCliente = models.CharField(default='',max_length=128)
+    atencionCliente = models.CharField(default='',max_length=64)
+    monedaOrden = models.CharField(default='SOLES',max_length=24)
+    productosOrden = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
+    tcCompraOrden = models.CharField(max_length=8,default='0.000')
+    tcVentaOrden = models.CharField(max_length=8,default='0.000')

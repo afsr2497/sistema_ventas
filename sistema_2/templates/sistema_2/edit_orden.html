@@ -20,33 +20,84 @@
     <div>
         <h4>Editar Orden de compra</h4>
     </div>
-    <br>
+    <hr class="hr">
     <div>
         <h4>Datos del proveedor</h4>
         <div class="col-md-3">
             <input class="form-control" style="display: none;" name="tipo" id="idOrden" value="{{ orden.id }}">
         </div>
         <div class="row mb-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label>Ruc</label>
-                <input type="text" class="form-control" placeholder="Ruc ..." id="rucProveedor" value="{{ orden.ruc_proveedor }}">
+                <input type="text" class="form-control" placeholder="Ruc ..." id="rucProveedor" value="{{ orden.rucProveedor }}">
             </div>
-            <div class="col-md-8">
-                <label>Proveedor</label>
-                <input type="text" class="form-control" placeholder="Proveedor ..." id="nombreProveedor" value="{{ orden.proveedorNombre }}">
+            <div class="col-md-3">
+                <label>Fecha de emision</label>
+                <input type="date" class="form-control" placeholder="Fecha de emision ..." id="fechaOrden" value="{{ orden.fechaEmision|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-3">
+                <label>Condicion</label>
+                <input type="text" class="form-control" placeholder="Condicion de orden ..." id="condicionOrden" value="{{ orden.condicionOrden }}">
+            </div>
+            <div class="col-md-3">
+                <label>Codigo de orden</label>
+                <input type="text" class="form-control" placeholder="Codigo de orden ..." id="codigoOrden" value="{{ orden.codigoOrden }}">
             </div>
         </div>
         <div class="row mb-3">
+            <div class="col-md-6">
+                <label>Direccion</label>
+                <input type="text" class="form-control" placeholder="Direccoin ..." id="direccionProveedor" value="{{ orden.direccionProveedor }}">
+            </div>
+            <div class="col-md-6">
+                <label>Proveedor</label>
+                <input type="text" class="form-control" placeholder="Razon social ..." id="nombreProveedor" value="{{ orden.nombreProveedor }}">
+            </div>
+        </div>
+        <hr class="hr">
+        <h4>Datos del cliente</h4>
+        <div class="row mb-3">
             <div class="col-md-4">
                 <label>Ciudad</label>
-                <input type="text" class="form-control" placeholder="Ciudad ..." id="ciudadProveedor" value="{{ orden.direccion }}">
+                <input type="text" class="form-control" placeholder="Ciudad ..." id="ciudadCliente" value="{{ orden.ciudadCliente }}">
             </div>
-            <div class="col-md-8">
-                <label>Destino</label>
-                <input type="text" class="form-control" placeholder="Destino ... " id="destinoProveedor" value="{{ orden.destino }}">
+            <div class="col-md-4">
+                <label>Atencion</label>
+                <input type="text" class="form-control" placeholder="Atencion ..." id="atencionCliente" value="{{ orden.atencionCliente }}">
+            </div>
+            <div class="col-md-4">
+                <label>Moneda</label>
+                <select class="selectpicker form-control" id="monedaOrden">
+                    {% if orden.monedaOrden == 'SOLES' %}
+                        <option value="SOLES" selected>SOLES</option>
+                        <option value="DOLARES">DOLARES</option>
+                    {% else %}
+                        <option value="SOLES">SOLES</option>
+                        <option value="DOLARES" selected>DOLARES</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-mb-3">
+            <div class="col-md-6">
+                <label>Direccion de destino</label>
+                <input type="text" class="form-control" placeholder="Destino ..." id="destinoCliente" value="{{ orden.destinoCliente }}">
+            </div>
+        </div>
+        <hr class="hr">
+        <h4>Tipo de cambio</h4>
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>TC (compra)</label>
+                <input class="form-control" type="number" step="0.001" value="{{ orden.tcCompraOrden }}" id="tcCompraOrden">
+            </div>
+            <div class="col-md-3">
+                <label>TC (venta)</label>
+                <input class="form-control" type="number" step="0.001" value="{{ orden.tcVentaOrden }}" id="tcVentaOrden">
             </div>
         </div>
     </div>
+    <hr class="hr">
     <div>
         <h4>Productos de la orden</h4>
         <div>
@@ -63,10 +114,11 @@
                         <th>Moneda</th>
                         <th>PV sin IGV</th>
                         <th>Cantidad</th>
+                        <th>Descuento</th>
                         <th>Eliminar</th>
                     </thead>
                     <tbody id="proCuerpo">
-                        {% for producto in orden.productos %}
+                        {% for producto in orden.productosOrden %}
                         <tr>
                             <td>{{ producto.0 }}</td>
                             <td>{{ producto.1 }}</td>
@@ -74,6 +126,7 @@
                             <td>{{ producto.3 }}</td>
                             <td><input class="form-control" style="width:80px;" value="{{ producto.4 }}"></td>
                             <td><input class="form-control" style="width:80px;" value="{{ producto.5 }}"></td>
+                            <td><input class="form-control" style="width:80px;" value="{{ producto.6 }}"></td>
                             <td><input type="button" class="btn btn-secondary" value="Eliminar"></td>
                         </tr>
                         {% endfor %}
@@ -89,7 +142,7 @@
 </div>
 
 
-<div class="modal" tabindex="-1" role="dialog" id="seleccionarProducto">
+<div class="modal" tabindex="-1" role="dialog" id="seleccionarProducto" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -118,26 +171,30 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label>Moneda</label>
-                        <select class="form-select" id="monedaProducto">
+                        <select class="selectpicker form-control" id="monedaProducto">
                             <option value="SOLES" selected>SOLES</option>
                             <option value="DOLARES">DOLARES</option>
                         </select>
                     </div>
                     <div class="form-group col-md-6">
-                        <label>Precio de venta sin IGV</label>
-                        <input type="number" step="0.01" class="form-control" placeholder="Precio de venta sin IGV" id="pvsinIGV">
+                        <label>Precio de compra sin IGV</label>
+                        <input type="number" step="0.01" value="0.00" class="form-control" placeholder="Precio de compra sin IGV" id="pcsinIGV">
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label>Cantidad</label>
-                        <input type="number" class="form-control" placeholder="Cantidad" id="cantidadPro" required>
+                        <input type="number" step="0.01" value="0.00" class="form-control" placeholder="Cantidad" id="cantidadPro">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Descuento</label>
+                        <input type="number" step="0.01" value="0.00" class="form-control" placeholder="Descuento" id="descuentoPro">
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="agregarProducto" data-bs-dismiss="modal">Agregar</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" id="cancelarProducto" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
       </div>
