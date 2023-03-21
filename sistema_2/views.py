@@ -10697,6 +10697,7 @@ def crear_orden(request):
         productosOrden = data.get('productos')
         tcCompraOrden = data.get('tcCompraOrden')
         tcVentaOrden = data.get('tcVentaOrden')
+        mostrarDescuento = data.get('mostrarDescuento')
         if fechaOrden == '':
             if(int((datetime.now()-timedelta(hours=5)).month) < 10):
                 mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
@@ -10724,6 +10725,7 @@ def crear_orden(request):
             productosOrden=productosOrden,
             tcCompraOrden=tcCompraOrden,
             tcVentaOrden=tcVentaOrden,
+            mostrarDescuento=mostrarDescuento
         ).save()
         return JsonResponse({
             'resp':'ok'
@@ -10880,18 +10882,19 @@ def descargarOrden(request,ind):
         can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
         lista_y = [lista_y[0] - 16,lista_y[1] - 16]
 
-    #Valores iniciales
-    lista_y = [550,565]
-    #Ingreso de campo de código de producto
-    can.setFillColorRGB(1,1,1)
-    can.setFont('Helvetica-Bold',7)
-    can.drawString(lista_x[5] + 5, lista_y[0] + 3,'Dsct.')
-    can.setFont('Helvetica',7)
-    can.setFillColorRGB(0,0,0)
-    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
-    for producto in orden_info.productosOrden:
-        can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,producto[6] + '%')
+    if orden_info.mostrarDescuento == '1':
+        #Valores iniciales
+        lista_y = [550,565]
+        #Ingreso de campo de descuento del producto
+        can.setFillColorRGB(1,1,1)
+        can.setFont('Helvetica-Bold',7)
+        can.drawString(lista_x[5] + 5, lista_y[0] + 3,'Dsct.')
+        can.setFont('Helvetica',7)
+        can.setFillColorRGB(0,0,0)
         lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+        for producto in orden_info.productosOrden:
+            can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,producto[6] + '%')
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
 
     #Valores iniciales
     lista_y = [550,565]
@@ -11010,6 +11013,7 @@ def editarOrden(request,ind):
         productosOrden = data.get('productos')
         tcCompraOrden = data.get('tcCompraOrden')
         tcVentaOrden = data.get('tcVentaOrden')
+        mostrarDescuento = data.get('mostrarDescuento')
         print(tcVentaOrden)
         print(tcCompraOrden)
         if fechaOrden == '':
@@ -11039,6 +11043,7 @@ def editarOrden(request,ind):
         orden_editar.productosOrden = productosOrden
         orden_editar.tcCompraOrden = str(tcCompraOrden)
         orden_editar.tcVentaOrden = str(tcVentaOrden)
+        orden_editar.mostrarDescuento = mostrarDescuento
         orden_editar.save()
         return JsonResponse({
             'resp':'ok'

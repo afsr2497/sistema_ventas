@@ -10,32 +10,6 @@
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 <script src="{% static 'sistema_2/cotizaciones.js' %}"></script>
 
-<script>
-    function alternar()
-    {
-        let elemento_soles = document.getElementById('seleccionSoles')
-        let elemento_dolares = document.getElementById('seleccionDolares')
-        
-        if(elemento_soles.checked === true)
-        {
-            elemento_dolares.disabled = true
-        }
-        else
-        {
-            elemento_dolares.disabled = false
-        }
-
-        if(elemento_dolares.checked === true)
-        {
-            elemento_soles.disabled = true
-        }
-        else
-        {
-            elemento_soles.disabled = false
-        }
-    }
-</script>
-
 {% endblock %}
 
 

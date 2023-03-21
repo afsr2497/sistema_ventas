@@ -340,3 +340,4 @@ class ordenCompraMetalprotec(models.Model):
     productosOrden = ArrayField(ArrayField(models.CharField(max_length=64)),default=list())
     tcCompraOrden = models.CharField(max_length=8,default='0.000')
     tcVentaOrden = models.CharField(max_length=8,default='0.000')
+    mostrarDescuento = models.CharField(max_length=8,default='0')

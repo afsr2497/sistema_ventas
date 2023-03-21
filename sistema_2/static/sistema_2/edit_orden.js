@@ -93,6 +93,15 @@ document.addEventListener("DOMContentLoaded",()=>{
 
     btnCrear.addEventListener('click',()=>{
 
+        let mostrarDescuento = '0'
+
+        if($('#mostrarDescuento').prop('checked')){
+            mostrarDescuento = '1'
+        }
+        else{
+            mostrarDescuento = '0'
+        }
+
         arregloProductos = []
         let longitudProductos = productosTabla.rows.length
         console.log(longitudProductos)
@@ -120,6 +129,7 @@ document.addEventListener("DOMContentLoaded",()=>{
             'monedaOrden':monedaOrden.value,
             'tcCompraOrden':tcCompraOrden.value,
             'tcVentaOrden':tcVentaOrden.value,
+            'mostrarDescuento':mostrarDescuento,
         }
         fetch(url,{
             method:"POST",
