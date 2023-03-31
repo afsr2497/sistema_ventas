@@ -10,7 +10,7 @@ from django import forms
 from reportlab.pdfgen import canvas
 from django.shortcuts import render, redirect
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito,ordenCompra, ordenCompraMetalprotec
+from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito,ordenCompra, ordenCompraMetalprotec,configurarComisiones
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from django.db.models import Q
@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '1'
+entorno_sistema = '0'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -4091,6 +4091,8 @@ def enviar_boleta(request,ind):
         url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/boleta'
         r = requests.put(url_pedido,headers=headers_info,json=info_data)
         nueva_boleta = boletas.objects.get(id=ind)
+        print(r)
+        print(r.content)
         if((r.status_code == 200) or (r.status_code == 409)):
             nueva_boleta.estadoBoleta = 'Enviada'
         if(r.status_code == 401):
@@ -7891,6 +7893,8 @@ def comisiones(request):
     monto_comision = 0
     month_filter = '01'
     year_filter = '2022'
+    porcentajeComision = '1'
+    incluyeIgv = '0'
     if request.method == 'POST':
         if 'Filtrar' in request.POST:
             month_filter = str(request.POST.get('monthInfo'))
@@ -7898,6 +7902,14 @@ def comisiones(request):
                 month_filter = '0' + month_filter
             year_filter = str(request.POST.get('yearInfo'))
             id_vendedor = request.POST.get('id_vendedor')
+            confi_seleccionada = request.POST.get('confi_seleccionada')
+            if confi_seleccionada != '':
+                configuracionInformacion = configurarComisiones.objects.get(id=confi_seleccionada)
+                porcentajeComision = configuracionInformacion.porcentajeComision
+                incluyeIgv = configuracionInformacion.incluyeIgv
+            else:
+                porcentajeComision = '1'
+                incluyeIgv = '0'
             codigoVendedor = '0'
             if id_vendedor != '0':
                 codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
@@ -7942,7 +7954,12 @@ def comisiones(request):
                         total_soles = Decimal(total_soles) + Decimal(v_servicio)
                     #Final del calculo de productos
                     monto_total = Decimal(monto_total) + Decimal(total_soles)
-                monto_comision = Decimal(monto_total)*Decimal(0.01)
+                if incluyeIgv == '1':
+                    monto_total = Decimal(monto_total)*Decimal(1.18)
+                    monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
+                else:
+                    pass
+                monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
                 monto_total = "{:.2f}".format(round(float(monto_total),2))
                 monto_comision = "{:.2f}".format(round(float(monto_comision),2))
         elif 'Exportar' in request.POST:
@@ -7951,6 +7968,14 @@ def comisiones(request):
                 month_filter = '0' + month_filter
             year_filter = str(request.POST.get('yearInfo'))
             id_vendedor = request.POST.get('id_vendedor')
+            confi_seleccionada = request.POST.get('confi_seleccionada')
+            if confi_seleccionada != '':
+                configuracionInformacion = configurarComisiones.objects.get(id=confi_seleccionada)
+                porcentajeComision = configuracionInformacion.porcentajeComision
+                incluyeIgv = configuracionInformacion.incluyeIgv
+            else:
+                porcentajeComision = '1'
+                incluyeIgv = '0'
             info_abonos = []
             if id_vendedor != '0':
                 codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
@@ -8006,7 +8031,12 @@ def comisiones(request):
                     info_abonos[counter_abonos][6] = str(round(float(total_soles),2))
                     monto_total = Decimal(monto_total) + Decimal(total_soles)
                     counter_abonos = counter_abonos + 1
-                monto_comision = Decimal(monto_total)*Decimal(0.01)
+                if incluyeIgv == '1':
+                    monto_total = Decimal(monto_total)*Decimal(1.18)
+                    monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
+                else:
+                    pass
+                monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
                 monto_total = "{:.2f}".format(round(float(monto_total),2))
                 monto_comision = "{:.2f}".format(round(float(monto_comision),2))
                 info_abonos.append(['','','','','','Monto total',str(monto_total)])
@@ -8037,6 +8067,8 @@ def comisiones(request):
         'tipoUsuario':str(user_logued.tipo),
         'usuarioSistema':str(user_logued.codigo),
         'usr_rol': user_logued,
+        'porcentajeComision':porcentajeComision,
+        'incluyeIgv':incluyeIgv,
     })
 
 def eliminarTodo(request):
@@ -13540,3 +13572,44 @@ def exportarReporteVentas(request):
     nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
     response['Content-Disposition'] = nombre
     return response
+
+@csrf_exempt
+def configComisiones(request):
+    usuariosTotales = User.objects.all().order_by('id')
+    usr = userProfile.objects.all().order_by('id')
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    configuracionesTotales = configurarComisiones.objects.all().order_by('id')
+    if request.method == 'POST':
+        usuarioSeleccionado = request.POST.get('usuarioSeleccionado')
+        porcentajeComision = request.POST.get('porcentajeComision')
+        incluyeIgv = request.POST.get('incluyeIgv')
+        if incluyeIgv == 'on':
+            incluyeIgv = '1'
+        else:
+            incluyeIgv = '0'
+        configurarComisiones.objects.create(
+            usuarioRelacionado=User.objects.get(id=usuarioSeleccionado),
+            porcentajeComision=porcentajeComision,
+            incluyeIgv=incluyeIgv
+        )
+        return HttpResponseRedirect(reverse('sistema_2:configComisiones'))
+    return render(request,'sistema_2/configComisiones.html',{
+        'usr_rol':user_logued,
+        'usuariosTotales':usuariosTotales,
+        'configuracionesTotales':configuracionesTotales,
+    })
+
+def eliminarConfiguracionComisiones(request,ind):
+    configurarComisiones.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:configComisiones'))
+
+def obtenerConfiguraciones(request,ind):
+    usuarioSeleccionado = User.objects.get(id=ind)
+    listaUsuario = usuarioSeleccionado.configurarcomisiones_set.all()
+    listaConfig = []
+    for config in listaUsuario:
+        listaConfig.append([config.id,config.porcentajeComision,config.incluyeIgv])
+    return JsonResponse({
+        'usuariosTotales':listaConfig,
+    })

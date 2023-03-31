@@ -147,5 +147,8 @@ urlpatterns = [
     path('nuevoFormatoSoles/<str:ind>',views.nuevoFormatoSoles,name='nuevoFormatoSoles'),
     path('nuevoFormatoDolares/<str:ind>',views.nuevoFormatoDolares,name='nuevoFormatoDolares'),
     path('kits_productos',views.kits_productos,name='kits_productos'),
-    path('exportarReporteVentas',views.exportarReporteVentas, name='exportarReporteVentas')
+    path('exportarReporteVentas',views.exportarReporteVentas, name='exportarReporteVentas'),
+    path('configComisiones',views.configComisiones,name='configComisiones'),
+    path('eliminarConfiguracionComisiones/<str:ind>',views.eliminarConfiguracionComisiones,name='eliminarConfiguracionComisiones'),
+    path('obtenerConfiguraciones/<str:ind>',views.obtenerConfiguraciones,name='obtenerConfiguraciones'),
 ]

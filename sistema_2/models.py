@@ -341,3 +341,9 @@ class ordenCompraMetalprotec(models.Model):
     tcCompraOrden = models.CharField(max_length=8,default='0.000')
     tcVentaOrden = models.CharField(max_length=8,default='0.000')
     mostrarDescuento = models.CharField(max_length=8,default='0')
+
+class configurarComisiones(models.Model):
+    porcentajeComision = models.CharField(max_length=8,default='0')
+    incluyeIgv = models.CharField(max_length=8,default='0')
+    usuarioRelacionado = models.ForeignKey(User,on_delete=models.CASCADE)
+    fechaRegistro = models.DateField(default=datetime.datetime.today)
