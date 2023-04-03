@@ -151,4 +151,5 @@ urlpatterns = [
     path('configComisiones',views.configComisiones,name='configComisiones'),
     path('eliminarConfiguracionComisiones/<str:ind>',views.eliminarConfiguracionComisiones,name='eliminarConfiguracionComisiones'),
     path('obtenerConfiguraciones/<str:ind>',views.obtenerConfiguraciones,name='obtenerConfiguraciones'),
+    path('crearComisionGlobal',views.crearComisionGlobal,name='crearComisionGlobal'),
 ]

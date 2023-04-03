@@ -347,3 +347,6 @@ class configurarComisiones(models.Model):
     incluyeIgv = models.CharField(max_length=8,default='0')
     usuarioRelacionado = models.ForeignKey(User,on_delete=models.CASCADE)
     fechaRegistro = models.DateField(default=datetime.datetime.today)
+    tipoComision = models.CharField(max_length=32,default='PARCIAL')
+    usuariosComision = ArrayField(ArrayField(models.CharField(max_length=32)),default=list())
+    codigoComision = models.CharField(max_length=32,default='COM-0000')

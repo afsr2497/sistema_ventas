@@ -62,6 +62,13 @@
                 <label>Seleccionar config:</label>
                 <select class="form-control selectpicker" id="configuracionSeleccionada" name="confi_seleccionada">
                     <option value=""></option>
+                    {% for config in configuracionUsuario %}
+                        {% if config.id == confi_seleccionada %}
+                            <option selected value="{{ config.id }}">{{ config.codigoComision }}</option>
+                        {% else %}
+                            <option value="{{ config.id }}">{{ config.codigoComision }}</option>
+                        {% endif %}
+                    {% endfor %}
                 </select>
             </div>
             <div class="col-md-2">
@@ -191,12 +198,17 @@
     </table>
     <!--Resumen de los resultados-->
     <div style="font-size: 12px;">
-        {% if incluyeIgv == '1' %}
-            <p>El monto total en ventas en soles con IGV para el vendedor {{ id_vendedor }} es S/. {{ monto_total }}</p>
-            <p>y la comision registrada es S/. {{ monto_comision }} con un porcentaje de {{ porcentajeComision }} %</p>
+        {% if configuracionInformacion.tipoComision == 'PARCIAL' %}
+            {% if incluyeIgv == '1' %}
+                <p>El monto total en ventas en soles con IGV para el vendedor {{ id_vendedor }} es S/. {{ monto_total }}</p>
+                <p>y la comision registrada es S/. {{ monto_comision }} con un porcentaje de {{ porcentajeComision }} %</p>
+            {% else %}
+                <p>El monto total en ventas en soles sin IGV para el vendedor {{ id_vendedor }} es S/. {{ monto_total }}</p>
+                <p>y la comision registrada es S/. {{ monto_comision }} con un porcentaje de {{ porcentajeComision }} %</p>
+            {% endif %}
         {% else %}
-            <p>El monto total en ventas en soles sin IGV para el vendedor {{ id_vendedor }} es S/. {{ monto_total }}</p>
-            <p>y la comision registrada es S/. {{ monto_comision }} con un porcentaje de {{ porcentajeComision }} %</p>
+            <p>El monto total en ventas para el vendedor {{ id_global }} es S/. {{ montoFinal }}</p>
+            <p>y la comision registrada es S/. {{ comisionFinal }}</p>
         {% endif %}
     </div>
 </div>

@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -7890,11 +7890,17 @@ def comisiones(request):
     codigos_ventas = []
     codigoVendedor = ''
     monto_total = Decimal(0.0000)
+    montoFinal = Decimal(0.000)
+    comisionFinal = Decimal(0.000)
     monto_comision = 0
     month_filter = '01'
     year_filter = '2022'
     porcentajeComision = '1'
     incluyeIgv = '0'
+    configuracionUsuario = None
+    configuracionInformacion = None
+    confi_seleccionada = '0'
+    id_global = '0'
     if request.method == 'POST':
         if 'Filtrar' in request.POST:
             month_filter = str(request.POST.get('monthInfo'))
@@ -7902,66 +7908,183 @@ def comisiones(request):
                 month_filter = '0' + month_filter
             year_filter = str(request.POST.get('yearInfo'))
             id_vendedor = request.POST.get('id_vendedor')
-            confi_seleccionada = request.POST.get('confi_seleccionada')
+            confi_seleccionada = str(request.POST.get('confi_seleccionada'))
+            configuracionUsuario = configurarComisiones.objects.filter(usuarioRelacionado=User.objects.get(id=id_vendedor))
             if confi_seleccionada != '':
                 configuracionInformacion = configurarComisiones.objects.get(id=confi_seleccionada)
-                porcentajeComision = configuracionInformacion.porcentajeComision
-                incluyeIgv = configuracionInformacion.incluyeIgv
+                if configuracionInformacion.tipoComision == 'PARCIAL':
+                    porcentajeComision = configuracionInformacion.porcentajeComision
+                    incluyeIgv = configuracionInformacion.incluyeIgv
+                    codigoVendedor = '0'
+                    if id_vendedor != '0':
+                        codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
+                        abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
+                        abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
+                        abonos_totales = abonos_totales.filter(abono_comisionable='1')
+                        abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
+                        for abono in abonos_totales:
+                            if len(abono.codigo_vendedor) > 0:
+                                if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
+                                    try:
+                                        if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
+                                            abonos_vendedor.append(abono)
+                                    except:
+                                        pass
+                        for abono in abonos_vendedor:
+                            if not (abono.codigo_comprobante in codigos_ventas):
+                                codigos_ventas.append(abono.codigo_comprobante)
+                            else:
+                                pass
+                        for codigo in codigos_ventas:
+                            dato_sumar = 0
+                            if codigo[:4] == 'F001':
+                                comprobante = facturas.objects.get(codigoFactura=codigo)
+                            if codigo[:4] == 'B001':
+                                comprobante = boletas.objects.get(codigoBoleta=codigo)
+                            #Calculo del dato_sumar - Valor de la factura - Productos
+                            total_soles = Decimal(0.0000)
+                            for producto in comprobante.productos:
+                                if producto[5] == 'DOLARES':
+                                    v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                                if producto[5] == 'SOLES':
+                                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                                total_soles = Decimal(total_soles) + Decimal(v_producto)
+                            for servicio in comprobante.servicios:
+                                if servicio[3] == 'DOLARES':
+                                    v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                if servicio[3] == 'SOLES':
+                                    v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                total_soles = Decimal(total_soles) + Decimal(v_servicio)
+                            #Final del calculo de productos
+                            monto_total = Decimal(monto_total) + Decimal(total_soles)
+                        if incluyeIgv == '1':
+                            monto_total = Decimal(monto_total)*Decimal(1.18)
+                            monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
+                        else:
+                            pass
+                        monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
+                        monto_total = "{:.2f}".format(round(float(monto_total),2))
+                        monto_comision = "{:.2f}".format(round(float(monto_comision),2))
+                if configuracionInformacion.tipoComision == 'GLOBAL':
+                    montoFinal = Decimal(0.0000)
+                    comisionFinal = Decimal(0.000)
+                    for usuario in configuracionInformacion.usuariosComision:
+                        monto_total = Decimal(0.0000)
+                        porcentajeComision = str(usuario[3])
+                        incluyeIgv = str(usuario[4])
+                        codigoVendedor = '0'
+                        id_global = id_vendedor
+                        id_vendedor = str(User.objects.get(id=usuario[0]).id)
+                        if id_vendedor != '0':
+                            codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
+                            abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
+                            abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
+                            abonos_totales = abonos_totales.filter(abono_comisionable='1')
+                            abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
+                            for abono in abonos_totales:
+                                if len(abono.codigo_vendedor) > 0:
+                                    if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
+                                        try:
+                                            if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
+                                                abonos_vendedor.append(abono)
+                                        except:
+                                            pass
+                            for abono in abonos_vendedor:
+                                if not (abono.codigo_comprobante in codigos_ventas):
+                                    codigos_ventas.append(abono.codigo_comprobante)
+                                else:
+                                    pass
+                            for codigo in codigos_ventas:
+                                dato_sumar = 0
+                                if codigo[:4] == 'F001':
+                                    comprobante = facturas.objects.get(codigoFactura=codigo)
+                                if codigo[:4] == 'B001':
+                                    comprobante = boletas.objects.get(codigoBoleta=codigo)
+                                #Calculo del dato_sumar - Valor de la factura - Productos
+                                total_soles = Decimal(0.0000)
+                                for producto in comprobante.productos:
+                                    if producto[5] == 'DOLARES':
+                                        v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                                    if producto[5] == 'SOLES':
+                                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                                    total_soles = Decimal(total_soles) + Decimal(v_producto)
+                                for servicio in comprobante.servicios:
+                                    if servicio[3] == 'DOLARES':
+                                        v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                    if servicio[3] == 'SOLES':
+                                        v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                    total_soles = Decimal(total_soles) + Decimal(v_servicio)
+                                #Final del calculo de productos
+                                monto_total = Decimal(monto_total) + Decimal(total_soles)
+                            if incluyeIgv == '1':
+                                monto_total = Decimal(monto_total)*Decimal(1.18)
+                                monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
+                            else:
+                                pass
+                            monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
+                            montoFinal = Decimal(montoFinal) + Decimal(monto_total)
+                            comisionFinal = Decimal(comisionFinal) + monto_comision
+                    montoFinal = "{:.2f}".format(round(float(montoFinal),2))
+                    comisionFinal = "{:.2f}".format(round(float(comisionFinal),2))
             else:
                 porcentajeComision = '1'
                 incluyeIgv = '0'
-            codigoVendedor = '0'
-            if id_vendedor != '0':
-                codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
-                abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
-                abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
-                abonos_totales = abonos_totales.filter(abono_comisionable='1')
-                abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
-                for abono in abonos_totales:
-                    if len(abono.codigo_vendedor) > 0:
-                        if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
-                            try:
-                                if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
-                                    abonos_vendedor.append(abono)
-                            except:
-                                pass
-                for abono in abonos_vendedor:
-                    if not (abono.codigo_comprobante in codigos_ventas):
-                        codigos_ventas.append(abono.codigo_comprobante)
+                codigoVendedor = '0'
+                if id_vendedor != '0':
+                    codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
+                    abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
+                    abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
+                    abonos_totales = abonos_totales.filter(abono_comisionable='1')
+                    abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
+                    for abono in abonos_totales:
+                        if len(abono.codigo_vendedor) > 0:
+                            if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
+                                try:
+                                    if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
+                                        abonos_vendedor.append(abono)
+                                except:
+                                    pass
+                    for abono in abonos_vendedor:
+                        if not (abono.codigo_comprobante in codigos_ventas):
+                            codigos_ventas.append(abono.codigo_comprobante)
+                        else:
+                            pass
+                    for codigo in codigos_ventas:
+                        dato_sumar = 0
+                        if codigo[:4] == 'F001':
+                            comprobante = facturas.objects.get(codigoFactura=codigo)
+                        if codigo[:4] == 'B001':
+                            comprobante = boletas.objects.get(codigoBoleta=codigo)
+                        #Calculo del dato_sumar - Valor de la factura - Productos
+                        total_soles = Decimal(0.0000)
+                        for producto in comprobante.productos:
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            total_soles = Decimal(total_soles) + Decimal(v_producto)
+                        for servicio in comprobante.servicios:
+                            if servicio[3] == 'DOLARES':
+                                v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                            if servicio[3] == 'SOLES':
+                                v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                            total_soles = Decimal(total_soles) + Decimal(v_servicio)
+                        #Final del calculo de productos
+                        monto_total = Decimal(monto_total) + Decimal(total_soles)
+                    if incluyeIgv == '1':
+                        monto_total = Decimal(monto_total)*Decimal(1.18)
+                        monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
                     else:
                         pass
-                for codigo in codigos_ventas:
-                    dato_sumar = 0
-                    if codigo[:4] == 'F001':
-                        comprobante = facturas.objects.get(codigoFactura=codigo)
-                    if codigo[:4] == 'B001':
-                        comprobante = boletas.objects.get(codigoBoleta=codigo)
-                    #Calculo del dato_sumar - Valor de la factura - Productos
-                    total_soles = Decimal(0.0000)
-                    for producto in comprobante.productos:
-                        if producto[5] == 'DOLARES':
-                            v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
-                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
-                        if producto[5] == 'SOLES':
-                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
-                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
-                        total_soles = Decimal(total_soles) + Decimal(v_producto)
-                    for servicio in comprobante.servicios:
-                        if servicio[3] == 'DOLARES':
-                            v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
-                        if servicio[3] == 'SOLES':
-                            v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
-                        total_soles = Decimal(total_soles) + Decimal(v_servicio)
-                    #Final del calculo de productos
-                    monto_total = Decimal(monto_total) + Decimal(total_soles)
-                if incluyeIgv == '1':
-                    monto_total = Decimal(monto_total)*Decimal(1.18)
-                    monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
-                else:
-                    pass
-                monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
-                monto_total = "{:.2f}".format(round(float(monto_total),2))
-                monto_comision = "{:.2f}".format(round(float(monto_comision),2))
+                    monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
+                    monto_total = "{:.2f}".format(round(float(monto_total),2))
+                    monto_comision = "{:.2f}".format(round(float(monto_comision),2))
         elif 'Exportar' in request.POST:
             month_filter = str(request.POST.get('monthInfo'))
             while len(month_filter) < 2:
@@ -8069,6 +8192,12 @@ def comisiones(request):
         'usr_rol': user_logued,
         'porcentajeComision':porcentajeComision,
         'incluyeIgv':incluyeIgv,
+        'configuracionUsuario':configuracionUsuario,
+        'configuracionInformacion':configuracionInformacion,
+        'confi_seleccionada':int(confi_seleccionada),
+        'montoFinal':str(montoFinal),
+        'comisionFinal':str(comisionFinal),
+        'id_global':str(id_global),
     })
 
 def eliminarTodo(request):
@@ -9402,7 +9531,15 @@ def get_vendedor_statistics(request):
     datos_vendedor = []
     consumo_vendedor = []
     nombres_vendedor = []
-    facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
+    if str(tiempo_vendedor) == '1':
+        facturas_info = facturas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year)
+        boletas_info = boletas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year)
+    else:
+        facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
+        boletas_info = boletas.objects.filter(fecha_emision__gte = nueva_fecha)
+
+    #facturas_info = facturas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year)
+    #boletas_info = boletas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year)
 
     for factura in facturas_info:
         datos_vendedor.append(factura.vendedor[2])
@@ -9410,6 +9547,19 @@ def get_vendedor_statistics(request):
         for producto in factura.productos:
             if producto[5] == 'DOLARES':
                 v_producto = Decimal(producto[6])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            if producto[5] == 'SOLES':
+                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+            total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+        consumo_vendedor.append(round(total_precio_soles,2))
+    
+    for boleta in boletas_info:
+        datos_vendedor.append(boleta.vendedor[2])
+        total_precio_soles = Decimal(0.00)
+        for producto in boleta.productos:
+            if producto[5] == 'DOLARES':
+                v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
                 v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
             if producto[5] == 'SOLES':
                 v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
@@ -9448,9 +9598,17 @@ def get_vendedor_statistics(request):
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                for servicio in factura.servicios:
+                    if servicio[3] == 'DOLARES':
+                        v_producto = Decimal(servicio[4])*Decimal(factura.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        v_producto = Decimal('%.2f' % v_producto)
+                    if servicio[3] == 'SOLES':
+                        v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        v_producto = Decimal('%.2f' % v_producto)
+                    total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
                 consumo_soles[indice_vendedor] = consumo_soles[indice_vendedor] + total_precio_soles
             if factura.monedaFactura == 'DOLARES':
-                total_precio_dolares = 0.00
+                total_precio_dolares = Decimal(0.00)
                 for producto in factura.productos:
                     if producto[5] == 'SOLES':
                         v_producto = (Decimal(producto[6])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
@@ -9459,8 +9617,59 @@ def get_vendedor_statistics(request):
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                for servicio in factura.servicios:
+                    if servicio[3] == 'SOLES':
+                        v_producto = (Decimal(servicio[4])/Decimal(factura.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        v_producto = Decimal('%.2f' % v_producto)
+                    if servicio[3] == 'DOLARES':
+                        v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        v_producto = Decimal('%.2f' % v_producto)
+                    total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
                 consumo_dolares[indice_vendedor] = consumo_dolares[indice_vendedor] + total_precio_dolares
 
+    for boleta in boletas_info:
+        if boleta.vendedor[2] in vendedor_mas_ventas:
+            indice_vendedor = vendedor_mas_ventas.index(boleta.vendedor[2])
+            if boleta.monedaBoleta == 'SOLES':
+                total_precio_soles = Decimal(0.00)
+                for producto in boleta.productos:
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'SOLES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                for servicio in boleta.servicios:
+                    if servicio[3] == 'DOLARES':
+                        v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        v_producto = Decimal('%.2f' % v_producto)
+                    if servicio[3] == 'SOLES':
+                        v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        v_producto = Decimal('%.2f' % v_producto)
+                    total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                consumo_soles[indice_vendedor] = consumo_soles[indice_vendedor] + total_precio_soles
+            if boleta.monedaBoleta == 'DOLARES':
+                total_precio_dolares = Decimal(0.00)
+                for producto in boleta.productos:
+                    if producto[5] == 'SOLES':
+                        v_producto = (Decimal(producto[6])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if producto[5] == 'DOLARES':
+                        v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                        v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                for servicio in boleta.servicios:
+                    if servicio[3] == 'SOLES':
+                        v_producto = (Decimal(servicio[4])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                        v_producto = Decimal('%.2f' % v_producto)
+                    if servicio[3] == 'DOLARES':
+                        v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                        v_producto = Decimal('%.2f' % v_producto)
+                    total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                consumo_dolares[indice_vendedor] = consumo_dolares[indice_vendedor] + total_precio_dolares
+
+    """
     datos_contador = 0
     while datos_contador < len(consumo_soles):
         consumo_soles[datos_contador] = consumo_soles[datos_contador]*Decimal(1.18)
@@ -9470,6 +9679,7 @@ def get_vendedor_statistics(request):
     while datos_contador < len(consumo_dolares):
         consumo_dolares[datos_contador] = consumo_dolares[datos_contador]*Decimal(1.18)
         datos_contador = datos_contador + 1
+    """
 
     return JsonResponse({
         'vendedor_mas_ventas':vendedor_mas_ventas[:int(info_vendedor)],
@@ -13581,19 +13791,22 @@ def configComisiones(request):
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     configuracionesTotales = configurarComisiones.objects.all().order_by('id')
     if request.method == 'POST':
-        usuarioSeleccionado = request.POST.get('usuarioSeleccionado')
-        porcentajeComision = request.POST.get('porcentajeComision')
-        incluyeIgv = request.POST.get('incluyeIgv')
-        if incluyeIgv == 'on':
-            incluyeIgv = '1'
-        else:
-            incluyeIgv = '0'
-        configurarComisiones.objects.create(
-            usuarioRelacionado=User.objects.get(id=usuarioSeleccionado),
-            porcentajeComision=porcentajeComision,
-            incluyeIgv=incluyeIgv
-        )
-        return HttpResponseRedirect(reverse('sistema_2:configComisiones'))
+        if "parcial" in request.POST:
+            usuarioSeleccionado = request.POST.get('usuarioSeleccionado')
+            porcentajeComision = request.POST.get('porcentajeComision')
+            incluyeIgv = request.POST.get('incluyeIgv')
+            if incluyeIgv == 'on':
+                incluyeIgv = '1'
+            else:
+                incluyeIgv = '0'
+            configurarComisiones.objects.create(
+                usuarioRelacionado=User.objects.get(id=usuarioSeleccionado),
+                porcentajeComision=porcentajeComision,
+                incluyeIgv=incluyeIgv
+            )
+            return HttpResponseRedirect(reverse('sistema_2:configComisiones'))
+        if "global" in request.POST:
+            pass
     return render(request,'sistema_2/configComisiones.html',{
         'usr_rol':user_logued,
         'usuariosTotales':usuariosTotales,
@@ -13609,7 +13822,27 @@ def obtenerConfiguraciones(request,ind):
     listaUsuario = usuarioSeleccionado.configurarcomisiones_set.all()
     listaConfig = []
     for config in listaUsuario:
-        listaConfig.append([config.id,config.porcentajeComision,config.incluyeIgv])
+        listaConfig.append([config.id,config.porcentajeComision,config.incluyeIgv,config.codigoComision])
     return JsonResponse({
         'usuariosTotales':listaConfig,
     })
+
+def crearComisionGlobal(request):
+    if request.method == 'POST':
+        data = json.load(request)
+        idUsuario = data.get('idUsuario')
+        tipoComision = data.get('tipoComision')
+        arregloComisiones = data.get('arregloComisiones')
+        configCreada = configurarComisiones.objects.create(
+            usuarioRelacionado=User.objects.get(id=idUsuario),
+            tipoComision=tipoComision,
+            usuariosComision=arregloComisiones,
+        )
+        idComision = str(configCreada.id)
+        while len(idComision) < 4:
+            idComision = '0' + idComision
+        configCreada.codigoComision = 'COM-' + idComision
+        configCreada.save()
+        return JsonResponse({
+            'ok':'200'
+        })

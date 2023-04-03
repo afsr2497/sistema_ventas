@@ -88,15 +88,6 @@
             },
         })
 
-        //fetch('/sistema_2/get_clientes_15')
-        //.then(response => response.json())
-        //.then(data => {
-        //    console.log(data)
-        //    pieGrafClientes.data.labels = data.nombre_clientes_15.slice(0,15)
-        //    pieGrafClientes.data.datasets[0].data = data.ventas_clientes_15.slice(0,15)
-        //    pieGrafClientes.update()
-        //})
-
         let pieGrafProductos = new Chart(pieProductos, {
             type: 'doughnut',
             data: {
@@ -109,16 +100,6 @@
                 ]
             },
         })
-
-        //fetch('/sistema_2/get_productos_15')
-        //.then(response => response.json())
-        //.then(data => {
-        //    console.log(data)
-        //    pieGrafProductos.data.labels = data.codigo_productos.slice(0,15)
-        //    pieGrafProductos.data.datasets[0].data = data.ventas_productos.slice(0,15)
-        //    pieGrafProductos.update()
-        //})
-
         let tablaVendedor = new Chart(grafVendedor,{
             type:'bar',
             options:{
@@ -377,8 +358,190 @@
 
 {% block content %}
 <div class="container" style="height: 100vh;overflow: scroll;">
-    <div class="row" style="border-bottom: solid 1px black">
+    <div class="row mb-3 mt-3">
+        <div class="col-8">
+            <div class="row mt-2 mb-2 px-2">
+                <div class="col-12" style="border-radius: 10px; border: solid 1px;">
+                    <div class="row text-center mt-2">
+                        <h5>Ventas mensuales</h5>
+                    </div>
+                    <br>
+                    <div class="row justify-content-center">
+                        <div class="col-3">
+                            <select class="form-select" id="filtroVentas" style="font-size: 12px;">
+                                <option value="10">Ultimos 10 meses</option>
+                                <option value="5">Ultimos 5 meses</option>
+                                <option value="3">Ultimos 3 meses</option>
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <button class="btn btn-success" id="filtrarVentas" style="font-size: 12px;">Filtrar</button>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="mb-2">
+                        <canvas width="200" height="100" id="grafVentas"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2 px-1">
+                <div class="col-6">
+                    <div class="row px-2">
+                        <div class="col-12" style="border-radius: 10px; border: solid 1px;">
+                            <div class="row text-center mt-2">
+                                <h5>Vendedores con mas ventas</h5>
+                            </div>
+                            <br>
+                            <div class="row justify-content-center">
+                                <div class="col-3">
+                                    <select class="form-select" id="filtroVendedor" style="font-size: 12px;">
+                                        <option value="10">Top 10</option>
+                                        <option value="5">Top 5</option>
+                                        <option value="3">Top 3</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-select" id="mesesVendedor" style="font-size: 12px;">
+                                        <option value="0">Presente mes</option>
+                                        <option value="1">Ultimo mes</option>
+                                        <option value="3">Ultimos 3 meses</option>
+                                        <option value="6">Ultimos 6 meses</option>
+                                        <option value="12">Ultimo año</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <button class="btn btn-success" id="filtrarVendedor" style="font-size: 12px;">Filtrar</button>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row mb-2">
+                                <canvas width="200" height="100" id="grafVendedor"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 px-2">
+                    <div class="row">
+                        <div class="col-12" style="border-radius: 10px; border: solid 1px;">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="row text-center mt-2">
+                                        <h5>Clientes con mas ventas</h5>
+                                    </div>
+                                    <br>
+                                    <div class="row justify-content-center">
+                                        <div class="col-3">
+                                            <select class="form-select" id="filtroClientes" style="font-size: 12px;">
+                                                <option value="15">Top 15</option>
+                                                <option value="10">Top 10</option>
+                                                <option value="5">Top 5</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-3">
+                                            <select class="form-select" id="mesesClientes" style="font-size: 12px;">
+                                                <option value="0">Presente mes</option>
+                                                <option value="1">Ultimo mes</option>
+                                                <option value="3">Ultimos 3 meses</option>
+                                                <option value="6">Ultimos 6 meses</option>
+                                                <option value="12">Ultimo año</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-3">
+                                            <button class="btn btn-success" id="filtrarClientes" style="font-size: 12px;">Filtrar</button>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row container" style="font-size: 10px;">
+                                        <table class="table table-bordered table-hover">
+                                            <thead class="table-dark">
+                                                <th>Ruc</th>
+                                                <th>Razon social</th>
+                                                <th>Valor vendido</th>
+                                            </thead>
+                                            <tbody id="tablaClientes">
+                            
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="row text-center">
+                                        <h5>Grafico de clientes</h5>
+                                    </div>
+                                    <div class="row">
+                                        <canvas width="200" height="100px" id="pieClientes"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="row mt-2 mb-2 px-2">
+                <div class="col-12" style="border-radius: 10px; border: solid 1px;">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row text-center mt-2">
+                                <h5>Productos con mas ventas</h5>
+                            </div>
+                            <br>
+                            <div class="row justify-content-center">
+                                <div class="col-3">
+                                    <select class="form-select" id="filtroProductos" style="font-size: 12px;">
+                                        <option value="15">Top 15</option>
+                                        <option value="10">Top 10</option>
+                                        <option value="5">Top 5</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-select" id="mesesProductos" style="font-size: 12px;">
+                                        <option value="0">Presente mes</option>
+                                        <option value="1">Ultimo mes</option>
+                                        <option value="3">Ultimos 3 meses</option>
+                                        <option value="6">Ultimos 6 meses</option>
+                                        <option value="12">Ultimo año</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <button class="btn btn-success" id="filtrarProductos" style="font-size: 12px;">Filtrar</button>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="container row mb-2" style="font-size: 10px;">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-dark">
+                                        <th>Codigo</th>
+                                        <th>Producto</th>
+                                        <th>Valor vendido</th>
+                                    </thead>
+                                    <tbody id="tablaProductos">
+                    
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row text-center">
+                                <h5>Gráfico de productos</h5>
+                            </div>
+                            <div class="row">
+                                <canvas width="200" height="100px" id="pieProductos"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="border-bottom: solid 1px black; display: none;">
         <div class="col-6">
+            <!--
             <div class="row text-center">
                 <h5>Clientes con mas ventas</h5>
             </div>
@@ -416,9 +579,10 @@
     
                     </tbody>
                 </table>
-            </div>
+            </div>-->
         </div>
         <div class="col-6">
+            <!--
             <div class="row text-center">
                 <h5>Productos con mas ventas</h5>
             </div>
@@ -456,12 +620,13 @@
     
                     </tbody>
                 </table>
-            </div>
+            </div>-->
         </div>
         <br>
     </div>
     <br>
-    <div class="row" style="border-bottom: solid 1px black;">
+    <div class="row" style="border-bottom: solid 1px black; display: none;">
+        <!--
         <div class="col-6">
             <div class="row text-center">
                 <h5>Grafico de clientes</h5>
@@ -479,10 +644,12 @@
             </div>
         </div>
         <br>
+        -->
     </div>
     <br>
-    <div class="row" style="border-bottom: solid 1px black;">
+    <div class="row" style="border-bottom: solid 1px black; display: none;">
         <div class="col-6">
+            <!--
             <div class="row text-center">
                 <h5>Vendedores con mas ventas</h5>
             </div>
@@ -512,8 +679,10 @@
             <div class="row">
                 <canvas width="200" height="100" id="grafVendedor"></canvas>
             </div>
+            -->
         </div>
         <div class="col-6">
+            <!--
             <div class="row text-center">
                 <h5>Ventas mensuales</h5>
             </div>
@@ -533,12 +702,12 @@
             <br>
             <div>
                 <canvas width="200" height="100" id="grafVentas"></canvas>
-            </div>
+            </div>-->
         </div>
         <br>
     </div>
     <br>
-    <div class="row justify-content-center" style="border-bottom: solid 1px black;">
+    <div class="row justify-content-center" style="border-bottom: solid 1px black; display: none;">
         <div class="col-10">
             <div class="row text-center">
                 <h5>Vendedores a lo largo del tiempo</h5>

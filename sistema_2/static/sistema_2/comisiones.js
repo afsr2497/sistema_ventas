@@ -22,15 +22,7 @@ document.addEventListener('DOMContentLoaded',()=>{
                 mensaje = ""
                 optionCreada = document.createElement('option')
                 optionCreada.value = data.usuariosTotales[i][0]
-                if(data.usuariosTotales[i][2] == 1)
-                {
-                    mensaje = 'Incluye IGV'
-                }
-                else
-                {
-                    mensaje = 'No incluye IGV'
-                }
-                optionCreada.innerHTML = data.usuariosTotales[i][1] + " %" + " - " + mensaje
+                optionCreada.innerHTML = data.usuariosTotales[i][3]
                 configuracionSeleccionada.appendChild(optionCreada)
             }
             configuracionSeleccionada.selectedIndex = '0'

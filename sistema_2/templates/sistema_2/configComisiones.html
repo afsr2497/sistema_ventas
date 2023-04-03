@@ -12,6 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
+<script src="{% static 'sistema_2/configComisiones.js' %}"></script>
 
 
 {% endblock %}
@@ -28,8 +29,11 @@
         <div class="col-1">
             <a class="btn btn-primary" href="{% url 'sistema_2:comisiones' %}"><i class="fa fa-arrow-left"></i></a>
         </div>
+        <div class="col-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaConfig"><i class="fa fa-plus"></i> Agregar parcial</button>
+        </div>
         <div class="col-2">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaConfig"><i class="fa fa-plus"></i> Agregar</button>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaGlobal"><i class="fa fa-plus"></i> Agregar global</button>
         </div>
     </div>
     <div class="row justify-content-around mt-4">
@@ -38,8 +42,10 @@
                 <thead class="table-dark">
                     <th>Usuario</th>
                     <th>Fecha de registro</th>
+                    <th>Tipo de comision</th>
                     <th>Porcentaje de comision</th>
                     <th>¿Incluye IGV?</th>
+                    <th>Codigo</th>
                     <th>Editar</th>
                     <th>Eliminar</th>
                 </thead>
@@ -48,6 +54,8 @@
                     <tr class="text-center">
                         <td>{{ configuracion.usuarioRelacionado.username }}</td>
                         <td>{{ configuracion.fechaRegistro|date:"d-m-Y" }}</td>
+                        <td>{{ configuracion.tipoComision }}</td>
+                        {% if configuracion.tipoComision == 'PARCIAL' %}
                         <td>{{ configuracion.porcentajeComision }} %</td>
                         <td>
                             {% if configuracion.incluyeIgv == '1' %}
@@ -56,6 +64,11 @@
                             <p class="bg-danger mx-4 text-white" style="border-radius: 5px;">No</p>
                             {% endif %}
                         </td>
+                        {% else %}
+                        <td></td>
+                        <td></td>
+                        {% endif %}
+                        <td>{{ configuracion.codigoComision }}</td>
                         <td><button class="btn btn-warning"><i class="fa fa-edit"></i></button></td>
                         <td><a class="btn btn-danger" href="{% url 'sistema_2:eliminarConfiguracionComisiones' configuracion.id %}"><i class="fa fa-trash"></i></a></td>
                     </tr>
@@ -70,7 +83,7 @@
 <div class="modal fade" id="nuevaConfig" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" action="{% url 'sistema_2:configComisiones' %}">
+            <form method="post" action="{% url 'sistema_2:configComisiones' %}" name="parcial">
                 <div class="modal-header">
                     <h5 class="modal-title">Nueva configuracion</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -104,6 +117,76 @@
                     <button type="submit" class="btn btn-primary">Registrar</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="nuevaGlobal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configuracion global</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mt-3 mb-3">
+                    <div class="col-4">
+                        <label>Seleccione el usuario principal</label>
+                        <select class="form-control selectpicker" data-live-search="true" id="usuarioPrincipal" required>
+                            <option value=""></option>
+                            {% for usuario in usuariosTotales %}
+                            <option value="{{ usuario.id }}">{{ usuario.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3 justify-content-around">
+                    <div class="col-4">
+                        <label>Seleccionar un usuario</label>
+                        <select class="form-control selectpicker" data-live-search="true" id="usuarioTabla">
+                            <option value=""></option>
+                            {% for usuario in usuariosTotales %}
+                            <option value="{{ usuario.id }}" data-codigo="{{ usuario.userprofile.codigo }}">{{ usuario.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-3">
+                        <label>Ingrese el porcentaje</label>
+                        <input class="form-control" id="porcentajeTabla">
+                    </div>
+                    <div class="col-2">
+                        <br>
+                        <input class="form-check-input" type="checkbox" value="on" id="igvTabla">
+                        <label class="form-check-label">Incluye IGV</label>
+                    </div>
+                    <div class="col-2">
+                        <br>
+                        <button class="btn btn-success" id="agregarTabla" onclick="agregarTabla()">Agregar</button>
+                    </div>
+                </div>
+                <div class="row mb-3 justify-content-center">
+                    <div class="col-11">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <th>Id</th>
+                                <th>Usuario</th>
+                                <th>Codigo</th>
+                                <th>Porcentaje</th>
+                                <th>Inlcuye IGV (1/0)</th>
+                                <th>Eliminar</th>
+                            </thead>
+                            <tbody id="tablaGlobal" class="text-center">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" onclick="registrarComision()">Registrar</button>
+            </div>
         </div>
     </div>
 </div>
