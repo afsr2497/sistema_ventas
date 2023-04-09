@@ -1718,10 +1718,11 @@ def fact(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoSunat,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_facturas:
-                    suma_total = suma_total + float(elemento[8])
+                    if (elemento[3] == 'Aceptado') or (elemento[3] == 'Aceptado con Obs.'):
+                        suma_total = suma_total + float(elemento[8])
                 suma_total = round(suma_total,2)
                 info_facturas.append(['','','','','','','','Monto Total',str(suma_total)])
                 tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
@@ -1793,10 +1794,11 @@ def fact(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoFactura,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                    info_facturas.append([factura.fechaFactura,factura.codigoFactura,factura.cliente[3],factura.estadoSunat,factura.vendedor[2],factura.codigosGuias,factura.monedaFactura,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0
                 for elemento in info_facturas:
-                    suma_total = suma_total + float(elemento[7])
+                    if (elemento[3] == 'Aceptado') or (elemento[3] == 'Aceptado con Obs.'):
+                        suma_total = suma_total + float(elemento[8])
                 suma_total = round(suma_total,2)
                 info_facturas.append(['','','','','','','Monto Total',str(suma_total)])
                 tabla_excel = pd.DataFrame(info_facturas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la factura','Monto (S/)'])
@@ -9466,7 +9468,7 @@ def get_products_statistics(request):
     datos_productos = []
     consumo_productos = []
     nombres_productos = []
-    facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
+    facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha).filter(estadoSunat__contains='Aceptado')
 
     for factura in facturas_info:
         for producto in factura.productos:
@@ -9532,11 +9534,11 @@ def get_vendedor_statistics(request):
     consumo_vendedor = []
     nombres_vendedor = []
     if str(tiempo_vendedor) == '1':
-        facturas_info = facturas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year)
-        boletas_info = boletas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year)
+        facturas_info = facturas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year).filter(estadoSunat__contains='Aceptado')
+        boletas_info = boletas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year).filter(estadoSunat__contains='Aceptado')
     else:
-        facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha)
-        boletas_info = boletas.objects.filter(fecha_emision__gte = nueva_fecha)
+        facturas_info = facturas.objects.filter(fecha_emision__gte = nueva_fecha).filter(estadoSunat__contains='Aceptado')
+        boletas_info = boletas.objects.filter(fecha_emision__gte = nueva_fecha).filter(estadoSunat__contains='Aceptado')
 
     #facturas_info = facturas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year)
     #boletas_info = boletas.objects.filter(fecha_emision__month=nueva_fecha.month,fecha_emision__year=nueva_fecha.year)
@@ -9597,6 +9599,9 @@ def get_vendedor_statistics(request):
                     if producto[5] == 'SOLES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if len(producto) > 12:
+                        if producto[12] == '1':
+                            v_producto = Decimal(0.000)
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
                 for servicio in factura.servicios:
                     if servicio[3] == 'DOLARES':
@@ -9606,6 +9611,9 @@ def get_vendedor_statistics(request):
                         v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                         v_producto = Decimal('%.2f' % v_producto)
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                notaAsociada = notaCredito.objects.filter(codigoComprobante=factura.codigoFactura)
+                if len(notaAsociada) > 0:
+                    total_precio_soles = Decimal(0.000)
                 consumo_soles[indice_vendedor] = consumo_soles[indice_vendedor] + total_precio_soles
             if factura.monedaFactura == 'DOLARES':
                 total_precio_dolares = Decimal(0.00)
@@ -9616,6 +9624,9 @@ def get_vendedor_statistics(request):
                     if producto[5] == 'DOLARES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if len(producto) > 12:
+                        if producto[12] == '1':
+                            v_producto = Decimal(0.000)
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
                 for servicio in factura.servicios:
                     if servicio[3] == 'SOLES':
@@ -9625,6 +9636,9 @@ def get_vendedor_statistics(request):
                         v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                         v_producto = Decimal('%.2f' % v_producto)
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                notaAsociada = notaCredito.objects.filter(codigoComprobante=factura.codigoFactura)
+                if len(notaAsociada) > 0:
+                    total_precio_dolares = Decimal(0.000)
                 consumo_dolares[indice_vendedor] = consumo_dolares[indice_vendedor] + total_precio_dolares
 
     for boleta in boletas_info:
@@ -9639,6 +9653,9 @@ def get_vendedor_statistics(request):
                     if producto[5] == 'SOLES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if len(producto) > 12:
+                        if producto[12] == '1':
+                            v_producto = Decimal(0.000)
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
                 for servicio in boleta.servicios:
                     if servicio[3] == 'DOLARES':
@@ -9648,6 +9665,9 @@ def get_vendedor_statistics(request):
                         v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                         v_producto = Decimal('%.2f' % v_producto)
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                notaAsociada = notaCredito.objects.filter(codigoComprobante=boleta.codigoBoleta)
+                if len(notaAsociada) > 0:
+                    total_precio_soles = Decimal(0.000)
                 consumo_soles[indice_vendedor] = consumo_soles[indice_vendedor] + total_precio_soles
             if boleta.monedaBoleta == 'DOLARES':
                 total_precio_dolares = Decimal(0.00)
@@ -9658,6 +9678,9 @@ def get_vendedor_statistics(request):
                     if producto[5] == 'DOLARES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if len(producto) > 12:
+                        if producto[12] == '1':
+                            v_producto = Decimal(0.000)
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
                 for servicio in boleta.servicios:
                     if servicio[3] == 'SOLES':
@@ -9667,6 +9690,9 @@ def get_vendedor_statistics(request):
                         v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                         v_producto = Decimal('%.2f' % v_producto)
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                notaAsociada = notaCredito.objects.filter(codigoComprobante=boleta.codigoBoleta)
+                if len(notaAsociada) > 0:
+                    total_precio_dolares = Decimal(0.000)
                 consumo_dolares[indice_vendedor] = consumo_dolares[indice_vendedor] + total_precio_dolares
 
     """
@@ -9702,8 +9728,8 @@ def get_ventas_meses(request,ind):
             indice_mes = mes_actual - i
             year_info = datetime.now().year
         lista_meses.append(meses_totales[indice_mes-1])
-        facturas_filtradas = facturas.objects.filter(fecha_emision__month=indice_mes,fecha_emision__year=year_info)
-        boletas_filtradas = boletas.objects.filter(fecha_emision__month=indice_mes,fecha_emision__year=year_info)
+        facturas_filtradas = facturas.objects.filter(fecha_emision__month=indice_mes,fecha_emision__year=year_info).filter(estadoFactura='Enviada').filter(estadoSunat__contains='Aceptado')
+        boletas_filtradas = boletas.objects.filter(fecha_emision__month=indice_mes,fecha_emision__year=year_info).filter(estadoBoleta='Enviada').filter(estadoSunat__contains='Aceptado')
         monto_total_mes_soles = Decimal(0.00)
         monto_total_mes_dolares = Decimal(0.00)
         for factura in facturas_filtradas:
@@ -9716,6 +9742,9 @@ def get_ventas_meses(request,ind):
                     if producto[5] == 'SOLES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if len(producto) > 12:
+                        if producto[12] == '1':
+                            v_producto = Decimal(0.000)
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
                 for servicio in factura.servicios:
                     if servicio[3] == 'DOLARES':
@@ -9725,6 +9754,9 @@ def get_ventas_meses(request,ind):
                         v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                         v_producto = Decimal('%.2f' % v_producto)
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                notaAsociada = notaCredito.objects.filter(codigoComprobante=factura.codigoFactura)
+                if len(notaAsociada) > 0:
+                    total_precio_soles = Decimal(0.000)
                 monto_total_mes_soles = Decimal(monto_total_mes_soles) + Decimal(total_precio_soles)
             if factura.monedaFactura == 'DOLARES':
                 total_precio_dolares = Decimal(0.00)
@@ -9735,6 +9767,9 @@ def get_ventas_meses(request,ind):
                     if producto[5] == 'DOLARES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if len(producto) > 12:
+                        if producto[12] == '1':
+                            v_producto = Decimal(0.000)
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
                 for servicio in factura.servicios:
                     if servicio[3] == 'SOLES':
@@ -9744,6 +9779,9 @@ def get_ventas_meses(request,ind):
                         v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                         v_producto = Decimal('%.2f' % v_producto)
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                notaAsociada = notaCredito.objects.filter(codigoComprobante=factura.codigoFactura)
+                if len(notaAsociada) > 0:
+                    total_precio_dolares = Decimal(0.000)
                 monto_total_mes_dolares = Decimal(monto_total_mes_dolares) + Decimal(total_precio_dolares)
         for boleta in boletas_filtradas:
             if boleta.monedaBoleta == 'SOLES':
@@ -9755,6 +9793,9 @@ def get_ventas_meses(request,ind):
                     if producto[5] == 'SOLES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if len(producto) > 12:
+                        if producto[12] == '1':
+                            v_producto = Decimal(0.000)
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
                 for servicio in boleta.servicios:
                     if servicio[3] == 'DOLARES':
@@ -9764,6 +9805,9 @@ def get_ventas_meses(request,ind):
                         v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                         v_producto = Decimal('%.2f' % v_producto)
                     total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                notaAsociada = notaCredito.objects.filter(codigoComprobante=boleta.codigoBoleta)
+                if len(notaAsociada) > 0:
+                    total_precio_soles = Decimal(0.000)
                 monto_total_mes_soles = Decimal(monto_total_mes_soles) + Decimal(total_precio_soles)
             if boleta.monedaBoleta == 'DOLARES':
                 total_precio_dolares = Decimal(0.00)
@@ -9774,6 +9818,9 @@ def get_ventas_meses(request,ind):
                     if producto[5] == 'DOLARES':
                         v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                         v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                    if len(producto) > 12:
+                        if producto[12] == '1':
+                            v_producto = Decimal(0.000)
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
                 for servicio in boleta.servicios:
                     if servicio[3] == 'SOLES':
@@ -9783,6 +9830,9 @@ def get_ventas_meses(request,ind):
                         v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                         v_producto = Decimal('%.2f' % v_producto)
                     total_precio_dolares = Decimal(total_precio_dolares) + Decimal(v_producto)
+                notaAsociada = notaCredito.objects.filter(codigoComprobante=boleta.codigoBoleta)
+                if len(notaAsociada) > 0:
+                    total_precio_dolares = Decimal(0.000)
                 monto_total_mes_dolares = Decimal(monto_total_mes_dolares) + Decimal(total_precio_dolares)
         ventas_meses_soles.append(monto_total_mes_soles)
         ventas_meses_dolares.append(monto_total_mes_dolares)
@@ -9802,7 +9852,7 @@ def get_clientes_15(request):
     clientes_mas_ventas = []
     razon_clientes = []
     valor_total_ventas = Decimal(0.000)
-    facturas_info = facturas.objects.all()
+    facturas_info = facturas.objects.all().filter(estadoSunat__contains='Aceptado')
     for factura in facturas_info:
         ruc_clientes.append(factura.cliente[5])
         total_precio_soles = 0.00
@@ -9850,7 +9900,7 @@ def get_clientes_15(request):
 def get_productos_15(request):
     codigo_producto = []
     consumo_x_producto = []
-    facturas_info = facturas.objects.all()
+    facturas_info = facturas.objects.all().filter(estadoSunat__contains='Aceptado')
 
     for factura in facturas_info:
         for producto in factura.productos:
@@ -9899,7 +9949,7 @@ def get_ventas_tiempo_vendedor(request):
     moneda = request.GET.get('moneda')
     print(moneda)
 
-    facturas_filtradas = facturas.objects.filter(fecha_emision__year = tiempo)
+    facturas_filtradas = facturas.objects.filter(fecha_emision__year = tiempo).filter(estadoSunat__contains='Aceptado')
     codigos_vendedor = []
     consumo_total_soles = []
     for factura in facturas_filtradas:
@@ -9940,7 +9990,7 @@ def get_ventas_tiempo_vendedor(request):
     
     counter_meses = 0
     while counter_meses < 12:
-        facturas_filtradas = facturas.objects.filter(fecha_emision__year=tiempo,fecha_emision__month=(counter_meses+1))
+        facturas_filtradas = facturas.objects.filter(fecha_emision__year=tiempo,fecha_emision__month=(counter_meses+1)).filter(estadoSunat__contains='Aceptado')
         for factura in facturas_filtradas:
             if factura.vendedor[2] in codigos_vendedor:
                 indice_vendedor = codigos_vendedor.index(factura.vendedor[2])
