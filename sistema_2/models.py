@@ -350,3 +350,36 @@ class configurarComisiones(models.Model):
     tipoComision = models.CharField(max_length=32,default='PARCIAL')
     usuariosComision = ArrayField(ArrayField(models.CharField(max_length=32)),default=list())
     codigoComision = models.CharField(max_length=32,default='COM-0000')
+
+class departamentoCosto(models.Model):
+    nombreDepartamento = models.CharField(max_length=64,default='')
+
+    def __str__(self):
+        return self.nombreDepartamento
+
+class categoriaCosto(models.Model):
+    nombreCategoria = models.CharField(max_length=64, default='')
+    departamentoAsociado = models.ForeignKey(departamentoCosto, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.nombreCategoria
+
+class divisionCosto(models.Model):
+    categoriaAsociada = models.ForeignKey(categoriaCosto, on_delete=models.CASCADE)
+    nombreDivision = models.CharField(max_length=64, default='')
+    tipoCosto = models.CharField(max_length=16, default='')
+    comportamientoCosto = models.CharField(max_length=16, default='')
+    operativoCosto = models.CharField(max_length=8, default='')
+
+    def __str__(self):
+        return self.nombreDivision
+
+class registroCosto(models.Model):
+    divisionRelacionada = models.ForeignKey(divisionCosto, on_delete=models.CASCADE)
+    fechaCosto = models.DateField(default=datetime.date.today)
+    documentoCosto = models.CharField(max_length=16, default='')
+    rucCosto = models.CharField(max_length=16, default='')
+    razonCosto = models.CharField(max_length=64, default='')
+    conceptoCosto = models.CharField(max_length=64, default='')
+    importeCosto = models.CharField(max_length=16, default='')
+    monedaCosto = models.CharField(max_length=16, default='')

@@ -10,7 +10,7 @@ from django import forms
 from reportlab.pdfgen import canvas
 from django.shortcuts import render, redirect
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito,ordenCompra, ordenCompraMetalprotec,configurarComisiones
+from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito,ordenCompra, ordenCompraMetalprotec,configurarComisiones, divisionCosto, categoriaCosto,departamentoCosto, registroCosto
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from django.db.models import Q
@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '1'
+entorno_sistema = '0'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -13896,3 +13896,71 @@ def crearComisionGlobal(request):
         return JsonResponse({
             'ok':'200'
         })
+
+def data_centro_costos(request):
+    usr = userProfile.objects.all().order_by('id')
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    divisionesCostos = divisionCosto.objects.all().order_by('-id')
+    registrosCostos = registroCosto.objects.all().order_by('-id')
+    if request.method == 'POST':
+        razonCosto = request.POST.get('razonCosto')
+        fechaCosto = request.POST.get('fechaCosto')
+        rucCosto = request.POST.get('rucCosto')
+        conceptoCosto = request.POST.get('conceptoCosto')
+        importeCosto = request.POST.get('importeCosto')
+        monedaCosto = request.POST.get('monedaCosto')
+        divisionInfo = request.POST.get('divisionInfo')
+        divisionObjeto = divisionCosto.objects.get(id=divisionInfo)
+        fechaSeparada = fechaCosto.split('-')
+        fecha_anho = int(fechaSeparada[0])
+        fecha_mes = int(fechaSeparada[1])
+        fecha_dia = int(fechaSeparada[2])
+        fechaReg = dt.datetime(fecha_anho, fecha_mes, fecha_dia)
+        registroCosto.objects.create(
+            divisionRelacionada = divisionObjeto,
+            fechaCosto=fechaReg,
+            rucCosto = rucCosto,
+            razonCosto=razonCosto,
+            conceptoCosto=conceptoCosto,
+            importeCosto=importeCosto,
+            monedaCosto=monedaCosto,
+        )
+        return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
+    return render(request,'sistema_2/data_centro_costos.html',{
+        'usr_rol':user_logued,
+        'divisionesCostos': divisionesCostos,
+        'registrosCostos': registrosCostos,
+    })
+
+def retornarDatosCostos(request):
+    idDivision = request.GET.get('idDivision')
+    objDivision = divisionCosto.objects.get(id=idDivision)
+    categoria = objDivision.categoriaAsociada.nombreCategoria
+    departamento = objDivision.categoriaAsociada.departamentoAsociado.nombreDepartamento
+    return JsonResponse({
+        'categoria':categoria,
+        'departamento':departamento,
+    })
+
+def consultarDatosRegistro(request):
+    registroId = request.GET.get('registroId')
+    objRegistro = registroCosto.objects.get(id=registroId)
+    return JsonResponse({
+        'razonCosto':objRegistro.razonCosto,
+        'fechaCosto':objRegistro.fechaCosto.strftime("%d-%m-%Y"),
+        'rucCosto':objRegistro.rucCosto,
+        'conceptoCosto': objRegistro.conceptoCosto,
+        'importeCosto': objRegistro.importeCosto,
+        'monedaCosto': objRegistro.monedaCosto,
+        'divisionCosto': objRegistro.divisionRelacionada.nombreDivision,
+        'categoriaCosto': objRegistro.divisionRelacionada.categoriaAsociada.nombreCategoria,
+        'departamentoCosto': objRegistro.divisionRelacionada.categoriaAsociada.departamentoAsociado.nombreDepartamento,
+        'tipoCosto': objRegistro.divisionRelacionada.tipoCosto,
+        'comportamientoCosto': objRegistro.divisionRelacionada.comportamientoCosto,
+        'operativoCosto': objRegistro.divisionRelacionada.operativoCosto,
+    })
+
+def eliminarRegistroCosto(request,ind):
+    registroCosto.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))

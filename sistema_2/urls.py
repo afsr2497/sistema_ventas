@@ -152,4 +152,8 @@ urlpatterns = [
     path('eliminarConfiguracionComisiones/<str:ind>',views.eliminarConfiguracionComisiones,name='eliminarConfiguracionComisiones'),
     path('obtenerConfiguraciones/<str:ind>',views.obtenerConfiguraciones,name='obtenerConfiguraciones'),
     path('crearComisionGlobal',views.crearComisionGlobal,name='crearComisionGlobal'),
+    path('centroCostos',views.data_centro_costos, name='data_centro_costos'),
+    path('eliminarRegistroCosto/<str:ind>', views.eliminarRegistroCosto, name='eliminarRegistroCosto'),
+    path('retornarDatosCostos',views.retornarDatosCostos,name='retornarDatosCostos'),
+    path('consultarDatosRegistro',views.consultarDatosRegistro,name='consultarDatosRegistro')
 ]
