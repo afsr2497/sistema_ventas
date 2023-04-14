@@ -83,7 +83,7 @@
 <div class="modal fade" id="nuevaConfig" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" action="{% url 'sistema_2:configComisiones' %}" name="parcial">
+            <form method="post" action="{% url 'sistema_2:configComisiones' %}">
                 <div class="modal-header">
                     <h5 class="modal-title">Nueva configuracion</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -114,7 +114,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <button type="submit" class="btn btn-primary" name="parcial">Registrar</button>
                 </div>
             </form>
         </div>

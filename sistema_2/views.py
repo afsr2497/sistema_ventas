@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -7911,7 +7911,7 @@ def comisiones(request):
             year_filter = str(request.POST.get('yearInfo'))
             id_vendedor = request.POST.get('id_vendedor')
             confi_seleccionada = str(request.POST.get('confi_seleccionada'))
-            configuracionUsuario = configurarComisiones.objects.filter(usuarioRelacionado=User.objects.get(id=id_vendedor))
+            configuracionUsuario = configurarComisiones.objects.filter(usuarioRelacionado=userProfile.objects.get(id=id_vendedor).usuario)
             if confi_seleccionada != '':
                 configuracionInformacion = configurarComisiones.objects.get(id=confi_seleccionada)
                 if configuracionInformacion.tipoComision == 'PARCIAL':
@@ -7978,7 +7978,7 @@ def comisiones(request):
                         incluyeIgv = str(usuario[4])
                         codigoVendedor = '0'
                         id_global = id_vendedor
-                        id_vendedor = str(User.objects.get(id=usuario[0]).id)
+                        id_vendedor = str(userProfile.objects.get(usuario=User.objects.get(id=usuario[0])).id)
                         if id_vendedor != '0':
                             codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
                             abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
@@ -13841,6 +13841,7 @@ def configComisiones(request):
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     configuracionesTotales = configurarComisiones.objects.all().order_by('id')
     if request.method == 'POST':
+        print(request.POST)
         if "parcial" in request.POST:
             usuarioSeleccionado = request.POST.get('usuarioSeleccionado')
             porcentajeComision = request.POST.get('porcentajeComision')
@@ -13849,11 +13850,16 @@ def configComisiones(request):
                 incluyeIgv = '1'
             else:
                 incluyeIgv = '0'
-            configurarComisiones.objects.create(
+            confiCreada = configurarComisiones.objects.create(
                 usuarioRelacionado=User.objects.get(id=usuarioSeleccionado),
                 porcentajeComision=porcentajeComision,
                 incluyeIgv=incluyeIgv
             )
+            idComision = str(confiCreada.id)
+            while len(idComision) < 4:
+                idComision = '0' + idComision
+            confiCreada.codigoComision = 'COM-' + idComision
+            confiCreada.save()
             return HttpResponseRedirect(reverse('sistema_2:configComisiones'))
         if "global" in request.POST:
             pass
@@ -13868,7 +13874,9 @@ def eliminarConfiguracionComisiones(request,ind):
     return HttpResponseRedirect(reverse('sistema_2:configComisiones'))
 
 def obtenerConfiguraciones(request,ind):
-    usuarioSeleccionado = User.objects.get(id=ind)
+    print(ind)
+    perfilUsuario = userProfile.objects.get(id=ind)
+    usuarioSeleccionado = perfilUsuario.usuario
     listaUsuario = usuarioSeleccionado.configurarcomisiones_set.all()
     listaConfig = []
     for config in listaUsuario:
