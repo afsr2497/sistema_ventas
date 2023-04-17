@@ -7972,28 +7972,34 @@ def comisiones(request):
                 if configuracionInformacion.tipoComision == 'GLOBAL':
                     montoFinal = Decimal(0.0000)
                     comisionFinal = Decimal(0.000)
+                    id_global = userProfile.objects.get(id=id_vendedor).codigo
+                    id_vendedor = id_global
+                    codigoVendedor = id_vendedor
+                    print(id_vendedor)
                     for usuario in configuracionInformacion.usuariosComision:
+                        codigos_ventas = []
+                        abonos_parciales = []
                         monto_total = Decimal(0.0000)
                         porcentajeComision = str(usuario[3])
                         incluyeIgv = str(usuario[4])
-                        codigoVendedor = '0'
-                        id_global = id_vendedor
-                        id_vendedor = str(userProfile.objects.get(usuario=User.objects.get(id=usuario[0])).id)
-                        if id_vendedor != '0':
-                            codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
+                        id_parcial = str(userProfile.objects.get(usuario=User.objects.get(id=usuario[0])).id)
+                        if id_parcial != '0':
+                            codigoParcial = userProfile.objects.get(id=id_parcial).codigo
+                            print(codigoParcial)
                             abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
                             abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
                             abonos_totales = abonos_totales.filter(abono_comisionable='1')
                             abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
                             for abono in abonos_totales:
                                 if len(abono.codigo_vendedor) > 0:
-                                    if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
+                                    if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_parcial):
                                         try:
                                             if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
                                                 abonos_vendedor.append(abono)
+                                                abonos_parciales.append(abono)
                                         except:
                                             pass
-                            for abono in abonos_vendedor:
+                            for abono in abonos_parciales:
                                 if not (abono.codigo_comprobante in codigos_ventas):
                                     codigos_ventas.append(abono.codigo_comprobante)
                                 else:
@@ -8028,10 +8034,14 @@ def comisiones(request):
                             else:
                                 pass
                             monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
+                            print(monto_comision)
+                            print(monto_total)
                             montoFinal = Decimal(montoFinal) + Decimal(monto_total)
                             comisionFinal = Decimal(comisionFinal) + monto_comision
                     montoFinal = "{:.2f}".format(round(float(montoFinal),2))
                     comisionFinal = "{:.2f}".format(round(float(comisionFinal),2))
+                    print(montoFinal)
+                    print(comisionFinal)
             else:
                 porcentajeComision = '1'
                 incluyeIgv = '0'
