@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '1'
+entorno_sistema = '0'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -8112,85 +8112,181 @@ def comisiones(request):
                 porcentajeComision = '1'
                 incluyeIgv = '0'
             info_abonos = []
-            if id_vendedor != '0':
-                codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
-                abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
-                abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
-                abonos_totales = abonos_totales.filter(abono_comisionable='1')
-                abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
-                for abono in abonos_totales:
-                    if len(abono.codigo_vendedor) > 0:
-                        if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
-                            try:
-                                if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
-                                    abonos_vendedor.append(abono)
-                            except:
-                                pass
-                for abono in abonos_vendedor:
-                    if not (abono.codigo_comprobante in codigos_ventas):
-                        datos_excel = ['','','','','','','']
-                        codigos_ventas.append(abono.codigo_comprobante)
-                        datos_excel[0] = abono.fechaAbono
-                        datos_excel[1] = abono.codigo_comprobante
-                        datos_excel[2] = abono.datos_cliente[1]
-                        datos_excel[3] = abono.nro_operacion
-                        datos_excel[4] = abono.nro_operacion_2
-                        info_abonos.append(datos_excel)
+            if configuracionInformacion.tipoComision == 'PARCIAL':
+                if id_vendedor != '0':
+                    codigoVendedor = userProfile.objects.get(id=id_vendedor).codigo
+                    abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
+                    abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
+                    abonos_totales = abonos_totales.filter(abono_comisionable='1')
+                    abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
+                    for abono in abonos_totales:
+                        if len(abono.codigo_vendedor) > 0:
+                            if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_vendedor):
+                                try:
+                                    if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
+                                        abonos_vendedor.append(abono)
+                                except:
+                                    pass
+                    for abono in abonos_vendedor:
+                        if not (abono.codigo_comprobante in codigos_ventas):
+                            datos_excel = ['','','','','','','']
+                            codigos_ventas.append(abono.codigo_comprobante)
+                            datos_excel[0] = abono.fechaAbono
+                            datos_excel[1] = abono.codigo_comprobante
+                            datos_excel[2] = abono.datos_cliente[1]
+                            datos_excel[3] = abono.nro_operacion
+                            datos_excel[4] = abono.nro_operacion_2
+                            info_abonos.append(datos_excel)
+                        else:
+                            pass
+                    counter_abonos = 0
+                    for codigo in codigos_ventas:
+                        if codigo[:4] == 'F001':
+                            comprobante = facturas.objects.get(codigoFactura=codigo)
+                            info_abonos[counter_abonos][5] = comprobante.monedaFactura
+                        if codigo[:4] == 'B001':
+                            comprobante = boletas.objects.get(codigoBoleta=codigo)
+                            info_abonos[counter_abonos][5] = comprobante.monedaBoleta
+                        #Calculo del dato_sumar - Valor de la factura - Productos
+                        total_soles = Decimal(0.0000)
+                        for producto in comprobante.productos:
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            total_soles = Decimal(total_soles) + Decimal(v_producto)
+                        for servicio in comprobante.servicios:
+                            if servicio[3] == 'DOLARES':
+                                v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                            if servicio[3] == 'SOLES':
+                                v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                            total_soles = Decimal(total_soles) + Decimal(v_servicio)
+                        #Final del calculo de productos
+                        info_abonos[counter_abonos][6] = str(round(float(total_soles),2))
+                        monto_total = Decimal(monto_total) + Decimal(total_soles)
+                        counter_abonos = counter_abonos + 1
+                    if incluyeIgv == '1':
+                        monto_total = Decimal(monto_total)*Decimal(1.18)
+                        monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
                     else:
                         pass
-                counter_abonos = 0
-                for codigo in codigos_ventas:
-                    if codigo[:4] == 'F001':
-                        comprobante = facturas.objects.get(codigoFactura=codigo)
-                        info_abonos[counter_abonos][5] = comprobante.monedaFactura
-                    if codigo[:4] == 'B001':
-                        comprobante = boletas.objects.get(codigoBoleta=codigo)
-                        info_abonos[counter_abonos][5] = comprobante.monedaBoleta
-                    #Calculo del dato_sumar - Valor de la factura - Productos
-                    total_soles = Decimal(0.0000)
-                    for producto in comprobante.productos:
-                        if producto[5] == 'DOLARES':
-                            v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
-                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
-                        if producto[5] == 'SOLES':
-                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
-                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
-                        total_soles = Decimal(total_soles) + Decimal(v_producto)
-                    for servicio in comprobante.servicios:
-                        if servicio[3] == 'DOLARES':
-                            v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
-                        if servicio[3] == 'SOLES':
-                            v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
-                        total_soles = Decimal(total_soles) + Decimal(v_servicio)
-                    #Final del calculo de productos
-                    info_abonos[counter_abonos][6] = str(round(float(total_soles),2))
-                    monto_total = Decimal(monto_total) + Decimal(total_soles)
-                    counter_abonos = counter_abonos + 1
-                if incluyeIgv == '1':
-                    monto_total = Decimal(monto_total)*Decimal(1.18)
-                    monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
-                else:
-                    pass
-                monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
-                monto_total = "{:.2f}".format(round(float(monto_total),2))
-                monto_comision = "{:.2f}".format(round(float(monto_comision),2))
-                info_abonos.append(['','','','','','Monto total',str(monto_total)])
-                info_abonos.append(['','','','','','Monto comision',str(monto_comision)])
-            tabla_excel = pd.DataFrame(info_abonos,columns=['Fecha','Codigo','Cliente','Nro operacion','Nro operacion 2','Moneda','Monto sin IGV'])
-            tabla_excel.to_excel('info_excel.xlsx',index=False)
-            doc_excel = openpyxl.load_workbook("info_excel.xlsx")
-            doc_excel.active.column_dimensions['A'].width = 30
-            doc_excel.active.column_dimensions['B'].width = 30
-            doc_excel.active.column_dimensions['C'].width = 30
-            doc_excel.active.column_dimensions['D'].width = 30
-            doc_excel.active.column_dimensions['B'].width = 30
-            doc_excel.active.column_dimensions['C'].width = 30
-            doc_excel.active.column_dimensions['D'].width = 30
-            doc_excel.save("info_excel.xlsx")
-            response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
-            response['Content-Disposition'] = nombre
-            return response
+                    monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
+                    monto_total = "{:.2f}".format(round(float(monto_total),2))
+                    monto_comision = "{:.2f}".format(round(float(monto_comision),2))
+                    info_abonos.append(['','','','','','Monto total',str(monto_total)])
+                    info_abonos.append(['','','','','','Monto comision',str(monto_comision)])
+                tabla_excel = pd.DataFrame(info_abonos,columns=['Fecha','Codigo','Cliente','Nro operacion','Nro operacion 2','Moneda','Monto sin IGV'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            if configuracionInformacion.tipoComision == 'GLOBAL':
+                if id_vendedor != '0':
+                    codigoVendedor = id_vendedor
+                    montoFinal = Decimal(0.000)
+                    comisionFinal = Decimal(0.000)
+                    counter_abonos = 0
+                    for usuario in configuracionInformacion.usuariosComision:
+                        abonos_parciales = []
+                        codigos_ventas = []
+                        porcentajeComision = str(usuario[3])
+                        incluyeIgv = str(usuario[4])
+                        monto_total = Decimal(0.00000)
+                        monto_comision = Decimal(0.0000)
+                        id_parcial = str(userProfile.objects.get(usuario=User.objects.get(id=usuario[0])).id)
+                        codigoParcial = userProfile.objects.get(id=id_parcial).codigo
+                        abonos_totales  = abonosOperacion.objects.all().order_by('fechaAbono')
+                        abonos_totales = abonos_totales.filter(comprobanteCancelado='CANCELADO')
+                        abonos_totales = abonos_totales.filter(abono_comisionable='1')
+                        abonos_totales = abonos_totales.filter(fechaAbono__month=month_filter,fechaAbono__year=year_filter)
+                        for abono in abonos_totales:
+                            if len(abono.codigo_vendedor) > 0:
+                                if str(userProfile.objects.get(codigo=abono.codigo_vendedor).id) == str(id_parcial):
+                                    try:
+                                        if clients.objects.get(id=abono.datos_cliente[0]).habilitado_comisiones == '1':
+                                            abonos_vendedor.append(abono)
+                                            abonos_parciales.append(abono)
+                                    except:
+                                        pass
+                        for abono in abonos_parciales:
+                            if not (abono.codigo_comprobante in codigos_ventas):
+                                datos_excel = ['','','','','','','']
+                                codigos_ventas.append(abono.codigo_comprobante)
+                                datos_excel[0] = abono.fechaAbono
+                                datos_excel[1] = abono.codigo_comprobante
+                                datos_excel[2] = abono.datos_cliente[1]
+                                datos_excel[3] = abono.nro_operacion
+                                datos_excel[4] = abono.nro_operacion_2
+                                info_abonos.append(datos_excel)
+                            else:
+                                pass
+                        for codigo in codigos_ventas:
+                            if codigo[:4] == 'F001':
+                                comprobante = facturas.objects.get(codigoFactura=codigo)
+                                info_abonos[counter_abonos][5] = comprobante.monedaFactura
+                            if codigo[:4] == 'B001':
+                                comprobante = boletas.objects.get(codigoBoleta=codigo)
+                                info_abonos[counter_abonos][5] = comprobante.monedaBoleta
+                            #Calculo del dato_sumar - Valor de la factura - Productos
+                            total_soles = Decimal(0.0000)
+                            for producto in comprobante.productos:
+                                if producto[5] == 'DOLARES':
+                                    v_producto = Decimal(producto[6])*Decimal(comprobante.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                                if producto[5] == 'SOLES':
+                                    v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                    v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                                total_soles = Decimal(total_soles) + Decimal(v_producto)
+                            for servicio in comprobante.servicios:
+                                if servicio[3] == 'DOLARES':
+                                    v_servicio = (Decimal(servicio[4])*Decimal(comprobante.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                if servicio[3] == 'SOLES':
+                                    v_servicio = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                total_soles = Decimal(total_soles) + Decimal(v_servicio)
+                            #Final del calculo de productos
+                            info_abonos[counter_abonos][6] = str(round(float(total_soles),2))
+                            monto_total = Decimal(monto_total) + Decimal(total_soles)
+                            counter_abonos = counter_abonos + 1
+                        if incluyeIgv == '1':
+                            monto_total = Decimal(monto_total)*Decimal(1.18)
+                            #monto_total = Decimal("{:.2f}".format(round(float(monto_total),2)))
+                        else:
+                            pass
+                        monto_comision = Decimal(monto_total)*Decimal(float(porcentajeComision)/100)
+                        montoFinal = Decimal(montoFinal) + Decimal(monto_total)
+                        comisionFinal = Decimal(comisionFinal) + Decimal(monto_comision)
+                    montoFinal = "{:.2f}".format(round(float(montoFinal),2))
+                    comisionFinal = "{:.2f}".format(round(float(comisionFinal),2))
+                    info_abonos.append(['','','','','','Monto total',str(montoFinal)])
+                    info_abonos.append(['','','','','','Monto comision',str(comisionFinal)])
+                tabla_excel = pd.DataFrame(info_abonos,columns=['Fecha','Codigo','Cliente','Nro operacion','Nro operacion 2','Moneda','Monto sin IGV'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.active.column_dimensions['B'].width = 30
+                doc_excel.active.column_dimensions['C'].width = 30
+                doc_excel.active.column_dimensions['D'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            
     return render(request,'sistema_2/comisiones.html',{
         'usuariosInfo':userProfile.objects.all().order_by('id'),
         'operacionesVendedor':abonos_vendedor,
@@ -13982,3 +14078,26 @@ def consultarDatosRegistro(request):
 def eliminarRegistroCosto(request,ind):
     registroCosto.objects.get(id=ind).delete()
     return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
+
+def costosDepartamentos(request):
+    categoriasTotales = categoriaCosto.objects.all()
+    departamentosTotales = departamentoCosto.objects.all()
+    return render(request,'sistema_2/costosDepartamentos.html',{
+        'departamentosTotales':departamentosTotales,
+        'categoriasTotales':categoriasTotales,
+    })
+
+def nuevoDepartamento(request):
+    if request.method == 'POST':
+        nombreDepartamento = request.POST.get('nombreDepartamento')
+        print(nombreDepartamento)
+        departamentoCosto(nombreDepartamento=nombreDepartamento).save()
+        return HttpResponseRedirect(reverse('sistema_2:costosDepartamentos'))
+
+def nuevaCategoria(request):
+    if request.method == 'POST':
+        nombreCategoria = request.POST.get('nombreCategoria')
+        idDepartamento = request.POST.get('idDepartamento')
+        departamentoAsociado = departamentoCosto.objects.get(id=idDepartamento)
+        categoriaCosto(departamentoAsociado=departamentoAsociado,nombreCategoria=nombreCategoria).save()
+        return HttpResponseRedirect(reverse('sistema_2:costosDepartamentos'))

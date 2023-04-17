@@ -46,7 +46,6 @@
                     <th>Porcentaje de comision</th>
                     <th>¿Incluye IGV?</th>
                     <th>Codigo</th>
-                    <th>Editar</th>
                     <th>Eliminar</th>
                 </thead>
                 <tbody>
@@ -69,7 +68,6 @@
                         <td></td>
                         {% endif %}
                         <td>{{ configuracion.codigoComision }}</td>
-                        <td><button class="btn btn-warning"><i class="fa fa-edit"></i></button></td>
                         <td><a class="btn btn-danger" href="{% url 'sistema_2:eliminarConfiguracionComisiones' configuracion.id %}"><i class="fa fa-trash"></i></a></td>
                     </tr>
                     {% endfor %}
