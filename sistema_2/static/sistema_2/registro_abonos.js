@@ -4,7 +4,62 @@ function actualizarAbono(abonoID)
     fetch(`/sistema_2/getDatosAbono?ind=${idAbono}`)
     .then(response => response.json())
     .then(data => {
+        let nroOperacion = document.getElementById('nroOperacion')
+        let nroOperacion2 = document.getElementById('nroOperacion2')
+        let fechaAbono = document.getElementById('fechaAbono')
+
+        let comprobanteAbono = document.getElementById('comprobanteAbono')
+        let guiaAbono = document.getElementById('guiaAbono')
+        let cotiAbono = document.getElementById('cotiAbono')
+        let vendedorAbono = document.getElementById('vendedorAbono')
+        let canceladoAbono = document.getElementById('canceladoAbono')
+        let comisionAbono = document.getElementById('comisionAbono')
+        let cliente = document.getElementById('cliente')
+        let bancoAbono = document.getElementById('bancoAbono')
+        let idRegistroAbono = document.getElementById('idRegistroAbono')
+
+        for(let i = 0; i < bancoAbono.options.length; i++ )
+        {
+            if(bancoAbono.options[i].value === data.datos_banco[0])
+            {
+                bancoAbono.selectedIndex = String(i)
+                $('#bancoAbono').selectpicker('refresh')
+                break;
+            }
+        }
+
+        comisionAbono.checked = false;
+        canceladoAbono.checked = false;
+
+        nroOperacion.value = data.nro_operacion
+        nroOperacion2.value = data.nro_operacion_2
+        fechaAbono.value = data.fechaAbono
+        comprobanteAbono.value = data.codigo_comprobante
+        guiaAbono.value = data.codigo_guia
+        cotiAbono.value = data.codigo_coti
+        vendedorAbono.value = data.codigo_vendedor
+        idRegistroAbono.value = data.idAbono
+        cliente.value = data.datos_cliente[1]
+
+        if( data.abono_comisionable === '1')
+        {
+            comisionAbono.checked = true;
+        }
+        else
+        {
+            comisionAbono.checked = false;
+        }
+
+        if(data.comprobanteCancelado === 'CANCELADO')
+        {
+            canceladoAbono.checked = true;
+        }
+        else
+        {
+            canceladoAbono.checked = false;
+        }
         console.log(data)
+
     })
 }
 

@@ -1,3 +1,10 @@
+function limpiarInfo()
+{
+    divisioInfo = document.getElementById('divisionInfo')
+    divisioInfo.selectedIndex = '0'
+    $('#divisionInfo').selectpicker('refresh') 
+}
+
 function mostrarDatos(registroId)
 {
     razonCosto = document.getElementById('razonCosto')
@@ -95,12 +102,18 @@ document.addEventListener('DOMContentLoaded',()=>{
     let seleccionDivision = document.getElementById('divisionInfo')
     let categoriaInfo = document.getElementById('categoriaInfo')
     let departamentoInfo = document.getElementById('departamentoInfo')
+    let tipoInfo = document.getElementById('tipoInfo')
+    let comportamientoInfo = document.getElementById('comportamientoInfo')
+    let operativoInfo = document.getElementById('operativoInfo')
     seleccionDivision.onchange = function()
     {
         if(seleccionDivision.value === '')
         {
             categoriaInfo.value = ''
             departamentoInfo.value = ''
+            tipoInfo.value = ''
+            comportamientoInfo.value = ''
+            operativoInfo.value = ''
         }
         else
         {
@@ -109,6 +122,9 @@ document.addEventListener('DOMContentLoaded',()=>{
             .then(data => {
                 categoriaInfo.value = data.categoria
                 departamentoInfo.value = data.departamento
+                tipoInfo.value = data.tipoCosto
+                comportamientoInfo.value = data.comportamientoCosto
+                operativoInfo.value = data.operativoCosto
             })
         }
     }

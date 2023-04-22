@@ -60,7 +60,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Registro de costos</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="limpiarInfo()"></button>
                 </div>
                 <div class="modal-body">
                     <h5>Datos generales</h5>
@@ -135,9 +135,29 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row justify-content-around mb-3">
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <input value="" class="form-control" type="text" readonly id="tipoInfo">
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label>Comportamiento</label>
+                                <input value="" class="form-control" type="text" readonly id="comportamientoInfo">
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label>Operativo</label>
+                                <input value="" class="form-control" type="text" readonly id="operativoInfo">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="limpiarInfo()">Close</button>
                     <button type="submit" class="btn btn-primary">Registrar</button>
                 </div>
             </div>

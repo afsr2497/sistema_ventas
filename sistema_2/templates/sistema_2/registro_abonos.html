@@ -58,7 +58,7 @@
                     <td>{{ abono.codigo_guia }}</td>
                     <td>{{ abono.codigo_coti }}</td>
                     <td>{{ abono.codigo_vendedor }}</td>
-                    <td style="text-align: center;"><a class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarAbono{{ abono.id }}" id="edit{{ abono.id }}"><i class="fa fa-edit"></i></a></td>
+                    <td style="text-align: center;"><button onclick="actualizarAbono(this.id)" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarAbono" id="edit{{ abono.id }}"><i class="fa fa-edit"></i></button></td>
                     <td style="text-align: center;"><a class="btn btn-danger" href="{% url 'sistema_2:eliminar_abono' abono.id %}"><i class="fa fa-trash"></i></a></td>
                 </tr>
                 {% endfor %}
@@ -161,27 +161,23 @@
     </div>
 </div>
 
-<!--
-<div class="modal fade" tabindex="-1" role="dialog" id="editarAbono" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" tabindex="-1" role="dialog" id="editarAbono">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div  class="modal-header">
-                <h5 class="modal-title">Editar abono</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="#">
+            <form method="post" action="{% url 'sistema_2:actualizar_abono' %}">
+                <div  class="modal-header">
+                    <input style="display: none;" id="idRegistroAbono" name="idRegistroAbono">
+                    <h5 class="modal-title">Editar abono</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label>Banco</label>
-                            <select class="selectpicker form-control" name="bancoAbono" required>
+                            <select class="selectpicker form-control" name="bancoAbono" id="bancoAbono" required>
                                 <option></option>
                                 {% for banco in bancos_totales %}
-                                {% if banco.id|stringformat:"i" == abono.datos_banco.0 %}
-                                    <option value="{{ banco.id }}" selected>{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
-                                {% else %}
-                                    <option value="{{ banco.id }}">{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
-                                {% endif %}
+                                <option value="{{ banco.id }}">{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -189,215 +185,63 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>Nro de Operacion</label>
-                            <input class="form-control" type="text" name="nroOperacionAbono" id="nroOperacionAbono" value="{{ abono.nro_operacion }}" maxlength="8" required>
+                            <input class="form-control" type="text" name="nroOperacionAbono" id="nroOperacion" maxlength="8" required>
                         </div>
                         <div class="col-md-6">
                             <label>Nro de Operacion 2</label>
-                            <input class="form-control" type="text" name="nroOperacion2Abono" id="nroOperacion2Abono" value="{{ abono.nro_operacion_2 }}" maxlength="8">
+                            <input class="form-control" type="text" name="nroOperacion2Abono" id="nroOperacion2" maxlength="8">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>Cliente</label>
-                            <select class="selectpicker form-control" data-live-search="true" name="clienteAbono" required id="clienteAbono" disabled>
-                                <option></option>
-                                {% for cliente in clientes_totales %}
-                                    {% if cliente.dni != '' %}
-                                        {% if cliente.id|stringformat:"i" == abono.datos_cliente.0 %}
-                                            <option value="{{ cliente.id }}" selected>{{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.dni }}</option>
-                                        {% else %}
-                                            <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.dni }}</option>
-                                        {% endif %}
-                                    {% endif %}
-                                    {% if cliente.ruc != '' %}
-                                        {% if cliente.id|stringformat:"i" == abono.datos_cliente.0 %}
-                                            <option value="{{ cliente.id }}" selected>{{ cliente.razon_social }} - {{ cliente.ruc }}</option>
-                                        {% else %}
-                                            <option value="{{ cliente.id }}">{{ cliente.razon_social }} - {{ cliente.ruc }}</option>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
+                            <input class="form-control" id="cliente" name="clienteAbono" readonly>
                         </div>
                         <div class="col-md-6">
                             <br>
-                            {% if abono.comprobanteCancelado == 'CANCELADO' %}
-                                <input class="form-check-input" type="checkbox" name="facturaCancelada" checked disabled>
-                            {% else %}
-                                <input class="form-check-input" type="checkbox" name="facturaCancelada">
-                            {% endif %}
+                            <input class="form-check-input" type="checkbox" name="facturaCancelada" id="canceladoAbono">
                             <label class="form-check-label">CANCELADO</label>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label>Comprobantes</label>
-                            <select class="selectpicker" required id="facturas_cliente" name="facturas_cliente" disabled>
-                                <option></option>
-                                <option value="{{ abono.codigo_comprobante }}" selected>{{ abono.codigo_comprobante }}</option>
-                            </select>
+                            <label>Comprobante</label>
+                            <input class="form-control" id="comprobanteAbono" name="comprobanteSeleccionado" readonly>
                         </div>
                         <div class="col-md-6">
                             <label>Guia</label>
-                            <input class="form-control" id="guiaSeleccionada" name="guiaSeleccionada" value="{{ abono.codigo_guia }}" readonly>
+                            <input class="form-control" id="guiaAbono" name="guiaSeleccionada" readonly>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>Cotizacion</label>
-                            <input class="form-control" id="cotiSeleccionada" name="cotiSeleccionada" value="{{ abono.codigo_coti }}" readonly>
+                            <input class="form-control" id="cotiAbono" name="cotiSeleccionada" readonly>
                         </div>
                         <div class="col-md-6">
                             <label>Vendedor</label>
-                            <input class="form-control" id="vendedorSeleccionado" name="vendedorSeleccionado" value="{{ abono.codigo_vendedor }}" readonly>
+                            <input class="form-control" id="vendedorAbono" name="vendedorSeleccionado" readonly>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>Fecha de registro</label>
-                            <input type="date" name="fechaAbonoRegistro" class="form-control" value="{{ abono.fechaAbono|date:'Y-m-d' }}" required>
+                            <input type="date" class="form-control" name="fechaAbonoRegistro" id="fechaAbono" required>
                         </div>
                         <div class="col-md-6">
                             <br>
-                            {% if abono.abono_comisionable == '1' %}
-                                <input class="form-check-input" type="checkbox" name="abonoComisiones" checked>
-                            {% else %}
-                                <input class="form-check-input" type="checkbox" name="abonoComisiones">
-                            {% endif %}
+                            <input class="form-check-input" type="checkbox" name="abonoComisiones" id="comisionAbono" checked>
                             <label>Habilitado para comisiones</label>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Agregar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 </div>
             </form>
         </div>        
     </div>
 </div>
--->
-
-
-
-{% for abono in abonos_info %}
-<div class="modal fade" tabindex="-1" role="dialog" id="editarAbono{{ abono.id }}">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div  class="modal-header">
-                <h5 class="modal-title">Editar abono</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="{% url 'sistema_2:actualizar_abono' abono.id %}">
-            {% csrf_token %}
-                <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <label>Banco</label>
-                            <select class="selectpicker form-control" name="bancoAbono" required>
-                                <option></option>
-                                {% for banco in bancos_totales %}
-                                {% if banco.id|stringformat:"i" == abono.datos_banco.0 %}
-                                    <option value="{{ banco.id }}" selected>{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
-                                {% else %}
-                                    <option value="{{ banco.id }}">{{ banco.bancoCuenta }} - {{ banco.monedaCuenta }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>Nro de Operacion</label>
-                            <input class="form-control" type="text" name="nroOperacionAbono" id="nroOperacionAbono" value="{{ abono.nro_operacion }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Nro de Operacion 2</label>
-                            <input class="form-control" type="text" name="nroOperacion2Abono" id="nroOperacion2Abono" value="{{ abono.nro_operacion_2 }}">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>Cliente</label>
-                            <select class="selectpicker form-control" data-live-search="true" name="clienteAbono" required id="clienteAbono" disabled>
-                                <option></option>
-                                {% for cliente in clientes_totales %}
-                                    {% if cliente.dni != '' %}
-                                        {% if cliente.id|stringformat:"i" == abono.datos_cliente.0 %}
-                                            <option value="{{ cliente.id }}" selected>{{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.dni }}</option>
-                                        {% else %}
-                                            <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.dni }}</option>
-                                        {% endif %}
-                                    {% endif %}
-                                    {% if cliente.ruc != '' %}
-                                        {% if cliente.id|stringformat:"i" == abono.datos_cliente.0 %}
-                                            <option value="{{ cliente.id }}" selected>{{ cliente.razon_social }} - {{ cliente.ruc }}</option>
-                                        {% else %}
-                                            <option value="{{ cliente.id }}">{{ cliente.razon_social }} - {{ cliente.ruc }}</option>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <br>
-                            {% if abono.comprobanteCancelado == 'CANCELADO' %}
-                                <input class="form-check-input" type="checkbox" name="facturaCancelada" checked disabled>
-                            {% else %}
-                                <input class="form-check-input" type="checkbox" name="facturaCancelada">
-                            {% endif %}
-                            <label class="form-check-label">CANCELADO</label>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>Comprobantes</label>
-                            <select class="selectpicker" required id="facturas_cliente" name="facturas_cliente" disabled>
-                                <option></option>
-                                <option value="{{ abono.codigo_comprobante }}" selected>{{ abono.codigo_comprobante }}</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Guia</label>
-                            <input class="form-control" id="guiaSeleccionada" name="guiaSeleccionada" value="{{ abono.codigo_guia }}" readonly>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>Cotizacion</label>
-                            <input class="form-control" id="cotiSeleccionada" name="cotiSeleccionada" value="{{ abono.codigo_coti }}" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Vendedor</label>
-                            <input class="form-control" id="vendedorSeleccionado" name="vendedorSeleccionado" value="{{ abono.codigo_vendedor }}" readonly>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>Fecha de registro</label>
-                            <input type="date" name="fechaAbonoRegistro" class="form-control" value="{{ abono.fechaAbono|date:'Y-m-d' }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <br>
-                            {% if abono.abono_comisionable == '1' %}
-                                <input class="form-check-input" type="checkbox" name="abonoComisiones" checked>
-                            {% else %}
-                                <input class="form-check-input" type="checkbox" name="abonoComisiones">
-                            {% endif %}
-                            <label>Habilitado para comisiones</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Agregar</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                </div>
-            </form>
-        </div>        
-    </div>
-</div>
-{% endfor %}
-
-
 
 {% endblock %}

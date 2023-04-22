@@ -13,6 +13,8 @@
 <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 
+<script src="{% static 'sistema_2/costosDepartamentos.js' %}"></script>
+
 
 {% endblock %}
 
@@ -23,17 +25,23 @@
     <br>
     <div class="row">
         <div class="col-2">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoDepartamento"><i class="fa fa-plus"></i> Departamento</button>
+            <button class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#verDepartamentos"><i class="fa fa-eye"></i> Departamento</button>
         </div>
         <div class="col-2">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaCategoria"><i class="fa fa-plus"></i> Categoria</button>
+            <button class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#verCategorias"><i class="fa fa-eye"></i> Categoria</button>
         </div>
         <div class="col-2">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaDivision"><i class="fa fa-plus"></i> Division</button>
+            <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#nuevoDepartamento"><i class="fa fa-plus"></i> Departamento</button>
+        </div>
+        <div class="col-2">
+            <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#nuevaCategoria"><i class="fa fa-plus"></i> Categoria</button>
+        </div>
+        <div class="col-2">
+            <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#nuevaDivision"><i class="fa fa-plus"></i> Division</button>
         </div>
     </div>
     <br>
-    <table class="table table-bordered">
+    <table class="table table-bordered" id="tablaDivisiones">
         <thead class="table-dark">
             <th>Departamento</th>
             <th>Categoria</th>
@@ -44,22 +52,92 @@
             <th>Eliminar</th>
         </thead>
         <tbody>
-            {% for categoria in categoriasTotales %}
+            {% for division in divisionesTotales %}
             <tr>
-                <td>{{ categoria.departamentoAsociado.nombreDepartamento }}</td>
-                <td>{{ categoria.nombreCategoria }}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{{ division.categoriaAsociada.departamentoAsociado.nombreDepartamento }}</td>
+                <td>{{ division.categoriaAsociada.nombreCategoria }}</td>
+                <td>{{ division.nombreDivision }}</td>
+                <td>{{ division.tipoCosto }}</td>
+                <td>{{ division.comportamientoCosto }}</td>
+                <td>{{ division.operativoCosto }}</td>
+                <td class="text-center"><a class="btn btn-danger" href="{% url 'sistema_2:eliminarDivision' division.id %}"><i class="fa fa-trash"></i></a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-<!-- Crear registro -->
+<!-- Ver Departamentos -->
+<div class="modal fade" id="verDepartamentos" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ver departamentos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row justify-content-center">
+                    <div class="col-11">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <th>Nombre</th>
+                                <th>Eliminar</th>
+                            </thead>
+                            <tbody>
+                                {% for departamento in departamentosTotales %}
+                                <tr>
+                                    <td>{{ departamento.nombreDepartamento }}</td>
+                                    <td class="text-center"><a class="btn btn-danger" href="{% url 'sistema_2:eliminarDepartamento' departamento.id %}"><i class="fa fa-trash"></i></a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ver Categorias -->
+<div class="modal fade" id="verCategorias" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ver categorias</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row justify-content-center">
+                    <div class="col-11">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <th>Nombre</th>
+                                <th>Eliminar</th>
+                            </thead>
+                            <tbody>
+                                {% for categoria in categoriasTotales %}
+                                <tr>
+                                    <td>{{ categoria.nombreCategoria }}</td>
+                                    <td class="text-center"><a class="btn btn-danger" href="{% url 'sistema_2:eliminarCategoria' categoria.id %}"><i class="fa fa-trash"></i></a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nuevo Departamento -->
 <div class="modal fade" id="nuevoDepartamento" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-sm">
         <form method="post" action="{% url 'sistema_2:nuevoDepartamento' %}">
@@ -86,6 +164,7 @@
     </div>
 </div>
 
+<!--Nueva categoria-->
 <div class="modal fade" id="nuevaCategoria" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <form method="post" action="{% url 'sistema_2:nuevaCategoria' %}">
@@ -121,16 +200,64 @@
     </div>
 </div>
 
+<!--Nueva division-->
 <div class="modal fade" id="nuevaDivision" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg">
-        <form method="post">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'sistema_2:nuevaDivision' %}">
         {% csrf_token %}
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Registro de costos</h5>
+                    <h5 class="modal-title">Registro de division</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="row mt-3 mb-3">
+                        <div class="col-4 form-group">
+                            <label>Departamento</label>
+                            <select class="selectpicker form-control" id="departamentoSeleccionado" required>
+                                <option value="" selected></option>
+                                {% for departamento in departamentosTotales %}
+                                <option value="{{ departamento.id }}">{{ departamento.nombreDepartamento }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-4 form-group">
+                            <label>Categoria</label>
+                            <select class="selectpicker form-control" id="categoriaSeleccionada" required name="idCategoria">
+                                <option value="" selected></option>
+                            </select>
+                        </div>
+                        <div class="col-4 form-group">
+                            <label>Division</label>
+                            <input class="form-control" type="text" required name="nombreDivision">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4 form-group">
+                            <label>Tipo</label>
+                            <select class="selectpicker form-control" required name="tipoCosto">
+                                <option value="" selected></option>
+                                <option value="COSTO">COSTO</option>
+                                <option value="GASTO">GASTO</option>
+                            </select>
+                        </div>
+                        <div class="col-4 form-group">
+                            <label>Comportamiento</label>
+                            <select class="selectpicker form-control" required name="comportamientoCosto">
+                                <option value="" selected></option>
+                                <option value="FIJO">FIJO</option>
+                                <option value="VARIABLE">VARIABLE</option>
+                            </select>
+                        </div>
+                        <div class="col-4 form-group">
+                            <label>Operativo</label>
+                            <select class="selectpicker form-control" required name="operativoCosto">
+                                <option value="" selected></option>
+                                <option value="SI">SI</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

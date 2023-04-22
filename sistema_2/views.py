@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -9362,6 +9362,7 @@ def getDatosAbono(request):
     infoAbono = abonosOperacion.objects.get(id=abonoID)
     print(infoAbono)
     return JsonResponse({
+        'idAbono':infoAbono.id,
         'datos_banco':infoAbono.datos_banco,
         'datos_cliente':infoAbono.datos_cliente,
         'nro_operacion':infoAbono.nro_operacion,
@@ -9406,9 +9407,9 @@ def eliminar_abono(request,ind):
     return HttpResponseRedirect(reverse('sistema_2:registro_abonos'))
 
 @csrf_exempt
-def actualizar_abono(request,ind):
+def actualizar_abono(request):
     if request.method == 'POST':
-        abonoActualizar = abonosOperacion.objects.get(id=ind)
+        idAbono = request.POST.get('idRegistroAbono')
         id_banco = request.POST.get('bancoAbono')
         nro_operacion = request.POST.get('nroOperacionAbono')
         nro_operacion_2 = request.POST.get('nroOperacion2Abono')
@@ -9416,7 +9417,7 @@ def actualizar_abono(request,ind):
         abono_habilitado_comisiones = request.POST.get('abonoComisiones')
         abono_fecha = request.POST.get('fechaAbonoRegistro')
         fecha_registro = datetime.strptime(abono_fecha,"%Y-%m-%d")
-
+        abonoActualizar = abonosOperacion.objects.get(id=idAbono)
         while len(nro_operacion) < 8:
             nro_operacion = '0' + nro_operacion
 
@@ -9460,6 +9461,13 @@ def actualizar_abono(request,ind):
             abonos_relacionados = abonosOperacion.objects.all().filter(codigo_comprobante = abonoActualizar.codigo_comprobante)
             for abono in abonos_relacionados:
                 abono.comprobanteCancelado = 'CANCELADO'
+                abono.save()
+            abonoActualizar.save()
+        else:
+            abonoActualizar.comprobanteCancelado = 'NOCANCELADO'
+            abonos_relacionados = abonosOperacion.objects.all().filter(codigo_comprobante = abonoActualizar.codigo_comprobante)
+            for abono in abonos_relacionados:
+                abono.comprobanteCancelado = 'NOCANCELADO'
                 abono.save()
             abonoActualizar.save()
         abonoActualizar.conectado = '0'
@@ -14052,9 +14060,15 @@ def retornarDatosCostos(request):
     objDivision = divisionCosto.objects.get(id=idDivision)
     categoria = objDivision.categoriaAsociada.nombreCategoria
     departamento = objDivision.categoriaAsociada.departamentoAsociado.nombreDepartamento
+    tipoCosto = objDivision.tipoCosto
+    comportamientoCosto = objDivision.comportamientoCosto
+    operativoCosto = objDivision.operativoCosto
     return JsonResponse({
         'categoria':categoria,
         'departamento':departamento,
+        'tipoCosto':tipoCosto,
+        'comportamientoCosto':comportamientoCosto,
+        'operativoCosto':operativoCosto
     })
 
 def consultarDatosRegistro(request):
@@ -14080,9 +14094,15 @@ def eliminarRegistroCosto(request,ind):
     return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
 
 def costosDepartamentos(request):
-    categoriasTotales = categoriaCosto.objects.all()
+    usr = userProfile.objects.all().order_by('id')
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    divisionesTotales = divisionCosto.objects.all()
     departamentosTotales = departamentoCosto.objects.all()
+    categoriasTotales = categoriaCosto.objects.all()
     return render(request,'sistema_2/costosDepartamentos.html',{
+        'usr_rol':user_logued,
+        'divisionesTotales':divisionesTotales,
         'departamentosTotales':departamentosTotales,
         'categoriasTotales':categoriasTotales,
     })
@@ -14101,3 +14121,44 @@ def nuevaCategoria(request):
         departamentoAsociado = departamentoCosto.objects.get(id=idDepartamento)
         categoriaCosto(departamentoAsociado=departamentoAsociado,nombreCategoria=nombreCategoria).save()
         return HttpResponseRedirect(reverse('sistema_2:costosDepartamentos'))
+
+def nuevaDivision(request):
+    if request.method == 'POST':
+        idCategoria = request.POST.get('idCategoria')
+        tipoCosto = request.POST.get('tipoCosto')
+        comportamientoCosto = request.POST.get('comportamientoCosto')
+        nombreDivision = request.POST.get('nombreDivision')
+        operativoCosto = request.POST.get('operativoCosto')
+        categoriaAsociada = categoriaCosto.objects.get(id=idCategoria)
+        divisionCosto(
+            categoriaAsociada=categoriaAsociada,
+            tipoCosto=tipoCosto,
+            comportamientoCosto=comportamientoCosto,
+            operativoCosto=operativoCosto,
+            nombreDivision=nombreDivision,
+            ).save()
+        return HttpResponseRedirect(reverse('sistema_2:costosDepartamentos'))
+
+def consultarCategorias(request):
+    categoriasDepartamento = []
+    idDepartamento = request.GET.get('idDepartamento')
+    print(idDepartamento)
+    departamentoSeleccionado = departamentoCosto.objects.get(id=idDepartamento)
+    categoriasTotales = categoriaCosto.objects.all().filter(departamentoAsociado=departamentoSeleccionado)
+    for categoria in categoriasTotales:
+        categoriasDepartamento.append([str(categoria.id),str(categoria.nombreCategoria)])
+    return JsonResponse({
+        'categoriasDepartamento':categoriasDepartamento,
+    })
+
+def eliminarDivision(request,ind):
+    divisionCosto.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:costosDepartamentos'))
+
+def eliminarDepartamento(request,ind):
+    departamentoCosto.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:costosDepartamentos'))
+
+def eliminarCategoria(request,ind):
+    categoriaCosto.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:costosDepartamentos'))
