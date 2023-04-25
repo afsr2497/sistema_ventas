@@ -2127,9 +2127,63 @@ def bole(request):
                 boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
                 info_boletas=[]
                 for boleta in boletas_filtradas:
-                    info_boletas.append([boleta.codigoBoleta,boleta.vendedor[1],boleta.fechaBoleta,boleta.monedaBoleta,boleta.estadoBoleta,boleta.cliente[3]])
-                tabla_excel = pd.DataFrame(info_boletas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
-                tabla_excel.to_excel('info_excel.xlsx')
+                    total_precio = Decimal(0.0000)
+                    total_precio_soles = Decimal(0.000)
+                    for producto in boleta.productos:
+                        if boleta.monedaBoleta == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if boleta.monedaBoleta == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                    for servicio in boleta.servicios:
+                        if boleta.monedaBoleta == 'SOLES':
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'SOLES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                        if boleta.monedaBoleta == 'DOLARES':
+                            if servicio[3] == 'SOLES':
+                                v_producto = (Decimal(servicio[4])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if servicio[3] == 'DOLARES':
+                            v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                            v_producto = Decimal('%.2f' % v_producto)
+                        if servicio[3] == 'SOLES':
+                            v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                            v_producto = Decimal('%.2f' % v_producto)
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                    info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                suma_total = 0.0000
+                for elemento in info_boletas:
+                    if (elemento[3] == 'Aceptado') or (elemento[3] == 'Aceptado con Obs.'):
+                        suma_total = suma_total + float(elemento[8])
+                suma_total = round(suma_total,2)
+                info_boletas.append(['','','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_boletas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la boleta','Monto (S/)'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
                 doc_excel.active.column_dimensions['A'].width = 30
                 doc_excel.active.column_dimensions['B'].width = 30
@@ -2146,12 +2200,66 @@ def bole(request):
                 response['Content-Disposition'] = nombre
                 return response
             else:
-                boletas_exportar = boletas.objects.all()
+                boletas_filtradas = boletas.objects.all()
                 info_boletas=[]
                 for boleta in boletas_filtradas:
-                    info_boletas.append([boleta.codigoBoleta,boleta.vendedor[1],boleta.fechaBoleta,boleta.monedaBoleta,boleta.estadoBoleta,boleta.cliente[3]])
-                tabla_excel = pd.DataFrame(info_boletas,columns=['Codigo','Vendedor','Fecha','Moneda','Estado','Cliente'])
-                tabla_excel.to_excel('info_excel.xlsx')
+                    total_precio = Decimal(0.0000)
+                    total_precio_soles = Decimal(0.000)
+                    for producto in boleta.productos:
+                        if boleta.monedaBoleta == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if boleta.monedaBoleta == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                    for servicio in boleta.servicios:
+                        if boleta.monedaBoleta == 'SOLES':
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'SOLES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                        if boleta.monedaBoleta == 'DOLARES':
+                            if servicio[3] == 'SOLES':
+                                v_producto = (Decimal(servicio[4])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if servicio[3] == 'DOLARES':
+                            v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                            v_producto = Decimal('%.2f' % v_producto)
+                        if servicio[3] == 'SOLES':
+                            v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                            v_producto = Decimal('%.2f' % v_producto)
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                    info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                suma_total = 0.0000
+                for elemento in info_boletas:
+                    if (elemento[3] == 'Aceptado') or (elemento[3] == 'Aceptado con Obs.'):
+                        suma_total = suma_total + float(elemento[8])
+                suma_total = round(suma_total,2)
+                info_boletas.append(['','','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_boletas,columns=['Fecha','Comprobante','Cliente / (Producto / Servicio)','Estado','Vendedor','Guias','Moneda','Monto de la boleta','Monto (S/)'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
                 doc_excel = openpyxl.load_workbook("info_excel.xlsx")
                 doc_excel.active.column_dimensions['A'].width = 30
                 doc_excel.active.column_dimensions['B'].width = 30
@@ -2162,6 +2270,170 @@ def bole(request):
                 doc_excel.active.column_dimensions['G'].width = 30
                 doc_excel.active.column_dimensions['H'].width = 30
                 doc_excel.active.column_dimensions['I'].width = 30
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+        elif 'detalle' in request.POST:
+            print('Se solicita el excel')
+            fecha_inicial = str(request.POST.get('fecha_inicio'))
+            fecha_final = str(request.POST.get('fecha_fin'))
+            if fecha_inicial != '' and fecha_final != '':
+                boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                info_boletas=[]
+                for boleta in boletas_filtradas:
+                    total_precio = Decimal(0.0000)
+                    total_precio_soles = Decimal(0.000)
+                    for producto in boleta.productos:
+                        if boleta.monedaBoleta == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if boleta.monedaBoleta == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,producto[1],boleta.monedaBoleta,'%.2f'%v_producto,producto[8]])
+                    for servicio in boleta.servicios:
+                        if boleta.monedaBoleta == 'SOLES':
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'SOLES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                        if boleta.monedaBoleta == 'DOLARES':
+                            if servicio[3] == 'SOLES':
+                                v_producto = (Decimal(servicio[4])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if servicio[3] == 'DOLARES':
+                            v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                            v_producto = Decimal('%.2f' % v_producto)
+                        if servicio[3] == 'SOLES':
+                            v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                            v_producto = Decimal('%.2f' % v_producto)
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,servicio[1],boleta.monedaBoleta,'%.2f'%v_producto,'1'])
+                    #info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[3],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                suma_total = 0.0000
+                #for elemento in info_boletas:
+                #    if (elemento[3] == 'Aceptado') or (elemento[3] == 'Aceptado con Obs.'):
+                #        suma_total = suma_total + float(elemento[8])
+                #suma_total = round(suma_total,2)
+                #info_boletas.append(['','','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_boletas,columns=['Fecha','Comprobante','Cliente','RUC','Estado','Vendedor','Guias','Item','Moneda','PU (SIN IGV) S/','Cantidad'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 15
+                doc_excel.active.column_dimensions['B'].width = 15
+                doc_excel.active.column_dimensions['C'].width = 40
+                doc_excel.active.column_dimensions['D'].width = 15
+                doc_excel.active.column_dimensions['E'].width = 15
+                doc_excel.active.column_dimensions['F'].width = 15
+                doc_excel.active.column_dimensions['G'].width = 20
+                doc_excel.active.column_dimensions['H'].width = 40
+                doc_excel.active.column_dimensions['I'].width = 15
+                doc_excel.active.column_dimensions['J'].width = 15
+                doc_excel.active.column_dimensions['K'].width = 15
+                doc_excel.save("info_excel.xlsx")
+                response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
+                response['Content-Disposition'] = nombre
+                return response
+            else:
+                boletas_filtradas = boletas.objects.all()
+                info_boletas=[]
+                for boleta in boletas_filtradas:
+                    total_precio = Decimal(0.0000)
+                    total_precio_soles = Decimal(0.000)
+                    for producto in boleta.productos:
+                        if boleta.monedaBoleta == 'SOLES':
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'SOLES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if boleta.monedaBoleta == 'DOLARES':
+                            if producto[5] == 'SOLES':
+                                v_producto = (Decimal(producto[6])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                            if producto[5] == 'DOLARES':
+                                v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                                v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if producto[5] == 'DOLARES':
+                            v_producto = Decimal(producto[6])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(producto[7])/100)
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        if producto[5] == 'SOLES':
+                            v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
+                            v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,producto[1],boleta.monedaBoleta,'%.2f'%v_producto,producto[8]])
+                    for servicio in boleta.servicios:
+                        if boleta.monedaBoleta == 'SOLES':
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'SOLES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                        if boleta.monedaBoleta == 'DOLARES':
+                            if servicio[3] == 'SOLES':
+                                v_producto = (Decimal(servicio[4])/Decimal(boleta.tipoCambio[1]))*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                                v_producto = Decimal('%.2f' % v_producto)
+                            if servicio[3] == 'DOLARES':
+                                v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                                v_producto = Decimal('%.2f' % v_producto)
+                        total_precio = Decimal(total_precio) + Decimal(v_producto)
+                        if servicio[3] == 'DOLARES':
+                            v_producto = Decimal(servicio[4])*Decimal(boleta.tipoCambio[1])*Decimal(Decimal(1.00) - Decimal(servicio[5])/100)
+                            v_producto = Decimal('%.2f' % v_producto)
+                        if servicio[3] == 'SOLES':
+                            v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
+                            v_producto = Decimal('%.2f' % v_producto)
+                        total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
+                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,servicio[1],boleta.monedaBoleta,'%.2f'%v_producto,'1'])
+                    #info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[3],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                suma_total = 0.0000
+                #for elemento in info_boletas:
+                #    if (elemento[3] == 'Aceptado') or (elemento[3] == 'Aceptado con Obs.'):
+                #        suma_total = suma_total + float(elemento[8])
+                #suma_total = round(suma_total,2)
+                #info_boletas.append(['','','','','','','','Monto Total',str(suma_total)])
+                tabla_excel = pd.DataFrame(info_boletas,columns=['Fecha','Comprobante','Cliente','DNI/RUC','Estado','Vendedor','Guias','Item','Moneda','PU (SIN IGV) S/','Cantidad'])
+                tabla_excel.to_excel('info_excel.xlsx',index=False)
+                doc_excel = openpyxl.load_workbook("info_excel.xlsx")
+                doc_excel.active.column_dimensions['A'].width = 15
+                doc_excel.active.column_dimensions['B'].width = 15
+                doc_excel.active.column_dimensions['C'].width = 40
+                doc_excel.active.column_dimensions['D'].width = 15
+                doc_excel.active.column_dimensions['E'].width = 15
+                doc_excel.active.column_dimensions['F'].width = 15
+                doc_excel.active.column_dimensions['G'].width = 20
+                doc_excel.active.column_dimensions['H'].width = 40
+                doc_excel.active.column_dimensions['I'].width = 15
+                doc_excel.active.column_dimensions['J'].width = 15
+                doc_excel.active.column_dimensions['K'].width = 15
                 doc_excel.save("info_excel.xlsx")
                 response = HttpResponse(open('info_excel.xlsx','rb'),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                 nombre = 'attachment; ' + 'filename=' + 'info.xlsx'
