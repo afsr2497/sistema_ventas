@@ -1,0 +1,93 @@
+{% extends "sistema_2/layout_3.html" %}
+
+{% load static %}
+
+{% block code %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
+
+<link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="height: 100vh; overflow: scroll;">
+    <h1>Registro de caja chica</h1>
+    <br>
+    <div>
+        <a class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaCaja"><i class="fa fa-plus" style="color: white;"></i> Crear caja</a>
+    </div>
+    <br>
+    <table class="table table-bordered table-hover" id="costosTable">
+        <thead class="table-dark">
+            <th>Fecha de creacion</th>
+            <th>Concepto de caja</th>
+            <th>Valor total</th>
+            <th>Moneda</th>
+            <th>Detalle</th>
+            <th>Eliminar</th>
+        </thead>
+        <tbody>
+            {% for caja in cajasTotales %}
+            <tr>
+                <td>{{ caja.fechaCreacion|date:'Y-m-d' }}</td>
+                <td>{{ caja.conceptoCaja }}</td>
+                <td>{{ caja.valorRegistrado }}</td>
+                <td>{{ caja.monedaCaja }}</td>
+                <td class="text-center"><a class="btn btn-info" href="{% url 'sistema_2:verCaja' caja.id %}"><i class="fa fa-eye"></i></a></td>
+                <td class="text-center"><a class="btn btn-danger" href="{% url 'sistema_2:eliminarCajaChica' caja.id %}"><i class="fa fa-trash"></i></a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Crear registro -->
+<div class="modal fade" id="nuevaCaja" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'sistema_2:registroCajaChica' %}">
+        {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registro de costos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="limpiarInfo()"></button>
+                </div>
+                <div class="modal-body">
+                    <h5>Datos generales</h5>
+                    <div class="row justify-content-around mb-3">
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label>Concepto :</label>
+                                <input class="form-control" type="text" name="conceptoCaja" required>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label>Moneda</label>
+                                <select class="selectpicker form-control" required name="monedaCaja">
+                                    <option value=""></option>
+                                    <option value="SOLES">SOLES</option>
+                                    <option value="DOLARES">DOLARES</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="limpiarInfo()">Close</button>
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

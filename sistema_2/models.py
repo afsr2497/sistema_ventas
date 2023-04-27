@@ -374,8 +374,19 @@ class divisionCosto(models.Model):
     def __str__(self):
         return self.nombreDivision
 
-class registroCosto(models.Model):
+
+class cajaChica(models.Model):
+    conceptoCaja = models.CharField(max_length=32, default='')
+    valorRegistrado = models.CharField(max_length=32,default='0')
+    fechaCreacion = models.DateField(default=datetime.datetime.today)
+    monedaCaja = models.CharField(default='SOLES',max_length=16)
+
+def get_default_caja():
+        return cajaChica.objects.get(conceptoCaja='Caja-0').id
+
+class registroCosto(models.Model):    
     divisionRelacionada = models.ForeignKey(divisionCosto, on_delete=models.CASCADE)
+    cajaRelacionada = models.ForeignKey(cajaChica, on_delete=models.SET_NULL,null=True,default=get_default_caja)
     fechaCosto = models.DateField(default=datetime.date.today)
     documentoCosto = models.CharField(max_length=16, default='')
     rucCosto = models.CharField(max_length=16, default='')
@@ -383,3 +394,9 @@ class registroCosto(models.Model):
     conceptoCosto = models.CharField(max_length=64, default='')
     importeCosto = models.CharField(max_length=16, default='')
     monedaCosto = models.CharField(max_length=16, default='')
+
+class ingresosCaja(models.Model):
+    fechaIngreso = models.DateField(default=datetime.datetime.today)
+    valorIngresado = models.CharField(max_length=32,default='0')
+    conceptoIngreso = models.CharField(max_length=64,default='')
+    cajaRelacionada = models.ForeignKey(cajaChica,on_delete=models.CASCADE)

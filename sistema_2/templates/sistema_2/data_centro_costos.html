@@ -33,6 +33,8 @@
             <th>Concepto</th>
             <th>Monto</th>
             <th>Moneda</th>
+            <th>Caja</th>
+            <th>Asignar</th>
             <th>Detalle</th>
             <th>Eliminar</th>
         </thead>
@@ -44,12 +46,50 @@
                 <td>{{ registro.conceptoCosto }}</td>
                 <td>{{ registro.importeCosto }}</td>
                 <td>{{ registro.monedaCosto }}</td>
+                <td>{{ registro.cajaRelacionada.conceptoCaja }}</td>
+                <td class="text-center"><button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#asignarCaja" onclick="cargarDatosAsignacion(this.id)" id="asignar{{ registro.id }}"><i class="fa fa-edit"></i></button></td>
                 <td class="text-center"><button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#detalleRegistro" onclick="mostrarDatos(this.id)" id="{{ registro.id }}"><i class="fa fa-eye"></i></button></td>
                 <td class="text-center"><a class="btn btn-danger" href="{% url 'sistema_2:eliminarRegistroCosto' registro.id %}"><i class="fa fa-trash"></i></a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Asignar caja -->
+<div class="modal fade" id="asignarCaja" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'sistema_2:data_centro_costos' %}">
+        {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Asignacion de caja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="limpiarInfo()"></button>
+                    <input style="display: none;" name="idRegistro" id="registroCaja">
+                </div>
+                <div class="modal-body">
+                    <h5>Datos generales</h5>
+                    <div class="row justify-content-around mb-3">
+                        <div class="col-5">
+                            <div class="form-group">
+                                <label>Seleccionar caja chica</label>
+                                <select class="selectpicker form-control" name="idCaja">
+                                    <option value=""></option>
+                                    {% for caja in cajasTotales %}
+                                    <option value="{{ caja.id }}">{{ caja.conceptoCaja }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="limpiarInfo()">Close</button>
+                    <button type="submit" name="asignar" class="btn btn-primary">Asignar</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Crear registro -->
@@ -158,7 +198,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="limpiarInfo()">Close</button>
-                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <button type="submit" name="nuevoCosto" class="btn btn-primary">Registrar</button>
                 </div>
             </div>
         </form>

@@ -164,4 +164,9 @@ urlpatterns = [
     path('eliminarDepartamento/<str:ind>',views.eliminarDepartamento,name='eliminarDepartamento'),
     path('eliminarCategoria/<str:ind>',views.eliminarCategoria,name='eliminarCategoria'),
     path('eliminarDivision/<str:ind>',views.eliminarDivision,name='eliminarDivision'),
+    path('registroCajaChica',views.registroCajaChica,name='registroCajaChica'),
+    path('eliminarCajaChica/<str:ind>',views.eliminarCajaChica,name='eliminarCajaChica'),
+    path('verCaja/<str:ind>',views.verCaja,name='verCaja'),
+    path('registrarIngresoCaja/<str:ind>',views.registrarIngresoCaja,name='registrarIngresoCaja'),
+    path('eliminarIngreso/<str:ind>&<str:idCaja>',views.eliminarIngreso,name='eliminarIngreso'),
 ]

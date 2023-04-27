@@ -1,3 +1,10 @@
+function cargarDatosAsignacion(idAsignar)
+{
+    idRegistro = idAsignar.substring(7)
+    registroCaja = document.getElementById('registroCaja')
+    registroCaja.value = idRegistro
+}
+
 function limpiarInfo()
 {
     divisioInfo = document.getElementById('divisionInfo')

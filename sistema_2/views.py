@@ -10,7 +10,7 @@ from django import forms
 from reportlab.pdfgen import canvas
 from django.shortcuts import render, redirect
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
-from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito,ordenCompra, ordenCompraMetalprotec,configurarComisiones, divisionCosto, categoriaCosto,departamentoCosto, registroCosto
+from .models import clients, products, services, userProfile, cotizaciones, ingresos_stock, guias, facturas, boletas, config_docs, notaCredito, regOperacion, regCuenta, abonosOperacion,egreso_stock,inventariosProductos,ubigeoDistrito,ordenCompra, ordenCompraMetalprotec,configurarComisiones, divisionCosto, categoriaCosto,departamentoCosto, registroCosto, cajaChica, ingresosCaja
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import io
 from django.db.models import Q
@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '1'
+entorno_sistema = '0'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -2124,7 +2124,7 @@ def bole(request):
             fecha_inicial = str(request.POST.get('fecha_inicio'))
             fecha_final = str(request.POST.get('fecha_fin'))
             if fecha_inicial != '' and fecha_final != '':
-                boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final]).order_by('-id')
                 info_boletas=[]
                 for boleta in boletas_filtradas:
                     total_precio = Decimal(0.0000)
@@ -2175,7 +2175,11 @@ def bole(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                    if boleta.estadoBoleta == 'Anulada':
+                        estadoSunat = 'NotaCredito'
+                    else:
+                        estadoSunat = boleta.estadoSunat
+                    info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0.0000
                 for elemento in info_boletas:
                     if (elemento[3] == 'Aceptado') or (elemento[3] == 'Aceptado con Obs.'):
@@ -2200,7 +2204,7 @@ def bole(request):
                 response['Content-Disposition'] = nombre
                 return response
             else:
-                boletas_filtradas = boletas.objects.all()
+                boletas_filtradas = boletas.objects.all().order_by('-id')
                 info_boletas=[]
                 for boleta in boletas_filtradas:
                     total_precio = Decimal(0.0000)
@@ -2251,7 +2255,11 @@ def bole(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                    info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
+                    if boleta.estadoBoleta == 'Anulada':
+                        estadoSunat = 'NotaCredito'
+                    else:
+                        estadoSunat = boleta.estadoSunat
+                    info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0.0000
                 for elemento in info_boletas:
                     if (elemento[3] == 'Aceptado') or (elemento[3] == 'Aceptado con Obs.'):
@@ -2280,7 +2288,7 @@ def bole(request):
             fecha_inicial = str(request.POST.get('fecha_inicio'))
             fecha_final = str(request.POST.get('fecha_fin'))
             if fecha_inicial != '' and fecha_final != '':
-                boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final])
+                boletas_filtradas = boletas.objects.all().filter(fecha_emision__range=[fecha_inicial,fecha_final]).order_by('-id')
                 info_boletas=[]
                 for boleta in boletas_filtradas:
                     total_precio = Decimal(0.0000)
@@ -2308,7 +2316,11 @@ def bole(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,producto[1],boleta.monedaBoleta,'%.2f'%v_producto,producto[8]])
+                        if boleta.estadoBoleta == 'Anulada':
+                            estadoSunat = 'NotaCredito'
+                        else:
+                            estadoSunat = boleta.estadoSunat
+                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],estadoSunat,boleta.vendedor[2],boleta.codigosGuias,producto[1],boleta.monedaBoleta,'%.2f'%v_producto,producto[8]])
                     for servicio in boleta.servicios:
                         if boleta.monedaBoleta == 'SOLES':
                             if servicio[3] == 'DOLARES':
@@ -2332,7 +2344,11 @@ def bole(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,servicio[1],boleta.monedaBoleta,'%.2f'%v_producto,'1'])
+                        if boleta.estadoBoleta == 'Anulada':
+                            estadoSunat = 'NotaCredito'
+                        else:
+                            estadoSunat = boleta.estadoSunat
+                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],estadoSunat,boleta.vendedor[2],boleta.codigosGuias,servicio[1],boleta.monedaBoleta,'%.2f'%v_producto,'1'])
                     #info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[3],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0.0000
                 #for elemento in info_boletas:
@@ -2360,7 +2376,7 @@ def bole(request):
                 response['Content-Disposition'] = nombre
                 return response
             else:
-                boletas_filtradas = boletas.objects.all()
+                boletas_filtradas = boletas.objects.all().order_by('-id')
                 info_boletas=[]
                 for boleta in boletas_filtradas:
                     total_precio = Decimal(0.0000)
@@ -2388,7 +2404,11 @@ def bole(request):
                             v_producto = Decimal(producto[6])*Decimal(Decimal(1.00) - (Decimal(producto[7])/100))
                             v_producto = Decimal('%.2f' % v_producto)*Decimal(producto[8])
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,producto[1],boleta.monedaBoleta,'%.2f'%v_producto,producto[8]])
+                        if boleta.estadoBoleta == 'Anulada':
+                            estadoSunat = 'NotaCredito'
+                        else:
+                            estadoSunat = boleta.estadoSunat
+                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],estadoSunat,boleta.vendedor[2],boleta.codigosGuias,producto[1],boleta.monedaBoleta,'%.2f'%v_producto,producto[8]])
                     for servicio in boleta.servicios:
                         if boleta.monedaBoleta == 'SOLES':
                             if servicio[3] == 'DOLARES':
@@ -2412,7 +2432,11 @@ def bole(request):
                             v_producto = Decimal(servicio[4])*Decimal(Decimal(1.00) - (Decimal(servicio[5])/100))
                             v_producto = Decimal('%.2f' % v_producto)
                         total_precio_soles = Decimal(total_precio_soles) + Decimal(v_producto)
-                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,servicio[1],boleta.monedaBoleta,'%.2f'%v_producto,'1'])
+                        if boleta.estadoBoleta == 'Anulada':
+                            estadoSunat = 'NotaCredito'
+                        else:
+                            estadoSunat = boleta.estadoSunat
+                        info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[1] + ' ' + boleta.cliente[2],boleta.cliente[4],estadoSunat,boleta.vendedor[2],boleta.codigosGuias,servicio[1],boleta.monedaBoleta,'%.2f'%v_producto,'1'])
                     #info_boletas.append([boleta.fecha_emision.strftime("%Y-%m-%d"),boleta.codigoBoleta,boleta.cliente[3],boleta.estadoSunat,boleta.vendedor[2],boleta.codigosGuias,boleta.monedaBoleta,'%.2f'%total_precio,'%.2f'%total_precio_soles])
                 suma_total = 0.0000
                 #for elemento in info_boletas:
@@ -14297,34 +14321,50 @@ def data_centro_costos(request):
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     divisionesCostos = divisionCosto.objects.all().order_by('-id')
     registrosCostos = registroCosto.objects.all().order_by('-id')
+    cajasTotales = cajaChica.objects.all().order_by('-id')
     if request.method == 'POST':
-        razonCosto = request.POST.get('razonCosto')
-        fechaCosto = request.POST.get('fechaCosto')
-        rucCosto = request.POST.get('rucCosto')
-        conceptoCosto = request.POST.get('conceptoCosto')
-        importeCosto = request.POST.get('importeCosto')
-        monedaCosto = request.POST.get('monedaCosto')
-        divisionInfo = request.POST.get('divisionInfo')
-        divisionObjeto = divisionCosto.objects.get(id=divisionInfo)
-        fechaSeparada = fechaCosto.split('-')
-        fecha_anho = int(fechaSeparada[0])
-        fecha_mes = int(fechaSeparada[1])
-        fecha_dia = int(fechaSeparada[2])
-        fechaReg = dt.datetime(fecha_anho, fecha_mes, fecha_dia)
-        registroCosto.objects.create(
-            divisionRelacionada = divisionObjeto,
-            fechaCosto=fechaReg,
-            rucCosto = rucCosto,
-            razonCosto=razonCosto,
-            conceptoCosto=conceptoCosto,
-            importeCosto=importeCosto,
-            monedaCosto=monedaCosto,
-        )
-        return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
+        if 'nuevoCosto' in request.POST:
+            razonCosto = request.POST.get('razonCosto')
+            fechaCosto = request.POST.get('fechaCosto')
+            rucCosto = request.POST.get('rucCosto')
+            conceptoCosto = request.POST.get('conceptoCosto')
+            importeCosto = request.POST.get('importeCosto')
+            monedaCosto = request.POST.get('monedaCosto')
+            divisionInfo = request.POST.get('divisionInfo')
+            divisionObjeto = divisionCosto.objects.get(id=divisionInfo)
+            fechaSeparada = fechaCosto.split('-')
+            fecha_anho = int(fechaSeparada[0])
+            fecha_mes = int(fechaSeparada[1])
+            fecha_dia = int(fechaSeparada[2])
+            fechaReg = dt.datetime(fecha_anho, fecha_mes, fecha_dia)
+            registroCosto.objects.create(
+                divisionRelacionada = divisionObjeto,
+                fechaCosto=fechaReg,
+                rucCosto = rucCosto,
+                razonCosto=razonCosto,
+                conceptoCosto=conceptoCosto,
+                importeCosto=importeCosto,
+                monedaCosto=monedaCosto,
+            )
+            return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
+        elif 'asignar' in request.POST:
+            idRegistro = request.POST.get('idRegistro')
+            idCaja = request.POST.get('idCaja')
+            registroActualizar = registroCosto.objects.get(id=idRegistro)
+            cajaAnterior = registroActualizar.cajaRelacionada
+            cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroActualizar.importeCosto),2))
+            cajaAnterior.save()
+            cajaRelacionada = cajaChica.objects.get(id=idCaja)
+            registroActualizar.cajaRelacionada = cajaRelacionada
+            registroActualizar.save()
+            cajaRelacionada.valorRegistrado = str(round(float(cajaRelacionada.valorRegistrado) - float(registroActualizar.importeCosto),2))
+            cajaRelacionada.save()
+            return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
     return render(request,'sistema_2/data_centro_costos.html',{
         'usr_rol':user_logued,
         'divisionesCostos': divisionesCostos,
         'registrosCostos': registrosCostos,
+        'cajasTotales':cajasTotales,
     })
 
 def retornarDatosCostos(request):
@@ -14362,7 +14402,11 @@ def consultarDatosRegistro(request):
     })
 
 def eliminarRegistroCosto(request,ind):
-    registroCosto.objects.get(id=ind).delete()
+    registroEliminar = registroCosto.objects.get(id=ind)
+    cajaAnterior = registroEliminar.cajaRelacionada
+    cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroEliminar.importeCosto),2))
+    cajaAnterior.save()
+    registroEliminar.delete()
     return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
 
 def costosDepartamentos(request):
@@ -14434,3 +14478,65 @@ def eliminarDepartamento(request,ind):
 def eliminarCategoria(request,ind):
     categoriaCosto.objects.get(id=ind).delete()
     return HttpResponseRedirect(reverse('sistema_2:costosDepartamentos'))
+
+def registroCajaChica(request):
+    usr = userProfile.objects.all().order_by('id')
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    cajasTotales = cajaChica.objects.all().order_by('-id')
+    if request.method == 'POST':
+        conceptoCaja = request.POST.get('conceptoCaja')
+        monedaCaja = request.POST.get('monedaCaja')
+        cajaChica(conceptoCaja=conceptoCaja,monedaCaja=monedaCaja).save()
+        return HttpResponseRedirect(reverse('sistema_2:registroCajaChica'))
+    return render(request,'sistema_2/registroCajaChica.html',{
+        'usr_rol':user_logued,
+        'cajasTotales':cajasTotales,
+    })
+
+def eliminarCajaChica(request,ind):
+    cajaChica.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:registroCajaChica'))
+
+def verCaja(request,ind):
+    usr = userProfile.objects.all().order_by('id')
+    usuario_logued = User.objects.get(username=request.user.username)
+    user_logued = userProfile.objects.get(usuario=usuario_logued)
+    caja = cajaChica.objects.get(id=ind)
+    registrosCostos = caja.registrocosto_set.all()
+    ingresosDeCaja = caja.ingresoscaja_set.all()
+    return render(request,'sistema_2/verCaja.html',{
+        'usr_rol':user_logued,
+        'cajaChica':caja,
+        'registrosCostos':registrosCostos,
+        'ingresosDeCaja':ingresosDeCaja,
+    })
+
+def registrarIngresoCaja(request,ind):
+    if request.method == 'POST':
+        montoIngreso = request.POST.get('montoIngreso')
+        fechaIngreso = request.POST.get('fechaIngreso')
+        conceptoIngreso = request.POST.get('conceptoIngreso')
+        fechaSeparada = fechaIngreso.split('-')
+        fecha_anho = int(fechaSeparada[0])
+        fecha_mes = int(fechaSeparada[1])
+        fecha_dia = int(fechaSeparada[2])
+        fechaReg = dt.datetime(fecha_anho, fecha_mes, fecha_dia)
+        cajaActualizar = cajaChica.objects.get(id=ind)
+        cajaActualizar.valorRegistrado = str(round(float(cajaActualizar.valorRegistrado) + float(montoIngreso),2))
+        cajaActualizar.save()
+        ingresosCaja(
+            fechaIngreso = fechaReg,
+            valorIngresado = montoIngreso,
+            conceptoIngreso = conceptoIngreso,
+            cajaRelacionada = cajaActualizar,
+        ).save()
+        return HttpResponseRedirect(reverse('sistema_2:verCaja', kwargs={'ind':ind}))
+
+def eliminarIngreso(request,ind,idCaja):
+    ingresoEliminar = ingresosCaja.objects.get(id=ind)
+    cajaAnterior = ingresoEliminar.cajaRelacionada
+    cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) - float(ingresoEliminar.valorIngresado),2))
+    cajaAnterior.save()
+    ingresoEliminar.delete()
+    return HttpResponseRedirect(reverse('sistema_2:verCaja', kwargs={'ind':idCaja}))
