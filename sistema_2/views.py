@@ -14316,6 +14316,16 @@ def crearComisionGlobal(request):
         })
 
 def data_centro_costos(request):
+    r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
+    datos = BeautifulSoup(r.text,'html.parser')
+    tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
+    tc_fila = tc_fila.find_all(class_='APLI_fila2')
+    if len(tc_fila) == 2:
+        tc_compra = round(float(tc_fila[0].string),3)
+        tc_venta = round(float(tc_fila[1].string),3)
+    else:
+        tc_compra = 0.000
+        tc_venta = 0.000
     usr = userProfile.objects.all().order_by('id')
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
@@ -14352,13 +14362,38 @@ def data_centro_costos(request):
             idCaja = request.POST.get('idCaja')
             registroActualizar = registroCosto.objects.get(id=idRegistro)
             cajaAnterior = registroActualizar.cajaRelacionada
-            cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroActualizar.importeCosto),2))
-            cajaAnterior.save()
+            if cajaAnterior is not None:
+                if cajaAnterior.monedaCaja == 'SOLES':
+                    if registroActualizar.monedaCosto == 'SOLES':
+                        cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroActualizar.importeCosto),2))
+                        cajaAnterior.save()
+                    if registroActualizar.monedaCosto == 'DOLARES':
+                        cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroActualizar.importeCosto)*tc_compra,2))
+                        cajaAnterior.save()
+                if cajaAnterior.monedaCaja == 'DOLARES':
+                    if registroActualizar.monedaCosto == 'SOLES':
+                        cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroActualizar.importeCosto)/tc_compra,2))
+                        cajaAnterior.save()
+                    if registroActualizar.monedaCosto == 'DOLARES':
+                        cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroActualizar.importeCosto),2))
+                        cajaAnterior.save()
             cajaRelacionada = cajaChica.objects.get(id=idCaja)
             registroActualizar.cajaRelacionada = cajaRelacionada
             registroActualizar.save()
-            cajaRelacionada.valorRegistrado = str(round(float(cajaRelacionada.valorRegistrado) - float(registroActualizar.importeCosto),2))
-            cajaRelacionada.save()
+            if cajaRelacionada.monedaCaja == 'SOLES':
+                if registroActualizar.monedaCosto == 'SOLES':
+                    cajaRelacionada.valorRegistrado = str(round(float(cajaRelacionada.valorRegistrado) - float(registroActualizar.importeCosto),2))
+                    cajaRelacionada.save()
+                if registroActualizar.monedaCosto == 'DOLARES':
+                    cajaRelacionada.valorRegistrado = str(round(float(cajaRelacionada.valorRegistrado) - float(registroActualizar.importeCosto)*tc_compra,2))
+                    cajaRelacionada.save()
+            if cajaRelacionada.monedaCaja == 'DOLARES':
+                if registroActualizar.monedaCosto == 'SOLES':
+                    cajaRelacionada.valorRegistrado = str(round(float(cajaRelacionada.valorRegistrado) - float(registroActualizar.importeCosto)/tc_compra,2))
+                    cajaRelacionada.save()
+                if registroActualizar.monedaCosto == 'DOLARES':
+                    cajaRelacionada.valorRegistrado = str(round(float(cajaRelacionada.valorRegistrado) - float(registroActualizar.importeCosto),2))
+                    cajaRelacionada.save()
             return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
     return render(request,'sistema_2/data_centro_costos.html',{
         'usr_rol':user_logued,
@@ -14402,10 +14437,32 @@ def consultarDatosRegistro(request):
     })
 
 def eliminarRegistroCosto(request,ind):
+    r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
+    datos = BeautifulSoup(r.text,'html.parser')
+    tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
+    tc_fila = tc_fila.find_all(class_='APLI_fila2')
+    if len(tc_fila) == 2:
+        tc_compra = round(float(tc_fila[0].string),3)
+        tc_venta = round(float(tc_fila[1].string),3)
+    else:
+        tc_compra = 0.000
+        tc_venta = 0.000
     registroEliminar = registroCosto.objects.get(id=ind)
     cajaAnterior = registroEliminar.cajaRelacionada
-    cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroEliminar.importeCosto),2))
-    cajaAnterior.save()
+    if cajaAnterior.monedaCaja == 'SOLES':
+        if registroEliminar.monedaCosto == 'SOLES':
+            cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroEliminar.importeCosto),2))
+            cajaAnterior.save()
+        if registroEliminar.monedaCosto == 'DOLARES':
+            cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroEliminar.importeCosto)*tc_compra,2))
+            cajaAnterior.save()
+    if cajaAnterior.monedaCaja == 'DOLARES':
+        if registroEliminar.monedaCosto == 'SOLES':
+            cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroEliminar.importeCosto)/tc_compra,2))
+            cajaAnterior.save()
+        if registroEliminar.monedaCosto == 'DOLARES':
+            cajaAnterior.valorRegistrado = str(round(float(cajaAnterior.valorRegistrado) + float(registroEliminar.importeCosto),2))
+            cajaAnterior.save()
     registroEliminar.delete()
     return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
 
