@@ -255,8 +255,14 @@
             </div>
             <div class="col-md-4">
                 <label>Motivo de traslado</label>
-                <select id="motivoTraslado" class="form-select" disabled>
-                    <option value="VENTA">VENTA</option>
+                <select id="motivoTraslado" class="form-select">
+                    {% if prof.datosTraslado.1 == 'TRASLADO_ESTABLECIMIENTOS' %}
+                        <option value="VENTA">VENTA</option>
+                        <option selected value="TRASLADO_ESTABLECIMIENTOS">TRASLADO ESTABLECIMIENTOS</option>
+                    {% else %}
+                        <option selected value="VENTA">VENTA</option>
+                        <option value="TRASLADO_ESTABLECIMIENTOS">TRASLADO ESTABLECIMIENTOS</option>
+                    {% endif %}
                 </select>
             </div>
             <div class="col-md-4">

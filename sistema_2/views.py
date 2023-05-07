@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -1067,16 +1067,20 @@ def crear_proforma(request):
     usr = userProfile.objects.all()
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
-    r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
-    datos = BeautifulSoup(r.text,'html.parser')
-    tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
-    tc_fila = tc_fila.find_all(class_='APLI_fila2')
-    if len(tc_fila) == 2:
-        tc_compra = round(float(tc_fila[0].string),3)
-        tc_venta = round(float(tc_fila[1].string),3)
-    else:
-        tc_compra = 0.000
-        tc_venta = 0.000
+    try:
+        r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
+        datos = BeautifulSoup(r.text,'html.parser')
+        tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
+        tc_fila = tc_fila.find_all(class_='APLI_fila2')
+        if len(tc_fila) == 2:
+            tc_compra = round(float(tc_fila[0].string),3)
+            tc_venta = round(float(tc_fila[1].string),3)
+        else:
+            tc_compra = 0.000
+            tc_venta = 0.000
+    except:
+        tc_compra = 3.705
+        tc_venta = 3.710
 
     pro = products.objects.all()
     cli = clients.objects.all()
@@ -11374,16 +11378,20 @@ def crear_orden(request):
     usr = userProfile.objects.all()
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
-    r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
-    datos = BeautifulSoup(r.text,'html.parser')
-    tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
-    tc_fila = tc_fila.find_all(class_='APLI_fila2')
-    if len(tc_fila) == 2:
-        tc_compra = round(float(tc_fila[0].string),3)
-        tc_venta = round(float(tc_fila[1].string),3)
-    else:
-        tc_compra = 0.000
-        tc_venta = 0.000
+    try:
+        r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
+        datos = BeautifulSoup(r.text,'html.parser')
+        tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
+        tc_fila = tc_fila.find_all(class_='APLI_fila2')
+        if len(tc_fila) == 2:
+            tc_compra = round(float(tc_fila[0].string),3)
+            tc_venta = round(float(tc_fila[1].string),3)
+        else:
+            tc_compra = 0.000
+            tc_venta = 0.000
+    except:
+        tc_compra = 3.705
+        tc_venta = 3.710
     if request.method == 'POST':
         data = json.load(request)
         rucProveedor = data.get('rucProveedor')
@@ -14316,16 +14324,20 @@ def crearComisionGlobal(request):
         })
 
 def data_centro_costos(request):
-    r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
-    datos = BeautifulSoup(r.text,'html.parser')
-    tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
-    tc_fila = tc_fila.find_all(class_='APLI_fila2')
-    if len(tc_fila) == 2:
-        tc_compra = round(float(tc_fila[0].string),3)
-        tc_venta = round(float(tc_fila[1].string),3)
-    else:
-        tc_compra = 0.000
-        tc_venta = 0.000
+    try:
+        r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
+        datos = BeautifulSoup(r.text,'html.parser')
+        tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
+        tc_fila = tc_fila.find_all(class_='APLI_fila2')
+        if len(tc_fila) == 2:
+            tc_compra = round(float(tc_fila[0].string),3)
+            tc_venta = round(float(tc_fila[1].string),3)
+        else:
+            tc_compra = 0.000
+            tc_venta = 0.000
+    except:
+        tc_compra = 3.705
+        tc_venta = 3.710
     usr = userProfile.objects.all().order_by('id')
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
@@ -14437,16 +14449,20 @@ def consultarDatosRegistro(request):
     })
 
 def eliminarRegistroCosto(request,ind):
-    r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
-    datos = BeautifulSoup(r.text,'html.parser')
-    tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
-    tc_fila = tc_fila.find_all(class_='APLI_fila2')
-    if len(tc_fila) == 2:
-        tc_compra = round(float(tc_fila[0].string),3)
-        tc_venta = round(float(tc_fila[1].string),3)
-    else:
-        tc_compra = 0.000
-        tc_venta = 0.000
+    try:
+        r = requests.get('https://www.sbs.gob.pe/app/pp/sistip_portal/paginas/publicacion/tipocambiopromedio.aspx')
+        datos = BeautifulSoup(r.text,'html.parser')
+        tc_fila = datos.find(id='ctl00_cphContent_rgTipoCambio_ctl00__0')
+        tc_fila = tc_fila.find_all(class_='APLI_fila2')
+        if len(tc_fila) == 2:
+            tc_compra = round(float(tc_fila[0].string),3)
+            tc_venta = round(float(tc_fila[1].string),3)
+        else:
+            tc_compra = 0.000
+            tc_venta = 0.000
+    except:
+        tc_compra = 3.705
+        tc_venta = 3.710
     registroEliminar = registroCosto.objects.get(id=ind)
     cajaAnterior = registroEliminar.cajaRelacionada
     if cajaAnterior.monedaCaja == 'SOLES':
@@ -14544,7 +14560,8 @@ def registroCajaChica(request):
     if request.method == 'POST':
         conceptoCaja = request.POST.get('conceptoCaja')
         monedaCaja = request.POST.get('monedaCaja')
-        cajaChica(conceptoCaja=conceptoCaja,monedaCaja=monedaCaja).save()
+        valorRegistrado = request.POST.get('montoCaja')
+        cajaChica(conceptoCaja=conceptoCaja,monedaCaja=monedaCaja,valorRegistrado=str(valorRegistrado)).save()
         return HttpResponseRedirect(reverse('sistema_2:registroCajaChica'))
     return render(request,'sistema_2/registroCajaChica.html',{
         'usr_rol':user_logued,
