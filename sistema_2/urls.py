@@ -169,4 +169,6 @@ urlpatterns = [
     path('verCaja/<str:ind>',views.verCaja,name='verCaja'),
     path('registrarIngresoCaja/<str:ind>',views.registrarIngresoCaja,name='registrarIngresoCaja'),
     path('eliminarIngreso/<str:ind>&<str:idCaja>',views.eliminarIngreso,name='eliminarIngreso'),
+    path('eliminarCostosTotales',views.eliminarCostosTotales,name='eliminarCostosTotales'),
+    path('importarRegistrosCostos',views.importarRegistrosCostos,name='importarRegistrosCostos'),
 ]

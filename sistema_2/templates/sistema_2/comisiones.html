@@ -60,7 +60,7 @@
             </div>
             <div class="col-md-2">
                 <label>Seleccionar config:</label>
-                <select class="form-control selectpicker" id="configuracionSeleccionada" name="confi_seleccionada">
+                <select class="form-control selectpicker" id="configuracionSeleccionada" name="confi_seleccionada" required>
                     <option value=""></option>
                     {% for config in configuracionUsuario %}
                         {% if config.id == confi_seleccionada %}

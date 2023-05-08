@@ -14614,3 +14614,76 @@ def eliminarIngreso(request,ind,idCaja):
     cajaAnterior.save()
     ingresoEliminar.delete()
     return HttpResponseRedirect(reverse('sistema_2:verCaja', kwargs={'ind':idCaja}))
+
+def eliminarCostosTotales(request):
+    registroCosto.objects.all().delete()
+    return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))
+
+def importarRegistrosCostos(request):
+    archivoInfo = request.FILES['archivoRegistrosCostos']
+    archivoExcel = 0
+    try:
+        archivoPanda = pd.read_excel(archivoInfo)
+        archivoExcel = 1
+    except:
+        pass
+    if archivoExcel == 1:
+        archivoPanda = archivoPanda.replace(np.nan,'',regex=True)
+        print(archivoPanda.columns)
+        i = 0
+        while i < len(archivoPanda):
+            try:
+                fechaRegistro = dt.datetime.strptime(str(archivoPanda.loc[i,'FECHA']),'%Y-%m-%d %H:%M:%S')
+            except:
+                fechaRegistro = dt.datetime.strptime(str(archivoPanda.loc[i,'FECHA']),'%d/%m/%Y')
+            
+            nombreDepartamento = archivoPanda.loc[i,'DEPARTAMENTO'].strip(' ')
+            try:
+                departamentoRegistro = departamentoCosto.objects.get(nombreDepartamento=nombreDepartamento)
+            except:
+                departamentoCosto(nombreDepartamento=nombreDepartamento).save()
+                departamentoRegistro = departamentoCosto.objects.get(nombreDepartamento=nombreDepartamento)
+            
+            nombreCategoria = archivoPanda.loc[i,'CATEGORIA'].strip(' ')
+            categoriasInfo = departamentoRegistro.categoriacosto_set.all()  
+            try:
+                categoriaRegistro = categoriasInfo.get(nombreCategoria=nombreCategoria)
+            except:
+                categoriaCosto(nombreCategoria=nombreCategoria,departamentoAsociado=departamentoRegistro).save()
+                categoriasInfo = departamentoRegistro.categoriacosto_set.all() 
+                categoriaRegistro = categoriasInfo.get(nombreCategoria=nombreCategoria)
+            
+            nombreDivision = archivoPanda.loc[i,'DIVISION'].strip(' ')
+            tipoCosto = archivoPanda.loc[i,'TIPO'].strip(' ')
+            comportamientoCosto = archivoPanda.loc[i,'COMPORTAMIENTO'].strip(' ')
+            operativoCosto = 'SI'
+            divisionesInfo = categoriaRegistro.divisioncosto_set.all()
+            try:
+                divisionRegistro = divisionesInfo.get(nombreDivision=nombreDivision)
+            except:
+                divisionCosto(
+                    nombreDivision=nombreDivision,
+                    categoriaAsociada=categoriaRegistro,
+                    tipoCosto=tipoCosto,
+                    comportamientoCosto=comportamientoCosto,
+                    operativoCosto=operativoCosto,
+                ).save()
+                divisionesInfo = categoriaRegistro.divisioncosto_set.all()
+                divisionRegistro = divisionesInfo.get(nombreDivision=nombreDivision)
+            rucCosto = str(archivoPanda.loc[i,'RUC']).strip(' ').split('.')[0]
+            razonCosto = str(archivoPanda.loc[i,'RAZON SOCIAL']).strip(' ')
+            conceptoCosto = str(archivoPanda.loc[i,'CONCEPTO']).strip(' ')
+            monedaCosto = str(archivoPanda.loc[i,'MONEDA']).strip(' ')
+            importeCosto = str(round(archivoPanda.loc[i,'MONTO SOLES'],2)).strip(' ')
+            registroCosto(
+                divisionRelacionada=divisionRegistro,
+                fechaCosto=fechaRegistro,
+                rucCosto=rucCosto,
+                razonCosto=razonCosto,
+                conceptoCosto=conceptoCosto,
+                monedaCosto=monedaCosto,
+                importeCosto=importeCosto,
+            ).save()
+            print(str(i))
+            i = i + 1
+    return HttpResponseRedirect(reverse('sistema_2:data_centro_costos'))

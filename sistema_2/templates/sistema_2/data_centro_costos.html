@@ -24,6 +24,8 @@
     <br>
     <div>
         <a class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoRegistro"><i class="fa fa-plus" style="color: white;"></i> Crear registro</a>
+        <a class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importarExcel"><i class="fas fa-file-import" style="color: white;"></i> Importar</a>
+        <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarTodo"><i class="fa fa-trash" style="color: white;"></i> Eliminar todo</a>
     </div>
     <br>
     <table class="table table-bordered table-hover" id="costosTable">
@@ -304,5 +306,57 @@
         </div>
     </div>
 </div>
+
+<!-- Eliminar todo -->
+<div class="modal fade" id="eliminarTodo" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar todo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h4>Esta seguro de eliminar todo?</h4>     
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a type="button" class="btn btn-danger" href="{% url 'sistema_2:eliminarCostosTotales' %}">Eliminar</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Importar excel -->
+<div class="modal fade" id="importarExcel" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{% url 'sistema_2:importarRegistrosCostos' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Importar registro de costos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input class="form-control" type="file" id="pruebaArchivo" name="archivoRegistrosCostos">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="eliminarArchivo()">Close</button>
+                    <button type="submit" class="btn btn-primary">Importar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function eliminarArchivo()
+    {
+        console.log('Se eliminara el archivo')
+        archivoInfo = document.getElementById('pruebaArchivo')
+        archivoInfo.value = ''
+    }
+</script>
 
 {% endblock %}
