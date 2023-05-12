@@ -384,7 +384,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row mb-2 px-1">
+            <div class="row mb-2 px-1" style="display: none;">
                 <div class="col-6">
                     <div class="row px-2">
                         <div class="col-12" style="border-radius: 10px; border: solid 1px;">
@@ -420,7 +420,65 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6 px-2">
+                <div class="col-6" style="border-radius: 10px; border: solid 1px;">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row text-center mt-2">
+                                <h5>Productos con mas ventas</h5>
+                            </div>
+                            <br>
+                            <div class="row justify-content-center">
+                                <div class="col-3">
+                                    <select class="form-select" id="filtroProductos" style="font-size: 12px;">
+                                        <option value="15">Top 15</option>
+                                        <option value="10">Top 10</option>
+                                        <option value="5">Top 5</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-select" id="mesesProductos" style="font-size: 12px;">
+                                        <option value="0">Presente mes</option>
+                                        <option value="1">Ultimo mes</option>
+                                        <option value="3">Ultimos 3 meses</option>
+                                        <option value="6">Ultimos 6 meses</option>
+                                        <option value="12">Ultimo año</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <button class="btn btn-success" id="filtrarProductos" style="font-size: 12px;">Filtrar</button>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="container row mb-2" style="font-size: 10px;">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-dark">
+                                        <th>Codigo</th>
+                                        <th>Producto</th>
+                                        <th>Valor vendido</th>
+                                    </thead>
+                                    <tbody id="tablaProductos">
+                    
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row text-center">
+                                <h5>Gráfico de productos</h5>
+                            </div>
+                            <div class="row">
+                                <canvas width="200" height="100px" id="pieProductos"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="row mt-2 mb-2 px-2">
+                <div class="col-12 px-2">
                     <div class="row">
                         <div class="col-12" style="border-radius: 10px; border: solid 1px;">
                             <div class="row">
@@ -474,64 +532,6 @@
                                         <canvas width="200" height="100px" id="pieClientes"></canvas>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="row mt-2 mb-2 px-2">
-                <div class="col-12" style="border-radius: 10px; border: solid 1px;">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="row text-center mt-2">
-                                <h5>Productos con mas ventas</h5>
-                            </div>
-                            <br>
-                            <div class="row justify-content-center">
-                                <div class="col-3">
-                                    <select class="form-select" id="filtroProductos" style="font-size: 12px;">
-                                        <option value="15">Top 15</option>
-                                        <option value="10">Top 10</option>
-                                        <option value="5">Top 5</option>
-                                    </select>
-                                </div>
-                                <div class="col-3">
-                                    <select class="form-select" id="mesesProductos" style="font-size: 12px;">
-                                        <option value="0">Presente mes</option>
-                                        <option value="1">Ultimo mes</option>
-                                        <option value="3">Ultimos 3 meses</option>
-                                        <option value="6">Ultimos 6 meses</option>
-                                        <option value="12">Ultimo año</option>
-                                    </select>
-                                </div>
-                                <div class="col-3">
-                                    <button class="btn btn-success" id="filtrarProductos" style="font-size: 12px;">Filtrar</button>
-                                </div>
-                            </div>
-                            <br>
-                            <div class="container row mb-2" style="font-size: 10px;">
-                                <table class="table table-bordered table-hover">
-                                    <thead class="table-dark">
-                                        <th>Codigo</th>
-                                        <th>Producto</th>
-                                        <th>Valor vendido</th>
-                                    </thead>
-                                    <tbody id="tablaProductos">
-                    
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="row text-center">
-                                <h5>Gráfico de productos</h5>
-                            </div>
-                            <div class="row">
-                                <canvas width="200" height="100px" id="pieProductos"></canvas>
                             </div>
                         </div>
                     </div>
