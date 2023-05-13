@@ -5,6 +5,28 @@
 {% block code %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    function recargarResumen()
+    {
+        let filtroResumen = document.getElementById('filtroResumenVentas')
+        fetch(`/sistema_2/resumenVentasMensuales?anho_ventas=${filtroResumen.value}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Los datos anuales son: ')
+            console.log(data)
+            let filaSoles = document.getElementById('filaSoles')
+            filaSoles.innerHTML = ''
+            filaSoles.innerHTML += '<td>Soles</td>'
+            let filaDolares = document.getElementById('filaDolares')
+            filaDolares.innerHTML = ''
+            filaDolares.innerHTML += '<td>Dolares</td>'
+            for(let i = 0; i < 12; i++)
+            {
+                filaSoles.innerHTML += `<td>${data.ventas_meses_soles[i]}</td>`
+                filaDolares.innerHTML += `<td>${data.ventas_meses_dolares[i]}</td>`
+            }
+        })
+
+    }
     document.addEventListener('DOMContentLoaded',()=>{
 
         fetch('/sistema_2/resumenVentasMensuales?anho_ventas=2023')
@@ -409,6 +431,19 @@
                 <div class="col-12" style="border-radius: 10px; border: solid 1px">
                     <div class="row text-center mt-2">
                         <h5>Resumen de ventas</h5>
+                    </div>
+                    <br>
+                    <div class="row justify-content-center">
+                        <div class="col-3">
+                            <select class="form-select" id="filtroResumenVentas" style="font-size: 12px;">
+                                <option value="2022">2022</option>
+                                <option value="2023" selected>2023</option>
+                                <option value="2024">2024</option>
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <button class="btn btn-success" id="filtrarResumen" style="font-size: 12px;" onclick="recargarResumen()">Filtrar</button>
+                        </div>
                     </div>
                     <br>
                     <div class="row justify-content-center mx-2">
