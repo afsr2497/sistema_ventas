@@ -6,6 +6,27 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded',()=>{
+
+        fetch('/sistema_2/resumenVentasMensuales?anho_ventas=2023')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Los datos anuales son: ')
+            console.log(data)
+            let filaSoles = document.getElementById('filaSoles')
+            filaSoles.innerHTML = ''
+            filaSoles.innerHTML += '<td>Soles</td>'
+            let filaDolares = document.getElementById('filaDolares')
+            filaDolares.innerHTML = ''
+            filaDolares.innerHTML += '<td>Dolares</td>'
+            for(let i = 0; i < 12; i++)
+            {
+                filaSoles.innerHTML += `<td>${data.ventas_meses_soles[i]}</td>`
+                filaDolares.innerHTML += `<td>${data.ventas_meses_dolares[i]}</td>`
+            }
+        })
+
+
+
         let grafVendedor = document.getElementById('grafVendedor')
         let grafVentas = document.getElementById('grafVentas')
         let grafVendedoresTiempo = document.getElementById('grafVendedoresTiempo')
@@ -381,6 +402,37 @@
                     <br>
                     <div class="mb-2">
                         <canvas width="200" height="100" id="grafVentas"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2 mb-2 px-2">
+                <div class="col-12" style="border-radius: 10px; border: solid 1px">
+                    <div class="row text-center mt-2">
+                        <h5>Resumen de ventas</h5>
+                    </div>
+                    <br>
+                    <div class="row justify-content-center mx-2">
+                        <table class="table table-bordered" style="font-size: 7px;" style="border-radius: 10px;">
+                            <thead class="table-dark">
+                                <th></th>
+                                <th>Enero</th>
+                                <th>Febrero</th>
+                                <th>Marzo</th>
+                                <th>Abril</th>
+                                <th>Mayo</th>
+                                <th>Junio</th>
+                                <th>Julio</th>
+                                <th>Agosto</th>
+                                <th>Septiembre</th>
+                                <th>Octubre</th>
+                                <th>Noviembre</th>
+                                <th>Diciembre</th>
+                            </thead>
+                            <tbody>
+                                <tr id="filaSoles"></tr>
+                                <tr id="filaDolares"></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

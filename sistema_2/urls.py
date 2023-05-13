@@ -171,4 +171,5 @@ urlpatterns = [
     path('eliminarIngreso/<str:ind>&<str:idCaja>',views.eliminarIngreso,name='eliminarIngreso'),
     path('eliminarCostosTotales',views.eliminarCostosTotales,name='eliminarCostosTotales'),
     path('importarRegistrosCostos',views.importarRegistrosCostos,name='importarRegistrosCostos'),
+    path('resumenVentasMensuales',views.resumen_ventas_mensuales,name='resumenVentasMensuales'),
 ]
