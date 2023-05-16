@@ -230,6 +230,7 @@ class config_docs(models.Model):
     tokenDoc = models.CharField(max_length=128,default='')
     almacenesSistema = ArrayField(models.CharField(max_length=256),default=list())
     almacenesDescuento = ArrayField(models.CharField(max_length=256),default=list())
+    tipoCambio = models.CharField(max_length=8, default='0')
 
 class notaCredito(models.Model):
     cliente = ArrayField(models.CharField(max_length=256),null=True)

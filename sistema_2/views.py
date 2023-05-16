@@ -5299,6 +5299,7 @@ def configurar_documentos(request):
         serieCoti = request.POST.get('serieCotizacion')
         nroCoti = request.POST.get('nroCotizacion')
         token_doc = request.POST.get('tokenSistema')
+        tipoCambio = request.POST.get('tipoCambio')
         datos_doc.boletaSerie = serieBol
         datos_doc.boletaNro = nroBol
         datos_doc.facturaSerie = serieFac
@@ -5313,6 +5314,7 @@ def configurar_documentos(request):
         datos_doc.cotiSerie = serieCoti
         datos_doc.cotiNro = nroCoti
         datos_doc.tokenDoc = token_doc
+        datos_doc.tipoCambio = str(tipoCambio)
         datos_doc.save()
         datos_doc = config_docs.objects.get(id=1)
         return HttpResponseRedirect(reverse('sistema_2:dashboard'))
@@ -10258,6 +10260,7 @@ def resumen_ventas_mensuales(request):
         'lista_meses':lista_meses,
         'ventas_meses_soles':ventas_meses_soles,
         'ventas_meses_dolares':ventas_meses_dolares,
+        'tipoCambio':config_docs.objects.get(id=1).tipoCambio,
     })
 
 
