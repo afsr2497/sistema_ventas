@@ -26,7 +26,7 @@
             {
                 filaSoles.innerHTML += `<td style="text-align:right;">${Number(data.ventas_meses_soles[i]).toLocaleString('es-MX')}</td>`
                 filaDolares.innerHTML += `<td style="text-align:right;">${Number(data.ventas_meses_dolares[i]).toLocaleString('es-MX')}</td>`
-                filaAcumulado.innerHTML += `<td style="text-align:right;">${Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2).toLocaleString('es-MX')}</td>`
+                filaAcumulado.innerHTML += `<td style="text-align:right;">${Number(Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2)).toLocaleString('es-MX')}</td>`
             }
         })
 
@@ -51,7 +51,7 @@
             {
                 filaSoles.innerHTML += `<td style="text-align:right;">${Number(data.ventas_meses_soles[i]).toLocaleString('es-MX')}</td>`
                 filaDolares.innerHTML += `<td style="text-align:right;">${Number(data.ventas_meses_dolares[i]).toLocaleString('es-MX')}</td>`
-                filaAcumulado.innerHTML += `<td style="text-align:right;">${Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2).toLocaleString('es-MX')}</td>`
+                filaAcumulado.innerHTML += `<td style="text-align:right;">${Number(Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2)).toLocaleString('es-MX')}</td>`
             }
         })
 
