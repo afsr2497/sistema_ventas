@@ -16,6 +16,10 @@
             let filaAcumulado = document.getElementById('filaAcumulado')
             filaAcumulado.innerHTML = ''
             filaAcumulado.innerHTML += '<td>Acumulado</td>'
+            let acumulado = 0
+            let filaTotal = document.getElementById('filaTotal')
+            filaTotal.innerHTML = ''
+            filaTotal.innerHTML += '<td>Total</td>'
             let filaSoles = document.getElementById('filaSoles')
             filaSoles.innerHTML = ''
             filaSoles.innerHTML += '<td>Soles</td>'
@@ -24,9 +28,11 @@
             filaDolares.innerHTML += '<td>Dolares</td>'
             for(let i = 0; i < 12; i++)
             {
+                acumulado = acumulado + Number(Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2))
                 filaSoles.innerHTML += `<td style="text-align:right;">${Number(data.ventas_meses_soles[i]).toLocaleString('es-MX')}</td>`
                 filaDolares.innerHTML += `<td style="text-align:right;">${Number(data.ventas_meses_dolares[i]).toLocaleString('es-MX')}</td>`
-                filaAcumulado.innerHTML += `<td style="text-align:right;">${Number(Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2)).toLocaleString('es-MX')}</td>`
+                filaTotal.innerHTML += `<td style="text-align:right;">${Number(Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2)).toLocaleString('es-MX')}</td>`
+                filaAcumulado.innerHTML += `<td style="text-align:right;">${acumulado.toLocaleString('es-MX')}</td>`
             }
         })
 
@@ -41,6 +47,10 @@
             let filaAcumulado = document.getElementById('filaAcumulado')
             filaAcumulado.innerHTML = ''
             filaAcumulado.innerHTML += '<td>Acumulado</td>'
+            let acumulado = 0
+            let filaTotal = document.getElementById('filaTotal')
+            filaTotal.innerHTML = ''
+            filaTotal.innerHTML += '<td>Total</td>'
             let filaSoles = document.getElementById('filaSoles')
             filaSoles.innerHTML = ''
             filaSoles.innerHTML += '<td>Soles</td>'
@@ -49,9 +59,11 @@
             filaDolares.innerHTML += '<td>Dolares</td>'
             for(let i = 0; i < 12; i++)
             {
+                acumulado = acumulado + Number(Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2))
                 filaSoles.innerHTML += `<td style="text-align:right;">${Number(data.ventas_meses_soles[i]).toLocaleString('es-MX')}</td>`
                 filaDolares.innerHTML += `<td style="text-align:right;">${Number(data.ventas_meses_dolares[i]).toLocaleString('es-MX')}</td>`
-                filaAcumulado.innerHTML += `<td style="text-align:right;">${Number(Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2)).toLocaleString('es-MX')}</td>`
+                filaTotal.innerHTML += `<td style="text-align:right;">${Number(Number((Number(data.ventas_meses_dolares[i])*Number(data.tipoCambio)) + Number(data.ventas_meses_soles[i])).toFixed(2)).toLocaleString('es-MX')}</td>`
+                filaAcumulado.innerHTML += `<td style="text-align:right;">${acumulado.toLocaleString('es-MX')}</td>`
             }
         })
 
@@ -474,6 +486,7 @@
                             <tbody>
                                 <tr id="filaSoles"></tr>
                                 <tr id="filaDolares"></tr>
+                                <tr id="filaTotal"></tr>
                                 <tr id="filaAcumulado"></tr>
                             </tbody>
                         </table>
