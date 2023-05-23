@@ -11868,6 +11868,30 @@ def descargarOrden(request,ind):
                 vu_producto = Decimal(producto[4])
         can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
         lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    
+    #Valores iniciales
+    lista_y = [550,565]
+    #Ingreso de campo de descuento del producto
+    can.setFillColorRGB(1,1,1)
+    can.setFont('Helvetica-Bold',7)
+    can.drawString(lista_x[5] - 3, lista_y[0] + 3,'V.U con Dsct.')
+    can.setFont('Helvetica',7)
+    can.setFillColorRGB(0,0,0)
+    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    for producto in orden_info.productosOrden:
+        v_producto = Decimal(0.0000)
+        if orden_info.monedaOrden == 'SOLES':
+            if producto[3] == 'DOLARES':
+                v_producto = Decimal('%.2f' % Decimal(producto[4])*Decimal(orden_info.tcCompraOrden))*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
+            if producto[3] == 'SOLES':
+                v_producto = Decimal(producto[4])*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
+        if orden_info.monedaOrden == 'DOLARES':
+            if producto[3] == 'SOLES':
+                v_producto = Decimal('%.2f' % (Decimal(producto[4])/Decimal(orden_info.tcCompraOrden)))*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
+            if producto[3] == 'DOLARES':
+                v_producto = Decimal(producto[4])*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
+        can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % v_producto)))
+        lista_y = [lista_y[0] - 16,lista_y[1] - 16]
 
     if orden_info.mostrarDescuento == '1':
         #Valores iniciales
@@ -11875,12 +11899,12 @@ def descargarOrden(request,ind):
         #Ingreso de campo de descuento del producto
         can.setFillColorRGB(1,1,1)
         can.setFont('Helvetica-Bold',7)
-        can.drawString(lista_x[5] + 5, lista_y[0] + 3,'Dsct.')
+        can.drawString(lista_x[6] + 5, lista_y[0] + 3,'Dsct.')
         can.setFont('Helvetica',7)
         can.setFillColorRGB(0,0,0)
         lista_y = [lista_y[0] - 16,lista_y[1] - 16]
         for producto in orden_info.productosOrden:
-            can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,producto[6] + '%')
+            can.drawRightString(lista_x[6] + 20,lista_y[0] + 3,producto[6] + '%')
             lista_y = [lista_y[0] - 16,lista_y[1] - 16]
 
     #Valores iniciales
