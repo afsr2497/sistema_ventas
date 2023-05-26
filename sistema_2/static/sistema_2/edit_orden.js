@@ -102,6 +102,15 @@ document.addEventListener("DOMContentLoaded",()=>{
             mostrarDescuento = '0'
         }
 
+        let mostrarVU = '0'
+
+        if($('#mostrarVU').prop('checked')){
+            mostrarVU = '1'
+        }
+        else{
+            mostrarVU = '0'
+        }
+
         arregloProductos = []
         let longitudProductos = productosTabla.rows.length
         console.log(longitudProductos)
@@ -130,6 +139,7 @@ document.addEventListener("DOMContentLoaded",()=>{
             'tcCompraOrden':tcCompraOrden.value,
             'tcVentaOrden':tcVentaOrden.value,
             'mostrarDescuento':mostrarDescuento,
+            'mostrarVU':mostrarVU,
         }
         fetch(url,{
             method:"POST",

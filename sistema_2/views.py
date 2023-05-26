@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '1'
+entorno_sistema = '0'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -11200,7 +11200,7 @@ def armar_json_nota_factura(factura_info):
             "tipoOperacion":"VENTA_INTERNA",
             "coVendedor":null
         },
-        "motivo":"ANULACION_OPERACION",
+        "motivo":"DEVOLUCION_POR_ITEM",
         "receptor":
         {
             "correo":factura_info.cliente[6],
@@ -11685,6 +11685,7 @@ def crear_orden(request):
         tcCompraOrden = data.get('tcCompraOrden')
         tcVentaOrden = data.get('tcVentaOrden')
         mostrarDescuento = data.get('mostrarDescuento')
+        mostrarVU = data.get('mostrarVU')
         if fechaOrden == '':
             if(int((datetime.now()-timedelta(hours=5)).month) < 10):
                 mes = '0' + str((datetime.now()-timedelta(hours=5)).month)
@@ -11712,7 +11713,8 @@ def crear_orden(request):
             productosOrden=productosOrden,
             tcCompraOrden=tcCompraOrden,
             tcVentaOrden=tcVentaOrden,
-            mostrarDescuento=mostrarDescuento
+            mostrarDescuento=mostrarDescuento,
+            mostrarVU=mostrarVU,
         ).save()
         return JsonResponse({
             'resp':'ok'
@@ -11844,37 +11846,13 @@ def descargarOrden(request,ind):
     for producto in orden_info.productosOrden:
         can.drawString(lista_x[2] + 5,lista_y[0] + 3,producto[1])
         lista_y = [lista_y[0] - 16,lista_y[1] - 16]
-    
-    
-    #Valores iniciales
-    lista_y = [550,565]
-    #Ingreso de campo de unidad de medida de producto
-    can.setFillColorRGB(1,1,1)
-    can.setFont('Helvetica-Bold',7)
-    can.drawString(lista_x[4] - 5, lista_y[0] + 3,'V.U sin IGV')
-    can.setFont('Helvetica',7)
-    can.setFillColorRGB(0,0,0)
-    lista_y = [lista_y[0] - 16,lista_y[1] - 16]
-    for producto in orden_info.productosOrden:
-        if orden_info.monedaOrden == 'SOLES':
-            if producto[3] == 'DOLARES':
-                vu_producto = Decimal(producto[4])*Decimal(orden_info.tcCompraOrden)
-            if producto[3] == 'SOLES':
-                vu_producto = Decimal(producto[4])
-        if orden_info.monedaOrden == 'DOLARES':
-            if producto[3] == 'SOLES':
-                vu_producto = (Decimal(producto[4])/Decimal(orden_info.tcCompraOrden))
-            if producto[3] == 'DOLARES':
-                vu_producto = Decimal(producto[4])
-        can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
-        lista_y = [lista_y[0] - 16,lista_y[1] - 16]
-    
+
     #Valores iniciales
     lista_y = [550,565]
     #Ingreso de campo de descuento del producto
     can.setFillColorRGB(1,1,1)
     can.setFont('Helvetica-Bold',7)
-    can.drawString(lista_x[5] - 3, lista_y[0] + 3,'V.U con Dsct.')
+    can.drawString(lista_x[4] - 3, lista_y[0] + 3,'V.U')
     can.setFont('Helvetica',7)
     can.setFillColorRGB(0,0,0)
     lista_y = [lista_y[0] - 16,lista_y[1] - 16]
@@ -11882,7 +11860,7 @@ def descargarOrden(request,ind):
         v_producto = Decimal(0.0000)
         if orden_info.monedaOrden == 'SOLES':
             if producto[3] == 'DOLARES':
-                v_producto = Decimal('%.2f' % Decimal(producto[4])*Decimal(orden_info.tcCompraOrden))*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
+                v_producto = Decimal('%.2f' % (Decimal(Decimal(producto[4])*Decimal(orden_info.tcCompraOrden))*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))))
             if producto[3] == 'SOLES':
                 v_producto = Decimal(producto[4])*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
         if orden_info.monedaOrden == 'DOLARES':
@@ -11890,8 +11868,50 @@ def descargarOrden(request,ind):
                 v_producto = Decimal('%.2f' % (Decimal(producto[4])/Decimal(orden_info.tcCompraOrden)))*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
             if producto[3] == 'DOLARES':
                 v_producto = Decimal(producto[4])*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
-        can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % v_producto)))
+        can.drawRightString(lista_x[4] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % v_producto)))
         lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    
+    if orden_info.mostrarVU == '1' and orden_info.mostrarDescuento == '1':
+        lista_x[5] = 410
+        lista_x[6] = 460
+    
+    if orden_info.mostrarVU == '1' and orden_info.mostrarDescuento == '0':
+        lista_x[5] = 410
+        lista_x[6] = 460
+
+    if orden_info.mostrarVU == '0' and orden_info.mostrarDescuento == '1':
+        lista_x[5] = 460
+        lista_x[6] = 410
+    
+    if orden_info.mostrarVU == '0' and orden_info.mostrarDescuento == '0':
+        lista_x[5] = 410
+        lista_x[6] = 460
+    
+    if orden_info.mostrarVU == '1':
+        #Valores iniciales
+        lista_y = [550,565]
+        #Ingreso de campo de unidad de medida de producto
+        can.setFillColorRGB(1,1,1)
+        can.setFont('Helvetica-Bold',7)
+        can.drawString(lista_x[5] - 5, lista_y[0] + 3,'V.U sin IGV')
+        can.setFont('Helvetica',7)
+        can.setFillColorRGB(0,0,0)
+        lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+        for producto in orden_info.productosOrden:
+            if orden_info.monedaOrden == 'SOLES':
+                if producto[3] == 'DOLARES':
+                    vu_producto = Decimal(producto[4])*Decimal(orden_info.tcCompraOrden)
+                if producto[3] == 'SOLES':
+                    vu_producto = Decimal(producto[4])
+            if orden_info.monedaOrden == 'DOLARES':
+                if producto[3] == 'SOLES':
+                    vu_producto = (Decimal(producto[4])/Decimal(orden_info.tcCompraOrden))
+                if producto[3] == 'DOLARES':
+                    vu_producto = Decimal(producto[4])
+            can.drawRightString(lista_x[5] + 20,lista_y[0] + 3,"{:,}".format(Decimal('%.2f' % vu_producto)))
+            lista_y = [lista_y[0] - 16,lista_y[1] - 16]
+    
+    
 
     if orden_info.mostrarDescuento == '1':
         #Valores iniciales
@@ -11919,7 +11939,7 @@ def descargarOrden(request,ind):
     for producto in orden_info.productosOrden:
         if orden_info.monedaOrden == 'SOLES':
             if producto[3] == 'DOLARES':
-                v_producto = Decimal('%.2f' % Decimal(producto[4])*Decimal(orden_info.tcCompraOrden))*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
+                v_producto = Decimal('%.2f' % (Decimal(producto[4])*Decimal(orden_info.tcCompraOrden)))*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
                 v_producto = Decimal('%.2f' % (v_producto*Decimal(producto[5])))
             if producto[3] == 'SOLES':
                 v_producto = Decimal(producto[4])*Decimal(Decimal(1.00) - Decimal((Decimal(producto[6])/100)))
@@ -12025,6 +12045,7 @@ def editarOrden(request,ind):
         tcCompraOrden = data.get('tcCompraOrden')
         tcVentaOrden = data.get('tcVentaOrden')
         mostrarDescuento = data.get('mostrarDescuento')
+        mostrarVU = data.get('mostrarVU')
         print(tcVentaOrden)
         print(tcCompraOrden)
         if fechaOrden == '':
@@ -12055,6 +12076,7 @@ def editarOrden(request,ind):
         orden_editar.tcCompraOrden = str(tcCompraOrden)
         orden_editar.tcVentaOrden = str(tcVentaOrden)
         orden_editar.mostrarDescuento = mostrarDescuento
+        orden_editar.mostrarVU = mostrarVU
         orden_editar.save()
         return JsonResponse({
             'resp':'ok'

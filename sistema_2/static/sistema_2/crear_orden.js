@@ -95,12 +95,20 @@ document.addEventListener("DOMContentLoaded",()=>{
     btnCrear.addEventListener('click',()=>{
 
         let mostrarDescuento = '0'
+        let mostrarVU = '0'
 
         if($('#mostrarDescuento').prop('checked')){
             mostrarDescuento = '1'
         }
         else{
             mostrarDescuento = '0'
+        }
+
+        if($('#mostrarVU').prop('checked')){
+            mostrarVU = '1'
+        }
+        else{
+            mostrarVU = '0'
         }
 
         arregloProductos = []
@@ -129,6 +137,7 @@ document.addEventListener("DOMContentLoaded",()=>{
             'tcCompraOrden':tcCompraOrden.value,
             'tcVentaOrden':tcVentaOrden.value,
             'mostrarDescuento':mostrarDescuento,
+            'mostrarVU':mostrarVU,
         }
         fetch(url,{
             method:"POST",

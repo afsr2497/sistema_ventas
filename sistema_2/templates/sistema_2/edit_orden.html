@@ -104,6 +104,13 @@
                     <input class="form-check-input" type="checkbox" id="mostrarDescuento" checked>
                 {% endif %}
                 <label class="form-check-label">Mostrar descuento</label>
+                <br>
+                {% if orden.mostrarVU == '0' %}
+                    <input class="form-check-input" type="checkbox" id="mostrarVU">
+                {% else %}
+                    <input class="form-check-input" type="checkbox" id="mostrarVU" checked>
+                {% endif %}
+                <label class="form-check-label">Mostrar VU</label>
             </div>
         </div>
     </div>

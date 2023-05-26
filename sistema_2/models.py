@@ -342,6 +342,7 @@ class ordenCompraMetalprotec(models.Model):
     tcCompraOrden = models.CharField(max_length=8,default='0.000')
     tcVentaOrden = models.CharField(max_length=8,default='0.000')
     mostrarDescuento = models.CharField(max_length=8,default='0')
+    mostrarVU = models.CharField(max_length=8,default='0')
 
 class configurarComisiones(models.Model):
     porcentajeComision = models.CharField(max_length=8,default='0')
