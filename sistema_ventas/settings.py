@@ -72,6 +72,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'sistema_ventas.wsgi.application'
 
 
+"""
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
@@ -104,7 +105,6 @@ DATABASES = {
         #'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-"""
 
 
 

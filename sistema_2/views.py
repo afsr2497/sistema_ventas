@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
