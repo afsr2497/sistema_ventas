@@ -11669,6 +11669,14 @@ def crear_orden(request):
     except:
         tc_compra = 3.705
         tc_venta = 3.710
+    return render(request,'sistema_2/crear_orden.html',{
+        'pro':pro,
+        'usr_rol': user_logued,
+        'tc_compra':tc_compra,
+        'tc_venta':tc_venta,
+    })
+    
+def agregar_orden(request):
     if request.method == 'POST':
         data = json.load(request)
         rucProveedor = data.get('rucProveedor')
@@ -11716,15 +11724,10 @@ def crear_orden(request):
             mostrarDescuento=mostrarDescuento,
             mostrarVU=mostrarVU,
         ).save()
+        time.sleep(0.5)
         return JsonResponse({
             'resp':'ok'
         })
-    return render(request,'sistema_2/crear_orden.html',{
-        'pro':pro,
-        'usr_rol': user_logued,
-        'tc_compra':tc_compra,
-        'tc_venta':tc_venta,
-    })
 
 def descargarOrden(request,ind):
     #Se proceden a generar las paginas del documento
@@ -12029,6 +12032,14 @@ def editarOrden(request,ind):
     usuario_logued = User.objects.get(username=request.user.username)
     user_logued = userProfile.objects.get(usuario=usuario_logued)
     orden_editar = ordenCompraMetalprotec.objects.get(id=ind)
+    return render(request,'sistema_2/edit_orden.html',{
+        'orden':orden_editar,
+        'pro':pro,
+        'usr_rol': user_logued,
+    })
+
+def modificar_orden(request,ind):
+    orden_editar = ordenCompraMetalprotec.objects.get(id=ind)
     if request.method == 'POST':
         data = json.load(request)
         rucProveedor = data.get('rucProveedor')
@@ -12078,15 +12089,14 @@ def editarOrden(request,ind):
         orden_editar.mostrarDescuento = mostrarDescuento
         orden_editar.mostrarVU = mostrarVU
         orden_editar.save()
+        time.sleep(0.5)
         return JsonResponse({
             'resp':'ok'
         })
 
-    return render(request,'sistema_2/edit_orden.html',{
-        'orden':orden_editar,
-        'pro':pro,
-        'usr_rol': user_logued,
-    })
+def eliminar_orden(request,ind):
+    ordenCompraMetalprotec.objects.get(id=ind).delete()
+    return HttpResponseRedirect(reverse('sistema_2:emisionoc'))
 
 @login_required(login_url='/sistema_2')
 def verificar_nota_teFacturo(request,ind):

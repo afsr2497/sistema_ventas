@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded",()=>{
             arregloProductos.push(productoArreglo)
         }
 
-        url = '/sistema_2/crear_orden'
+        url = '/sistema_2/agregar_orden'
         ejemplo = {
             'productos':arregloProductos,
             'rucProveedor':rucProveedor.value,

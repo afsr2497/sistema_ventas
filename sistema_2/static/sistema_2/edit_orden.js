@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
         console.log(tcCompraOrden.value)
         console.log(tcVentaOrden.value)
-        url = '/sistema_2/editarOrden/' + idOrden.value
+        url = '/sistema_2/modificar_orden/' + idOrden.value
         ejemplo = {
             'productos':arregloProductos,
             'rucProveedor':rucProveedor.value,

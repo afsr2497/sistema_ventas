@@ -32,6 +32,7 @@
               <th scope="col">Proveedor</th>
               <th scope="col">Descargar OC</th>
               <th scope="col">Editar</th>
+              <th scope="col">Eliminar</th>
           </tr>
       </thead>
       <tbody>
@@ -46,6 +47,7 @@
               <td style="text-align: center;">
                 <a class="btn btn-warning" href="{% url 'sistema_2:editarOrden' orden.id %}"><i class="fa fa-edit"></i></a>
               </td>
+              <td style="text-align: center;"><a class="btn btn-danger" href="{% url 'sistema_2:eliminar_orden' orden.id %}"><i class="fas fa-trash"></i></a></td>
           </tr>
           {% endfor %}
       </tbody>
