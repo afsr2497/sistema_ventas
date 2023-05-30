@@ -12014,7 +12014,10 @@ def descargarOrden(request,ind):
     can.setFillColorRGB(0,0,0)
 
     can.setFont('Helvetica',9)
-    can.drawString(100,50,'Revisado por gerencia')
+    can.drawString(100,35,'Revisado por gerencia')
+
+    #Generacion de la firma
+    can.drawImage('./sistema_2/static/images/firmaOrdenCompra.png',90,30,width=113,height=51,mask='auto')
 
     #Linea de separacion con los datos finales
     can.line(25,lista_y[1],580,lista_y[1])
