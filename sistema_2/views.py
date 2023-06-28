@@ -37,7 +37,7 @@ from django.core.files.base import ContentFile,File
 import datetime as dt
 
 #Entorno del sistema, 0 es dev, 1 es produccion
-entorno_sistema = '0'
+entorno_sistema = '1'
 APIS_TOKEN = "apis-token-1.aTSI1U7KEuT-6bbbCguH-4Y8TI6KS73N"
 api_consultas = ApisNetPe(APIS_TOKEN)
 getcontext().prec = 10
@@ -6526,7 +6526,11 @@ def verificar_factura_teFacturo(request,ind):
         headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
         url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
         r = requests.put(url_pedido,headers=headers_info,json=info_data)
-        factura_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
+        try:
+            valor_verificacion = json.loads(r.content[:183]).get('estadoSunat').get('valor')
+        except:
+            valor_verificacion = 'SinDatos'
+        factura_verificar.estadoSunat = valor_verificacion
         factura_verificar.save()
     if entorno_sistema == '0':
         factura_verificar.estadoSunat = 'Anulado'
