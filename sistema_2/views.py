@@ -6529,12 +6529,7 @@ def verificar_factura_teFacturo(request,ind):
         headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
         url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
         r = requests.put(url_pedido,headers=headers_info,json=info_data)
-        print(r.content)
-        try:
-            valor_verificacion = json.loads(r.content[:183]).get('estadoSunat').get('valor')
-        except:
-            valor_verificacion = 'SinDatos'
-        factura_verificar.estadoSunat = valor_verificacion
+        factura_verificar.estadoSunat = r.json().get('estadoSunat').get('valor')
         factura_verificar.save()
     if entorno_sistema == '0':
         factura_verificar.estadoSunat = 'Anulado'
