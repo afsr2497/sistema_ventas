@@ -1621,6 +1621,7 @@ def editar_guia(request,ind):
             cot_traslado = data.get('traslado')
             cot_transporte = data.get('transporte')
             cot_vehiculo = data.get('datosVehiculo')
+            cot_licenciaConductor = data.get('licenciaConductor')
             proforma_editar.fecha_emision = parse(cot_fecha)
             proforma_editar.datosTraslado = cot_traslado
             proforma_editar.cliente = cot_cliente
@@ -1638,6 +1639,7 @@ def editar_guia(request,ind):
             proforma_editar.ubigeoGuia = cot_ubigeo
             proforma_editar.datosVehiculo = cot_vehiculo
             proforma_editar.origenGuia = origenGuia
+            proforma_editar.licenciaConductor = cot_licenciaConductor
             proforma_editar.save()
             return JsonResponse({'status': 'Todo added!'})
     return render(request,'sistema_2/editar_guia.html',{
@@ -4892,6 +4894,7 @@ def armar_json_guia(guia_info):
         guia_vehiculos = [
             {
                 "placa":guia_info.datosVehiculo[0],
+                "liscenciaConducir":guia_info.licenciaConductor,
                 "conductor":
                 {
                     "nombreLegal":guia_info.datosVehiculo[1],
@@ -6526,6 +6529,7 @@ def verificar_factura_teFacturo(request,ind):
         headers_info = {"X-Auth-Token":"HUR89LVdEfuKRdtpIqHYEbj5+3YFgJxBi2ecFzzQfVB5AAERhObWzBNga6NjSgH7","Content-Type":"application/json"}
         url_pedido = 'https://invoice2u.pe/apiemisor/invoice2u/integracion/consultarEstado'
         r = requests.put(url_pedido,headers=headers_info,json=info_data)
+        print(r.content)
         try:
             valor_verificacion = json.loads(r.content[:183]).get('estadoSunat').get('valor')
         except:
@@ -11204,7 +11208,7 @@ def armar_json_nota_factura(factura_info):
             "tipoOperacion":"VENTA_INTERNA",
             "coVendedor":null
         },
-        "motivo":"DEVOLUCION_POR_ITEM",
+        "motivo":"ANULACION_OPERACION",
         "receptor":
         {
             "correo":factura_info.cliente[6],

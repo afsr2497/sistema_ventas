@@ -336,18 +336,22 @@
         <h4>Datos del conductor</h4>
         <br>
         <div class="row mb-3">
-            <div class="col-md-4">
-                    <label>Placa del vehiculo (*)</label>
-                    <input type="text" class="form-control" placeholder="Placa del vehiculo" id="placaVehiculo" value="{{ prof.datosVehiculo.0 }}">
+            <div class="col-md-2">
+                <label>Placa vehiculo (*)</label>
+                <input type="text" class="form-control" placeholder="Placa del vehiculo" id="placaVehiculo" value="{{ prof.datosVehiculo.0 }}">
             </div>
-            <div class="col-md-4">
-                    <label>Nombre del conducto (*)</label>
-                    <input type="text" class="form-control" placeholder="Nombre del conductor" id="nombreConductor" value="{{ prof.datosVehiculo.1 }}">
-            </div>
-            <div class="col-md-4">
-                <label>DNI del conductor (*)</label>
+            <div class="col-md-2">
+                <label>DNI conductor (*)</label>
                 <input type="text" class="form-control" placeholder="Dni del conductor" id="dniConductor" value="{{ prof.datosVehiculo.2 }}">
-        </div>
+            </div>
+            <div class="col-md-3">
+                <label>Licencia conductor (*)</label>
+                <input type="text" class="form-control" placeholder="Licencia del conductor" id="licenciaConductor" value="{{ prof.licenciaConductor }}">
+            </div>
+            <div class="col-md-5">
+                <label>Nombre del conducto (*)</label>
+                <input type="text" class="form-control" placeholder="Nombre del conductor" id="nombreConductor" value="{{ prof.datosVehiculo.1 }}">
+            </div>
         </div>
     </div>
     <br>

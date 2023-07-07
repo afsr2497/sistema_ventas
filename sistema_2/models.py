@@ -157,6 +157,7 @@ class guias(models.Model):
     fecha_emision = models.DateField(null=True)
     cotiRelacionada = models.CharField(max_length=128,default='')
     origenGuia = ArrayField(models.CharField(max_length=512,default=''),default=list())
+    licenciaConductor = models.CharField(max_length=24,default='')
     
 
 class facturas(models.Model):

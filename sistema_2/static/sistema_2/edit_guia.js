@@ -77,6 +77,7 @@ addEventListener('DOMContentLoaded',()=>{
     let placaVehiculo = document.getElementById('placaVehiculo')
     let nombreConductor = document.getElementById('nombreConductor')
     let dniConductor = document.getElementById('dniConductor')
+    let licenciaConductor = document.getElementById('licenciaConductor')
 
     let cliente_info
     let almacenes
@@ -275,6 +276,7 @@ addEventListener('DOMContentLoaded',()=>{
         url = '/sistema_2/editar_guia/' + idenProforma.value
         console.log(url)
         ejemplo = {
+            'licenciaConductor':licenciaConductor.value,
             'origenGuia':origenGuia,
             'obsGuia':observacionesGuia.value,
             'ubigeoCliente':ubigeoCliente.value,
