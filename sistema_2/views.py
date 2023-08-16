@@ -9869,6 +9869,9 @@ def get_clients_statistics(request):
     consumo_clientes.append(total_consumo_otros)
     clientes_mas_ventas.append('Otros')
     info_clientes = str(int(info_clientes)+1)
+    print(clientes_mas_ventas[:int(info_clientes)])
+    print(consumo_clientes[:int(info_clientes)])
+    print(razon_clientes[:int(info_clientes)])
     return JsonResponse({
         'clientes_mas_ventas':clientes_mas_ventas[:int(info_clientes)],
         'ventas_clientes':consumo_clientes[:int(info_clientes)],
@@ -9935,6 +9938,9 @@ def get_products_statistics(request):
     consumo_productos.append(total_consumo_otros)
     productos_mas_ventas.append('Otros')
     info_productos = str(int(info_productos)+1)
+    print(productos_mas_ventas[:int(info_productos)])
+    print(consumo_productos[:int(info_productos)])
+    print(nombres_productos[:int(info_productos)])
     return JsonResponse({
         'productos_mas_ventas':productos_mas_ventas[:int(info_productos)],
         'ventas_productos':consumo_productos[:int(info_productos)],
@@ -10125,7 +10131,9 @@ def get_vendedor_statistics(request):
         consumo_dolares[datos_contador] = consumo_dolares[datos_contador]*Decimal(1.18)
         datos_contador = datos_contador + 1
     """
-
+    print(vendedor_mas_ventas[:int(info_vendedor)])
+    print(consumo_soles[:int(info_vendedor)])
+    print(consumo_dolares[:int(info_vendedor)])
     return JsonResponse({
         'vendedor_mas_ventas':vendedor_mas_ventas[:int(info_vendedor)],
         'ventas_vendedor':consumo_soles[:int(info_vendedor)],
@@ -10259,6 +10267,10 @@ def resumen_ventas_mensuales(request):
     lista_meses.reverse()
     ventas_meses_soles.reverse()
     ventas_meses_dolares.reverse()
+    print(lista_meses)
+    print(ventas_meses_soles)
+    print(ventas_meses_dolares)
+    print(config_docs.objects.get(id=1).tipoCambio)
     return JsonResponse({
         'lista_meses':lista_meses,
         'ventas_meses_soles':ventas_meses_soles,
@@ -10395,6 +10407,9 @@ def get_ventas_meses(request,ind):
     lista_meses.reverse()
     ventas_meses_soles.reverse()
     ventas_meses_dolares.reverse()
+    print(lista_meses)
+    print(ventas_meses_soles)
+    print(ventas_meses_dolares)
     return JsonResponse({
         'lista_meses':lista_meses,
         'ventas_meses_soles':ventas_meses_soles,
@@ -10743,6 +10758,8 @@ def get_ventas_tiempo_vendedor(request):
             consumo_x_mes_vendedor[counter_vendedor][counter_meses] = consumo_x_mes_vendedor[counter_vendedor][counter_meses]
             counter_meses = counter_meses + 1
         counter_vendedor = counter_vendedor + 1
+    print(codigos_vendedor)
+    print(consumo_x_mes_vendedor)
     return JsonResponse({
         'vendedor':codigos_vendedor,
         'ventas_vendedor':consumo_x_mes_vendedor,
